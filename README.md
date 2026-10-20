@@ -41,3 +41,7 @@ Genera `dist/com.diegodelacruz.drivetv_<versión>_all.ipk`. La carpeta `dist/` e
 ## Próximos pasos
 
 Ver [docs/plan.md](docs/plan.md). Los hitos que dependen de credenciales (Google Cloud, cuenta LG, IP de las TV) se harán al final.
+
+## Diseño de interfaz
+
+Ver [docs/diseno-interfaz.md](docs/diseno-interfaz.md): referencias revisadas, principios, estructura de pantallas y criterios de foco.

@@ -55,3 +55,18 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Pérdida de red durante reproducción | pendiente | pendiente |
 | Expiración de sesión de Developer Mode | pendiente | pendiente |
 | Reinstalación tras expiración | pendiente | pendiente |
+
+## Formatos de audio e imágenes (Hito 5)
+
+| Prueba | TV 2020 | TV 2023 |
+|---|---|---|
+| Audio mp3 | pendiente | pendiente |
+| Audio aac / m4a | pendiente | pendiente |
+| Audio flac | pendiente | pendiente |
+| Audio ogg / opus | pendiente | pendiente |
+| Imagen jpg | pendiente | pendiente |
+| Imagen png | pendiente | pendiente |
+| Imagen webp / heic | pendiente | pendiente |
+| Presentación automática | pendiente | pendiente |
+| Reproducción de audio en segundo plano | pendiente | pendiente |
+| Pistas múltiples en mkv (audio y subtítulos) | pendiente | pendiente |

@@ -135,3 +135,17 @@ Puntos abiertos de arquitectura:
 - `/home/user/dlc.tvs/app/appinfo.json`, `app/index.html`, `app/src/` (esqueleto de la app)
 
 Rama de trabajo: `claude/focused-cray-opspx4`.
+
+## Decisiones tomadas (2026-10-20)
+
+- **Destino:** las dos TV, con un solo build. La app detecta en tiempo de ejecución la versión de webOS y el motor web, y se adapta cuando sea necesario. [Inferencial: lectura de la respuesta de Diego "que la aplicación lo identifique y ejecute"; confirmar.]
+- **Uso:** personal por ahora.
+- **Formatos a soportar:** audio, imágenes y video en mp4, mkv y HEVC. La compatibilidad real de mkv y HEVC se valida en cada TV (Hito 5).
+- **Cuenta de desarrollador LG:** Diego debe revisar si ya tiene una. Revisión en Gmail hecha el 2026-10-20: sin correos de LG Developer ni de Seller Lounge (solo promociones y alertas de empleo). Verificación definitiva pendiente de Diego.
+- **Interfaz:** ver [docs/diseno-interfaz.md](diseno-interfaz.md). Pendiente de aprobación.
+
+## Pendiente de Diego
+
+- Framework: JS plano o Enact (pregunta 2, parcialmente respondida).
+- Modelos y versión de webOS de cada TV (pregunta 1).
+- Aprobación de la barra superior y del prototipo (diseño).
