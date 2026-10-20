@@ -21,8 +21,8 @@ Fecha: 2026-10-20. Archivo revisado: `docs/prototipo/CodeTV.html`.
 | Reproductor | D-pad | OK. Barra de progreso, 10 s, pausa, audio y subtítulos. | `revision/reproductor.png` |
 | Menú de audio y subtítulos | D-pad | OK. Se abre desde el reproductor y muestra la pista activa. | `revision/menu-audio-subtitulos.png` |
 | Clic en pestañas y tarjetas | Magic Remote (puntero) | OK. Abre la sección y el detalle. | `revision/magic-clic-tarjeta.png` |
-| Foco al pasar el puntero | Magic Remote (puntero) | **Falla.** Pasar el puntero sobre una opción no mueve el foco. | `revision/magic-hover-sin-foco.png` |
-| Rueda del Magic Remote | Magic Remote (rueda) | **Falla.** La rueda no desplaza la lista de videos. | `revision/magic-rueda-sin-desplazamiento.png` |
+| Foco al pasar el puntero | Magic Remote (puntero) | Corregido. Pasar el puntero sobre una opción mueve el foco sin ejecutarla. Antes: `revision/magic-hover-sin-foco.png`. | Recorrido automatizado |
+| Rueda del Magic Remote | Magic Remote (rueda) | Corregido. La rueda desplaza la lista hasta el final y vuelve al inicio. Antes: `revision/magic-rueda-sin-desplazamiento.png`. Después: `revision/magic-rueda-corregida.png`. | Recorrido automatizado |
 | Mini reproductor de música | D-pad y puntero | OK. Visible en la barra superior con una pista seleccionada. | `captura-inicio.png` |
 | Mini reproductor de video | D-pad y puntero | OK tras implementarlo. Aparece al salir del reproductor, se reabre con clic o OK, y se cierra con la "×". | `revision/mini-video-en-barra.png`, `revision/mini-video-cerrado.png` |
 | Pausa de música al iniciar video | D-pad | OK. El reproductor de video pausa la música. | `revision/mini-video-cerrado.png` (música en pausa) |
@@ -31,15 +31,15 @@ Fecha: 2026-10-20. Archivo revisado: `docs/prototipo/CodeTV.html`.
 
 ## Hallazgos
 
-### 1. Foco no sigue al puntero (prioridad alta)
+### 1. Foco no sigue al puntero (corregido)
 
-- Con el Magic Remote, el usuario espera que el foco siga al puntero. Hoy no ocurre: solo el clic activa la opción.
-- Recomendación: que el puntero sobre una tarjeta o una pestaña mueva el foco a esa opción, sin ejecutarla.
+- El puntero sobre una tarjeta o pestaña mueve el foco a esa opción. Solo el clic la ejecuta.
+- Implementado en el prototipo como manejador de movimiento del puntero. Pendiente de confirmar con el Magic Remote físico (Hito 5).
 
-### 2. La rueda no desplaza la lista (prioridad alta)
+### 2. La rueda no desplaza la lista (corregido)
 
-- La rueda del Magic Remote no mueve el contenido. Solo el foco por flechas desplaza.
-- Recomendación: que la rueda desplace la vista de la sección activa, y que el foco siga visible tras desplazarse.
+- La rueda desplaza el contenedor de la sección activa. El foco no cambia al desplazarse; las flechas lo traen de vuelta a la vista.
+- Pendiente de confirmar con el Magic Remote físico (Hito 5): que el control envía eventos de rueda en la TV.
 
 ### 3. Texto de 20 px (decidido)
 
@@ -61,6 +61,5 @@ Fecha: 2026-10-20. Archivo revisado: `docs/prototipo/CodeTV.html`.
 
 ## Pendientes antes de programar
 
-1. Corregir el foco por puntero y el desplazamiento con la rueda (hallazgos 1 y 2).
-2. Probar todo en la TV con el Magic Remote físico (Hito 5).
-3. Validar el video real en el mini reproductor (Hito 5).
+1. Probar todo en la TV con el Magic Remote físico (Hito 5).
+2. Validar el video real en el mini reproductor (Hito 5).
