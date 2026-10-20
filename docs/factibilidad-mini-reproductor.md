@@ -61,3 +61,16 @@ Factible, con dos condiciones:
 - Validación en la TV de 2020 antes de comprometer el modo de video real en el mini reproductor.
 
 Este documento no modifica el prototipo. Cuando se aprueben las decisiones de la sección 5, se agrega el comportamiento al prototipo.
+
+## 8. Decisiones tomadas (2026-10-20)
+
+1. **Iniciar video pausa la música.** Confirmado por Diego. No se reproducen dos archivos a la vez.
+2. **Video real en el mini.** Confirmado. En el prototipo se muestra un marcador; el video real se valida en el Hito 5.
+3. **Duración del mini en pausa:** se mantiene hasta que el usuario lo cierre con la "×" (propuesta aceptada por la regla de Diego de mantenerlo mientras haya reproducción).
+
+## 9. Implementación en el prototipo
+
+- Al salir del reproductor, el mini de video reemplaza al de música en la barra superior.
+- Clic u OK en el mini reabre el reproductor en el mismo segundo. La "×" lo cierra sin reabrirlo.
+- Verificado con recorridos automatizados: aparece, se reabre con clic, se cierra con la "×" y la música queda en pausa.
+- Pendiente de validar en la TV: video real, rendimiento y superposición de controles.

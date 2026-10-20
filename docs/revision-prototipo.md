@@ -1,57 +1,66 @@
 # Revisión del prototipo CodeTV
 
-Fecha: 2026-10-20. Archivo revisado: `docs/prototipo/CodeTV.html` (prototipo aprobado para revisión).
+Fecha: 2026-10-20. Archivo revisado: `docs/prototipo/CodeTV.html`.
 
 ## Método
 
-- Prototipo abierto en Chromium headless a 1920x1080, sin errores de consola en los recorridos.
-- Control remoto simulado con el teclado: flechas = D-pad, Enter = OK, Escape = Atrás. También se probó el código 461 de webOS para Atrás, que el prototipo acepta en el código.
-- Recorridos: inicio, barra superior, sección Video (con desplazamiento), detalle, reproductor, menú de audio y subtítulos, y regreso con Atrás.
+- Prototipo abierto en Chromium headless a 1920x1080. Sin errores de consola en ningún recorrido.
+- **Control D-pad:** flechas, Enter = OK, Escape = Atrás. El código 461 de webOS para Atrás está soportado en el código.
+- **Magic Remote (puntero):** clics y movimiento del puntero simulados con el ratón, y rueda.
+- Recorridos: inicio, barra superior, sección Video, detalle, reproductor, menú de audio y subtítulos, mini reproductor de video y música.
 
-**Limitación:** no se probó con el control físico ni en la TV. La prueba en TV queda en el Hito 5 del plan.
+**Limitación:** las pruebas son en un navegador de escritorio. El control físico Magic Remote y la TV real quedan para el Hito 5 del plan. La matriz de pruebas (`docs/pruebas.md`) ya incluye esos casos.
 
 ## Resultados
 
-| Área | Resultado | Evidencia |
-|---|---|---|
-| Carga y estructura | OK. Sin errores de consola. | Recorrido automatizado |
-| Barra superior y foco | OK. Arriba lleva a la barra y las flechas cambian de sección. | `prototipo/revision/video-seccion.png` |
-| Desplazamiento de filas | OK. La fila enfocada se muestra completa al bajar. | `prototipo/revision/video-desplazamiento.png` |
-| Reproductor | OK. Barra de progreso, 10 s, pausa, audio y subtítulos. | `prototipo/revision/reproductor.png` |
-| Menú de audio y subtítulos | OK. Se abre desde el reproductor y muestra la pista activa. | `prototipo/revision/menu-audio-subtitulos.png` |
-| Mini reproductor de música | OK. Visible en la barra superior con una pista seleccionada. | `docs/prototipo/captura-inicio.png` |
-| Renombre a CodeTV | OK. Marca, título y diálogos actualizados. | 7 ocurrencias en el archivo |
-
-Capturas del recorrido en `docs/prototipo/revision/`.
+| Área | Control | Resultado | Evidencia |
+|---|---|---|---|
+| Carga y estructura | Todos | OK. Sin errores de consola. | Recorridos automatizados |
+| Barra superior y foco | D-pad | OK. Arriba lleva a la barra y las flechas cambian de sección. | `revision/video-seccion.png` |
+| Desplazamiento de filas | D-pad | OK. La fila enfocada se muestra completa al bajar. | `revision/video-desplazamiento.png` |
+| Reproductor | D-pad | OK. Barra de progreso, 10 s, pausa, audio y subtítulos. | `revision/reproductor.png` |
+| Menú de audio y subtítulos | D-pad | OK. Se abre desde el reproductor y muestra la pista activa. | `revision/menu-audio-subtitulos.png` |
+| Clic en pestañas y tarjetas | Magic Remote (puntero) | OK. Abre la sección y el detalle. | `revision/magic-clic-tarjeta.png` |
+| Foco al pasar el puntero | Magic Remote (puntero) | **Falla.** Pasar el puntero sobre una opción no mueve el foco. | `revision/magic-hover-sin-foco.png` |
+| Rueda del Magic Remote | Magic Remote (rueda) | **Falla.** La rueda no desplaza la lista de videos. | `revision/magic-rueda-sin-desplazamiento.png` |
+| Mini reproductor de música | D-pad y puntero | OK. Visible en la barra superior con una pista seleccionada. | `captura-inicio.png` |
+| Mini reproductor de video | D-pad y puntero | OK tras implementarlo. Aparece al salir del reproductor, se reabre con clic o OK, y se cierra con la "×". | `revision/mini-video-en-barra.png`, `revision/mini-video-cerrado.png` |
+| Pausa de música al iniciar video | D-pad | OK. El reproductor de video pausa la música. | `revision/mini-video-cerrado.png` (música en pausa) |
+| Renombre a CodeTV | Todos | OK. Marca, título y diálogos actualizados. | Revisión de texto |
+| Correo de ejemplo | Todos | OK. Reemplazado por `usuario@ejemplo.com`. | Revisión de texto |
 
 ## Hallazgos
 
-### 1. Texto demasiado pequeño para 2.5 a 3.5 m (prioridad alta)
+### 1. Foco no sigue al puntero (prioridad alta)
 
-- El texto más pequeño del prototipo es de 20 px. Con el tamaño "Mínimo" baja a 16 px.
-- Los títulos de 48 px y el cuerpo de 32 px quedan bien. Los textos de 20 a 22 px (etiquetas y metadatos) son los que más se perderían a distancia.
-- Recomendación: mínimo de 24 px en cualquier texto, y que "Mínimo" no baje de 20 px. Esto es una propuesta [Inferencial], no verificada en la TV.
+- Con el Magic Remote, el usuario espera que el foco siga al puntero. Hoy no ocurre: solo el clic activa la opción.
+- Recomendación: que el puntero sobre una tarjeta o una pestaña mueva el foco a esa opción, sin ejecutarla.
 
-### 2. Dato de ejemplo con apariencia de correo real (prioridad media)
+### 2. La rueda no desplaza la lista (prioridad alta)
 
-- El diálogo de cerrar sesión en Ajustes muestra `maria.lopez@gmail.com`.
-- Recomendación: reemplazar por un dato genérico, como `usuario@ejemplo.com`, para evitar que parezca un dato real.
+- La rueda del Magic Remote no mueve el contenido. Solo el foco por flechas desplaza.
+- Recomendación: que la rueda desplace la vista de la sección activa, y que el foco siga visible tras desplazarse.
 
-### 3. Mini reproductor de video ausente (requerimiento nuevo)
+### 3. Texto de 20 px (decidido)
 
-- Ya no aparece solo con música. Ver `docs/factibilidad-mini-reproductor.md`.
+- Diego confirmó que el mínimo de texto se mantiene en 20 px para aprovechar el tamaño de la pantalla.
+- El tamaño "Mínimo" (16 px) queda como opción del usuario. Si se quiere que nunca baje de 20 px, se corrige en el prototipo.
 
-### 4. Fotogramas de muestra
+### 4. Mini reproductor de video (implementado)
 
-- Las miniaturas son bandas diagonales, no imágenes reales. Es esperado en un prototipo, pero conviene probar el recorte y el texto con miniaturas reales.
+- Se implementó en el prototipo. Usa un solo elemento de video, la música se pausa al iniciar el video, y el mini de video reemplaza al de música mientras esté activo.
+- El video del prototipo es un marcador (fotograma de muestra). El video real se valida en el Hito 5, en la TV de 2020 y en la de 2023.
 
-### 5. Enfoque inicial en el reproductor
+### 5. Miniaturas de muestra
 
-- Al abrir el reproductor, el foco va a la barra de progreso. Es una buena elección para el control de saltos, pero hay que confirmar que la pausa es el primer botón al que llega el usuario con Abajo.
+- Las miniaturas son bandas diagonales, no imágenes. Esperado en un prototipo. Conviene probar el recorte y el texto con miniaturas reales.
+
+### 6. Foco inicial en el reproductor
+
+- Al abrir el reproductor, el foco va a la barra de progreso. Hay que confirmar con el control físico que la pausa es lo primero que llega con Abajo.
 
 ## Pendientes antes de programar
 
-1. Decidir el tamaño mínimo de texto (hallazgo 1).
-2. Reemplazar el correo de ejemplo (hallazgo 2).
-3. Decidir el comportamiento del mini reproductor de video (ver factibilidad).
-4. Probar el prototipo con el control físico del TV.
+1. Corregir el foco por puntero y el desplazamiento con la rueda (hallazgos 1 y 2).
+2. Probar todo en la TV con el Magic Remote físico (Hito 5).
+3. Validar el video real en el mini reproductor (Hito 5).

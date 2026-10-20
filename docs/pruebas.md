@@ -70,3 +70,29 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Presentación automática | pendiente | pendiente |
 | Reproducción de audio en segundo plano | pendiente | pendiente |
 | Pistas múltiples en mkv (audio y subtítulos) | pendiente | pendiente |
+
+## Control Magic Remote (requerido por Diego)
+
+Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
+
+| Prueba | TV 2020 | TV 2023 |
+|---|---|---|
+| Puntero: clic en pestañas de la barra superior | pendiente | pendiente |
+| Puntero: el foco sigue al pasar sobre tarjetas y pestañas | pendiente | pendiente |
+| Puntero: clic en tarjeta abre detalle | pendiente | pendiente |
+| Puntero: clic en controles del reproductor (10 s, pausa, audio y subtítulos) | pendiente | pendiente |
+| Rueda: desplaza listas de videos, carpetas y fotos | pendiente | pendiente |
+| Botón Atrás del Magic Remote desde cada pantalla | pendiente | pendiente |
+| Botón OK del Magic Remote en tarjetas y controles | pendiente | pendiente |
+| Cambio entre D-pad y puntero sin perder el foco | pendiente | pendiente |
+
+## Mini reproductor de video
+
+| Prueba | TV 2020 | TV 2023 |
+|---|---|---|
+| Video real reproduce en el mini tras salir del reproductor | pendiente | pendiente |
+| Clic en el mini reabre el reproductor en el mismo segundo | pendiente | pendiente |
+| Botón "×" del mini cierra sin reabrir el reproductor | pendiente | pendiente |
+| Iniciar video pausa la música | pendiente | pendiente |
+| Mini se mantiene al cambiar de sección | pendiente | pendiente |
+| Rendimiento del mini con video 4K HDR | pendiente | pendiente |

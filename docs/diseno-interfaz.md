@@ -6,7 +6,7 @@ Convención: **[Verificado]** = visto en fuente primaria o noticia. **[Fuente se
 
 ## 1. Alcance y restricciones
 
-- Pantalla de TV, navegación solo con control remoto (D-pad, OK, Atrás). Sin puntero ni teclado táctil.
+- Pantalla de TV con Magic Remote: D-pad (flechas), OK, Atrás, puntero y rueda. El puntero debe mover el foco y la rueda debe desplazar las listas. Ninguna pantalla puede requerir escribir texto con el control.
 - Contenido: audio, imágenes y video (mp4, mkv, HEVC) almacenados en Google Drive.
 - Uso personal por ahora. Un solo usuario por TV.
 - Dos TV (2020 y 2023). La interfaz debe ser idéntica en ambas.
