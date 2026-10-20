@@ -1,0 +1,11 @@
+{
+	"id": "com.diegodelacruz.drivetv",
+	"version": "0.1.0",
+	"vendor": "Diego de la Cruz",
+	"type": "web",
+	"main": "index.html",
+	"title": "Drive TV",
+	"icon": "icon.png",
+	"largeIcon": "largeIcon.png",
+	"requiredACG": []
+}

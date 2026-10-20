@@ -1,0 +1,7 @@
+dist/
+*.ipk
+node_modules/
+.env
+*.env.local
+credentials*.json
+tokens*.json
