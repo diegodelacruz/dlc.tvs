@@ -1,4 +1,4 @@
-# Diseño de interfaz: Drive TV
+# Diseño de interfaz: CodeTV
 
 Fecha: 2026-10-20.
 

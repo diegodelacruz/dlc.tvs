@@ -1,6 +1,6 @@
-# Drive TV
+# CodeTV
 
-Aplicación para LG webOS TV que reproduce contenido multimedia desde Google Drive.
+Aplicación para LG webOS TV que reproduce audio, imágenes y video desde Google Drive.
 
 Estado actual: **Hito 0** (estructura base y empaquetado verificado). Sin autenticación ni reproducción todavía.
 
@@ -36,7 +36,7 @@ export PATH="$HOME/webos-cli/node_modules/.bin:$PATH"
 ares-package app -o dist
 ```
 
-Genera `dist/com.diegodelacruz.drivetv_<versión>_all.ipk`. La carpeta `dist/` está en `.gitignore`.
+Genera `dist/com.diegodelacruz.codetv_<versión>_all.ipk`. La carpeta `dist/` está en `.gitignore`.
 
 ## Próximos pasos
 
@@ -48,5 +48,11 @@ Ver [docs/diseno-interfaz.md](docs/diseno-interfaz.md): referencias revisadas, p
 
 ## Prototipo
 
-- [docs/prototipo/ClodTV.html](docs/prototipo/ClodTV.html): prototipo navegable (un solo archivo, sin conexión). Flechas = D-pad, Enter = OK, Escape/Backspace = Atrás.
+- [docs/prototipo/CodeTV.html](docs/prototipo/CodeTV.html): prototipo navegable (un solo archivo, sin conexión). Flechas = D-pad, Enter = OK, Escape/Backspace = Atrás.
 - [docs/prototipo/captura-inicio.png](docs/prototipo/captura-inicio.png): captura de la pantalla de Inicio a 1920x1080.
+- [docs/revision-prototipo.md](docs/revision-prototipo.md): resultados de la revisión con teclado y pendientes.
+- [docs/factibilidad-mini-reproductor.md](docs/factibilidad-mini-reproductor.md): factibilidad del mini reproductor de video.
+
+## Tokens (borrador)
+
+- [app/src/styles/tokens.json](app/src/styles/tokens.json) y [app/src/styles/tokens.css](app/src/styles/tokens.css): colores de los cinco temas, tipografía, márgenes de seguridad y foco, derivados del prototipo. Son un borrador hasta que se aprueben los tokens oficiales.
