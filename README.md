@@ -2,7 +2,7 @@
 
 Aplicación para LG webOS TV que reproduce audio, imágenes y video desde Google Drive.
 
-Estado actual: **Hito 0** (estructura base y empaquetado verificado). Sin autenticación ni reproducción todavía.
+Estado actual: **Hito 0** completo y **Hitos 2 y 3** con código y pruebas simuladas. Falta probar con credenciales y en la TV.
 
 ## Estructura
 
@@ -56,3 +56,16 @@ Ver [docs/diseno-interfaz.md](docs/diseno-interfaz.md): referencias revisadas, p
 ## Tokens (borrador)
 
 - [app/src/styles/tokens.json](app/src/styles/tokens.json) y [app/src/styles/tokens.css](app/src/styles/tokens.css): colores de los cinco temas, tipografía, márgenes de seguridad y foco, derivados del prototipo. Son un borrador hasta que se aprueben los tokens oficiales.
+
+## Pruebas
+
+```bash
+npm test
+```
+
+Usa el runner integrado de Node 22. Las pruebas de autenticación y Drive usan respuestas simuladas, no llaman a Google.
+
+## Código
+
+- `app/src/auth/deviceFlow.js`: flujo de dispositivo de Google (código, sondeo, renovación).
+- `app/src/drive/driveClient.js`: listado de Drive y URL de contenido.

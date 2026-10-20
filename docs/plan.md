@@ -149,3 +149,16 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - Framework: JS plano o Enact (pregunta 2, parcialmente respondida).
 - Modelos y versión de webOS de cada TV (pregunta 1).
 - Aprobación de la barra superior y del prototipo (diseño).
+
+## Avance (2026-10-20): Hitos 2 y 3 sin TV
+
+- **Hito 2 (autenticación):** `app/src/auth/deviceFlow.js`. Solicitud de código, sondeo con `authorization_pending` y `slow_down`, renovación de token y expiración con margen de 60 s. Probado con respuestas simuladas.
+- **Hito 3 (Drive):** `app/src/drive/driveClient.js`. Listado paginado de carpetas y medios (video, audio, imagen), clasificación por MIME y URL de contenido con `alt=media`. Probado con respuestas simuladas.
+- **Pruebas:** `npm test` (Node 22, runner integrado). 15 pruebas, todas pasan.
+- **Sintaxis:** ES2017 sin optional chaining ni nullish, por el motor web de la TV de 2020. Módulos ES.
+- **Pendiente sin TV:** verificar `Range` en `alt=media` y los scopes de Drive con device flow. Requiere credenciales (Hito 4).
+
+## Riesgos nuevos identificados al programar
+
+1. **Token en la URL del reproductor.** Un `<video>` no puede enviar cabeceras, así que `mediaUrl` pone `access_token` en la URL. El token puede quedar en registros o historial. Alternativa a evaluar: proxy propio que añada la cabecera.
+2. **Client secret en el dispositivo.** El flujo de TV de Google exige `client_secret` en el intercambio de token. Un secreto en una app distribuida no es confidencial. Para uso personal se guarda en un archivo local fuera del repositorio. Para distribución se evalúa un proxy.
