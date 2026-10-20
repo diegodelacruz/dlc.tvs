@@ -45,3 +45,8 @@ Ver [docs/plan.md](docs/plan.md). Los hitos que dependen de credenciales (Google
 ## Diseño de interfaz
 
 Ver [docs/diseno-interfaz.md](docs/diseno-interfaz.md): referencias revisadas, principios, estructura de pantallas y criterios de foco.
+
+## Prototipo
+
+- [docs/prototipo/ClodTV.html](docs/prototipo/ClodTV.html): prototipo navegable (un solo archivo, sin conexión). Flechas = D-pad, Enter = OK, Escape/Backspace = Atrás.
+- [docs/prototipo/captura-inicio.png](docs/prototipo/captura-inicio.png): captura de la pantalla de Inicio a 1920x1080.
