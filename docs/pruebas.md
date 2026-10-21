@@ -14,7 +14,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Actualizaciones disponibles | No hay (Diego, 2026-10-21) | No hay (Diego, 2026-10-21) |
 | Motor web (Chromium) | Chromium 53 para webOS 4.x (fuente secundaria, LG) | pendiente de leer en TV |
 | IP en red local | pendiente (Diego) | pendiente (Diego) |
-| Sesión de Developer Mode (duración leída en app) | pendiente | pendiente |
+| Sesión de Developer Mode (duración leída en app) | pendiente | 999h:59m al activar (Diego, 2026-10-21) |
 
 ## Hito 0: empaquetado y CLI (sin TV)
 
