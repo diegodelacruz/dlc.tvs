@@ -4,10 +4,10 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 
 ## Datos de cada TV
 
-| Campo | TV 2020 | TV 2023 |
+| Campo | TV 2019 | TV 2021 |
 |---|---|---|
 | Modelo | OLED55B9PSB (fabricada 08/2019, ensamblada en Ecuador) | OLED48A1PSA (fabricada 12/2021, ensamblada en Ecuador) |
-| Año de modelo según etiqueta | 2019 (lanzamiento 2020 en mercado) | 2021 (lanzamiento 2021); no es 2023 |
+| Año de modelo según etiqueta | 2019 (fabricada 08/2019) | 2021 (fabricada 12/2021) |
 | webOS de fábrica (fuente secundaria) | 4.5 [No verificado en TV] | 6.0 [No verificado en TV] |
 | Versión de software (firmware) | 05.50.00 (Diego, 2026-10-21) | 03.53.45 (Diego, 2026-10-21) |
 | Versión de webOS (leer en TV) | pendiente: Ajustes → General → Acerca de esta TV | pendiente: Ajustes → General → Acerca de esta TV |
@@ -44,7 +44,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 
 ## Hito 5: en TV
 
-| Prueba | TV 2020 | TV 2023 |
+| Prueba | TV 2019 | TV 2021 |
 |---|---|---|
 | Instalación con `ares-install` | pendiente | pendiente |
 | Lanzamiento con `ares-launch` | pendiente | pendiente |
@@ -62,7 +62,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 
 ## Formatos de audio e imágenes (Hito 5)
 
-| Prueba | TV 2020 | TV 2023 |
+| Prueba | TV 2019 | TV 2021 |
 |---|---|---|
 | Audio mp3 | pendiente | pendiente |
 | Audio aac / m4a | pendiente | pendiente |
@@ -79,7 +79,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 
 Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 
-| Prueba | TV 2020 | TV 2023 |
+| Prueba | TV 2019 | TV 2021 |
 |---|---|---|
 | Puntero: clic en pestañas de la barra superior | pendiente | pendiente |
 | Puntero: el foco sigue al pasar sobre tarjetas y pestañas | pendiente | pendiente |
@@ -92,7 +92,7 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 
 ## Mini reproductor de video
 
-| Prueba | TV 2020 | TV 2023 |
+| Prueba | TV 2019 | TV 2021 |
 |---|---|---|
 | Video real reproduce en el mini tras salir del reproductor | pendiente | pendiente |
 | Clic en el mini reabre el reproductor en el mismo segundo | pendiente | pendiente |
