@@ -7,7 +7,9 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Campo | TV 2020 | TV 2023 |
 |---|---|---|
 | Modelo | pendiente (Diego) | pendiente (Diego) |
-| Versión de webOS | pendiente (Diego) | pendiente (Diego) |
+| Versión de software (firmware) | 05.50.00 (Diego, 2026-10-21) | 03.53.45 (Diego, 2026-10-21) |
+| Versión de webOS | pendiente (Diego: Ajustes → General → Acerca de esta TV) | pendiente (Diego: Ajustes → General → Acerca de esta TV) |
+| Actualizaciones disponibles | No hay (Diego, 2026-10-21) | No hay (Diego, 2026-10-21) |
 | Motor web (Chromium) | [No verificado] | [No verificado] |
 | IP en red local | pendiente (Diego) | pendiente (Diego) |
 | Sesión de Developer Mode (duración leída en app) | pendiente | pendiente |
