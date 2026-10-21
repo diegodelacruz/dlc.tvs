@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CodeTV diagnóstico</title>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-color: #000000;
+			color: #e9e9ed;
+			font-family: sans-serif;
+			font-size: 24px;
+			padding: 40px;
+		}
+
+		h1 {
+			font-size: 40px;
+			margin: 0 0 24px 0;
+		}
+
+		pre {
+			white-space: pre-wrap;
+			font-size: 22px;
+			line-height: 1.4;
+		}
+
+		a {
+			color: #b5abfc;
+			font-size: 26px;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>CodeTV · Diagnóstico de firma RSA</h1>
+	<pre id="out">Ejecutando…</pre>
+	<p><a href="index.html">Volver</a></p>
+	<script type="text/javascript">
+		(function () {
+			var lines = [];
+			var out = document.getElementById('out');
+
+			function log(text) {
+				lines.push(text);
+				out.textContent = lines.join('\n');
+			}
+
+			log('userAgent: ' + navigator.userAgent);
+			log('location.protocol: ' + location.protocol);
+			log('isSecureContext: ' + (typeof window.isSecureContext === 'undefined' ? 'no definido' : String(window.isSecureContext)));
+			log('window.crypto: ' + typeof window.crypto);
+			log('Promise: ' + typeof window.Promise);
+			log('fetch: ' + typeof window.fetch);
+			log('TextEncoder: ' + typeof window.TextEncoder);
+
+			var subtle = window.crypto && (window.crypto.subtle || window.crypto.webkitSubtle);
+			log('crypto.subtle: ' + (subtle ? 'existe' : 'NO existe'));
+
+			if (!subtle) {
+				log('Resultado: sin crypto.subtle. Hay que usar una implementación RSA en JavaScript.');
+				return;
+			}
+
+			var algo = {
+				name: 'RSASSA-PKCS1-v1_5',
+				modulusLength: 2048,
+				publicExponent: new Uint8Array([1, 0, 1]),
+				hash: { name: 'SHA-256' }
+			};
+			var data = new Uint8Array([72, 111, 108, 97]);
+			var start = Date.now();
+
+			subtle.generateKey(algo, true, ['sign', 'verify']).then(function (pair) {
+				log('generateKey: OK (' + (Date.now() - start) + ' ms)');
+				return subtle.exportKey('pkcs8', pair.privateKey).then(function (der) {
+					log('exportKey pkcs8: OK (' + der.byteLength + ' bytes)');
+					return subtle.importKey('pkcs8', der, { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } }, false, ['sign']);
+				}).then(function (privateKey) {
+					log('importKey pkcs8: OK');
+					return subtle.sign({ name: 'RSASSA-PKCS1-v1_5' }, privateKey, data);
+				}).then(function (signature) {
+					log('sign: OK (' + signature.byteLength + ' bytes)');
+					return subtle.verify({ name: 'RSASSA-PKCS1-v1_5' }, pair.publicKey, signature, data);
+				}).then(function (valid) {
+					log('verify: ' + valid);
+					log('Resultado: firma RSA disponible en este dispositivo.');
+				});
+			}).catch(function (e) {
+				var detail = e && e.name ? e.name : '';
+				var message = e && e.message ? e.message : String(e);
+				log('ERROR: ' + detail + ' ' + message);
+				log('Resultado: falló la firma con crypto.subtle. Hay que usar una implementación RSA en JavaScript.');
+			});
+		})();
+	</script>
+</body>
+
+</html>
