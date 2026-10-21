@@ -21,4 +21,24 @@ async function checkFolder(folderName, showLine) {
 	});
 }
 
-window.CodeTV = { auth: auth, serviceAccount: serviceAccount, drive: drive, checkFolder: checkFolder };
+// Prepara la reproducción de prueba: obtiene token, lista los videos y devuelve una función
+// que asigna la URL de Drive (con access_token) al elemento <video> indicado.
+async function prepareVideos(folderName) {
+	if (!window.CodeTVKey) throw new Error('No hay llave incluida (service-account.js)');
+	const token = await serviceAccount.exchangeToken(window.CodeTVKey, window.crypto);
+	const files = await drive.listFolderByName(folderName, token.accessToken);
+	if (files === null) throw new Error('No se encontró la carpeta "' + folderName + '"');
+	const videos = files.filter(function (f) { return f.kind === 'video'; });
+	return {
+		videos: videos,
+		url: function (file) { return drive.mediaUrl(file.id, token.accessToken); },
+	};
+}
+
+window.CodeTV = {
+	auth: auth,
+	serviceAccount: serviceAccount,
+	drive: drive,
+	checkFolder: checkFolder,
+	prepareVideos: prepareVideos,
+};

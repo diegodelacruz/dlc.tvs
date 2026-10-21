@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CodeTV prueba de reproducción</title>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-color: #000000;
+			color: #e9e9ed;
+			font-family: sans-serif;
+			font-size: 24px;
+			padding: 40px;
+		}
+
+		h1 {
+			font-size: 36px;
+			margin: 0 0 16px 0;
+		}
+
+		video {
+			width: 960px;
+			height: 540px;
+			background-color: #111111;
+		}
+
+		a {
+			display: block;
+			color: #b5abfc;
+			font-size: 26px;
+			margin: 12px 0;
+		}
+
+		pre {
+			white-space: pre-wrap;
+			font-size: 20px;
+			line-height: 1.4;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>CodeTV · Prueba de reproducción con &lt;video&gt;</h1>
+	<video id="player" controls></video>
+	<div id="videos"></div>
+	<pre id="log">Cargando lista de Drive…</pre>
+	<script type="text/javascript" src="js/service-account.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+	<script type="text/javascript">
+		(function () {
+			var lines = [];
+			var log = document.getElementById('log');
+			var player = document.getElementById('player');
+
+			function show(text) {
+				lines.push(text);
+				log.textContent = lines.slice(-14).join('\n');
+			}
+
+			['loadstart', 'loadedmetadata', 'playing', 'seeked', 'ended'].forEach(function (name) {
+				player.addEventListener(name, function () {
+					show(name + (player.duration ? ' (duración ' + Math.round(player.duration) + ' s)' : ''));
+				});
+			});
+			player.addEventListener('error', function () {
+				var code = player.error ? player.error.code : 'desconocido';
+				show('ERROR del <video>, código ' + code + ' (1 cancelado, 2 red, 3 decodificación, 4 formato no soportado)');
+			});
+
+			if (!window.CodeTV) {
+				show('ERROR: no cargó js/app.js. Ejecuta npm run package:tv.');
+				return;
+			}
+
+			window.CodeTV.prepareVideos('CodeTV-prueba').then(function (prepared) {
+				var container = document.getElementById('videos');
+				if (prepared.videos.length === 0) {
+					show('No hay videos en la carpeta de prueba.');
+					return;
+				}
+				prepared.videos.forEach(function (file) {
+					var link = document.createElement('a');
+					link.href = '#';
+					link.textContent = 'Reproducir: ' + file.name;
+					link.onclick = function () {
+						show('Cargando ' + file.name + '…');
+						player.src = prepared.url(file);
+						player.play();
+						return false;
+					};
+					container.appendChild(link);
+				});
+				var seek = document.createElement('a');
+				seek.href = '#';
+				seek.textContent = 'Saltar a 1:00 (prueba de seek)';
+				seek.onclick = function () {
+					show('Salto solicitado a 60 s');
+					player.currentTime = 60;
+					return false;
+				};
+				container.appendChild(seek);
+				show('Listo: ' + prepared.videos.length + ' video(s). Elige uno con OK.');
+			}).catch(function (e) {
+				show('ERROR: ' + (e && e.message ? e.message : String(e)));
+			});
+		})();
+	</script>
+</body>
+
+</html>
