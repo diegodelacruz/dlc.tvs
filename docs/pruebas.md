@@ -8,9 +8,9 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 |---|---|---|
 | Modelo | OLED55B9PSB (fabricada 08/2019, ensamblada en Ecuador) | OLED48A1PSA (fabricada 12/2021, ensamblada en Ecuador) |
 | Año de modelo según etiqueta | 2019 (fabricada 08/2019) | 2021 (fabricada 12/2021) |
-| webOS de fábrica (fuente secundaria) | 4.5 según fichas; leído en TV: 4.10.2-31 | 6.0 según distribuidor [No verificado en TV] |
+| webOS de fábrica (fuente secundaria) | 4.5 según fichas; leído en TV: 4.10.2-31 | 6.0 según distribuidor; leído en TV: 6.5.3-47 |
 | Versión de software (firmware) | 05.50.00 (Diego, 2026-10-21) | 03.53.45 (Diego, 2026-10-21) |
-| Versión de webOS (leer en TV) | webOS TV 4.10.2-31 (leído en TV, Diego, 2026-10-21) | pendiente: Ajustes → General → Acerca de esta TV → TV Information |
+| Versión de webOS (leer en TV) | webOS TV 4.10.2-31 (leído en TV, Diego, 2026-10-21) | webOS TV 6.5.3-47 (leído en TV, Diego, 2026-10-21) |
 | Actualizaciones disponibles | No hay (Diego, 2026-10-21) | No hay (Diego, 2026-10-21) |
 | Motor web (Chromium) | Chromium 53 para webOS 4.x (fuente secundaria, LG) | pendiente de leer en TV |
 | IP en red local | pendiente (Diego) | pendiente (Diego) |

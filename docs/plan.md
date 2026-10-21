@@ -181,3 +181,9 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - **TV 2019 (OLED55B9PSB):** webOS TV 4.10.2-31. Según fuente secundaria, webOS 4.x usa Chromium 53. Por eso el objetivo de compilación `chrome53` se mantiene y no se cambia.
 - **TV 2021 (OLED48A1PSA):** pendiente de leer la versión de webOS en la misma pantalla.
 - Datos de identificación del equipo (número de serie, direcciones MAC, ESN, VSN y claves Widevine) no se guardan en el repositorio.
+
+## Versiones de webOS completas (2026-10-21)
+
+- **TV 2019 (OLED55B9PSB):** webOS TV 4.10.2-31. Firmware 05.50.00.
+- **TV 2021 (OLED48A1PSA):** webOS TV 6.5.3-47. Firmware 03.53.45. Sin actualizaciones disponibles.
+- **Impacto:** el objetivo de compilación `chrome53` cubre las dos TV. La TV de 2021 tiene un motor más nuevo, así que cualquier sintaxis válida para Chrome 53 también corre allí.
