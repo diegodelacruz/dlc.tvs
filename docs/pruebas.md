@@ -100,3 +100,15 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 | Iniciar video pausa la música | pendiente | pendiente |
 | Mini se mantiene al cambiar de sección | pendiente | pendiente |
 | Rendimiento del mini con video 4K HDR | pendiente | pendiente |
+
+## Drive con cuenta de servicio
+
+| Prueba | TV 2019 | TV 2021 |
+|---|---|---|
+| Firma RSA con crypto.subtle (diagnóstico) | pendiente (diferida) | OK (2026-10-21) |
+| Token de la cuenta de servicio desde la TV | pendiente (diferida) | OK (2026-10-21) |
+| Listado de CodeTV-prueba (mkv y mp4) | pendiente (diferida) | OK (2026-10-21) |
+| Range en alt=media con Authorization (206) | pendiente | pendiente (script desde Mac) |
+| Range en alt=media con access_token en URL (206) | pendiente | pendiente (script desde Mac) |
+| Reproducción mp4 en <video> | pendiente | pendiente |
+| Reproducción mkv en <video> | pendiente | pendiente |

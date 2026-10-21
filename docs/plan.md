@@ -88,12 +88,13 @@ Estado al 2026-10-21. Leyenda: `[x]` completado · `[~]` parcial (código o docu
 - [x] Pruebas unitarias del cliente con respuestas simuladas.
 - [ ] Reproductor `<video>` dentro de la app con URL autenticada. No construido.
 - [x] Acceso a Drive con cuenta de servicio verificado desde el Mac: lista `CodeTV-prueba` con mkv y mp4.
-- [ ] Verificar `Range` en `alt=media` con una petición real, usando la cuenta de servicio.
+- [x] Acceso a Drive desde la TV 2021 con cuenta de servicio: firma, token y listado de `CodeTV-prueba` verificados.
+- [ ] Verificar `Range` en `alt=media` (script `scripts/range-check.mjs`, se ejecuta desde el Mac).
 
 **Hito 4 — Credenciales y configuración (lo haces tú) — pendiente**
 - [x] Modelos, firmware y versión de webOS de las dos TV, leídos en pantalla.
 - [x] Cuenta de desarrollador LG creada (Diego, 2026-10-21).
-- [~] Modo desarrollador: TV 2021 activo (sesión de 999h:59m). TV 2019 pendiente.
+- [~] Modo desarrollador: TV 2021 activo (sesión de 999h:59m). TV 2019 pendiente (diferida por Diego).
 - [x] Proyecto `codetv-512304`, Drive API habilitada, cuenta de servicio `codetv-drive` con llave local (`~/.config/codetv/`) y carpeta `CodeTV-prueba` compartida como Lector. El cliente OAuth `codetv-tv` quedó creado, pero no se usará.
 - [~] Archivos de prueba en `CodeTV-prueba`: mp4 y mkv. Faltan mp3, jpg y HEVC.
 
@@ -218,3 +219,11 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - **TV 2021 (OLED48A1PSA, webOS 6.5.3):** `crypto.subtle` disponible en app empaquetada (`location.protocol: file:`, `isSecureContext: true`). Generar llave RSA 2048 en 2165 ms, exportar e importar PKCS8, firmar RSASSA-PKCS1-v1_5 y verificar: `true`.
 - **Motor reportado:** `Chrome/79.0.3945.79` en el userAgent de la TV 2021. Esto corrige la suposición de Chrome 87 para webOS 6.5; el dato real viene del propio dispositivo.
 - **Pendiente:** repetir el diagnóstico en la TV 2019 (webOS 4.10.2, motor esperado Chrome 53 según fuente secundaria). Ese resultado decide si hace falta una implementación RSA en JavaScript ES5.
+
+## Resultado de prueba de Drive en TV 2021 (2026-10-21)
+
+- Firma RSA con `crypto.subtle` dentro de la app empaquetada: OK.
+- Intercambio de JWT por token de acceso desde la TV: OK. No hubo bloqueo de CORS desde el origen `file:`.
+- Listado de `CodeTV-prueba`: OK, 2 archivos (mkv y mp4) con tipo MIME y tamaño.
+- **Pendiente:** Range en `alt=media` (`scripts/range-check.mjs`, desde el Mac) y reproducción con `<video>` en la TV.
+- **Decisión:** la TV 2019 queda diferida. Su prueba de `crypto.subtle` se hará cuando Diego lo decida.
