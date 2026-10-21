@@ -61,45 +61,59 @@ Puntos abiertos de arquitectura:
 
 ## Ruta de desarrollo por hitos
 
-**Hito 0 — Verificaciones técnicas sin credenciales (lo hago ahora, en cuanto salga del modo plan)**
-- [ ] Crear estructura del proyecto: `/home/user/dlc.tvs/` con `README.md`, `docs/`, y carpeta `app/` (appinfo.json, index.html, src/).
-- [ ] Documentar en `docs/` los hallazgos de esta investigación, con fuentes y marcas `[No verificado]`.
-- [ ] Instalar `@webos-tools/cli` en el entorno (si el sandbox lo permite) y verificar comandos `ares-*`.
-- [ ] Crear una app "hola mundo" empaquetada con `ares-generate` y `ares-package` (no se instala aún).
-- [ ] Preparar matriz de pruebas de códecs y contenedores (mp4 H.264 AAC, mkv, HEVC, AV1) para probar en TV.
+Estado al 2026-10-21. Leyenda: `[x]` completado · `[~]` parcial (código o documentación sin verificar en TV o con credenciales) · `[ ]` pendiente.
 
-**Hito 1 — Decisiones de diseño (con Diego)**
-- [ ] Framework: JS plano o Enact.
-- [ ] Modo de uso inicial: solo personal en modo desarrollador, o preparar para tienda desde el principio.
-- [ ] Proveedor de Google Cloud: cuenta de Diego, proyecto nuevo.
+**Hito 0 — Verificaciones técnicas sin credenciales — completo**
+- [x] Estructura del proyecto: `README.md`, `docs/`, `app/`, `src/`, `test/`.
+- [x] Hallazgos de la investigación documentados con fuentes en `docs/investigacion-webos.md`.
+- [x] CLI `@webos-tools/cli` 3.2.6 instalada y comandos `ares-*` verificados.
+- [x] App de prueba generada con `ares-generate` y empaquetada en `.ipk` con `ares-package`.
+- [x] Matriz de pruebas por TV en `docs/pruebas.md`.
 
-**Hito 2 — Autenticación con Google (sin pruebas en TV)**
-- [ ] Diseño del flujo device code (pantalla con código + URL de verificación).
-- [ ] Validar que los scopes de Drive funcionan con device flow (prueba con cliente de escritorio o curl usando las credenciales del Hito 4; si no se puede, documentar el bloqueo).
-- [ ] Módulo de refresh token con reintentos y manejo de expiración de 7 días.
+**Hito 1 — Decisiones de diseño — parcial**
+- [x] Modo de uso inicial: personal.
+- [x] Formatos a soportar: audio, imágenes, video mp4, mkv y HEVC.
+- [~] Framework: JavaScript plano adoptado de forma provisional. Falta tu confirmación.
+- [ ] Proyecto en Google Cloud: pendiente (Hito 4).
 
-**Hito 3 — Cliente de Drive y reproductor (sin TV, con mocks)**
-- [ ] Listado de carpetas y archivos de video, con paginación (`pageToken`).
-- [ ] Reproducción con `<video>` a partir de URL autenticada (o proxy).
-- [ ] Pruebas unitarias del cliente con respuestas simuladas.
-- [ ] Verificar `Range` en `alt=media` con una petición real (requiere credenciales → Hito 4).
+**Hito 2 — Autenticación con Google — parcial (código y pruebas simuladas)**
+- [x] Flujo de dispositivo: solicitud de código, sondeo, `slow_down`, errores y expiración en `src/auth/deviceFlow.js`.
+- [x] Renovación de token con conservación del refresh token y `invalid_grant` (volver a autorizar).
+- [ ] Validar que Google permite los scopes de Drive en el flujo de dispositivo. Requiere credenciales (Hito 4).
+- [ ] Pantalla con código y URL de verificación en la TV. Depende del Hito 5.
 
-**Hito 4 — Credenciales y configuración (lo hace Diego)**
-- [ ] Cuenta de desarrollador LG (LG Seller Lounge / cuenta LG).
-- [ ] Activar Developer Mode en ambos TV; anotar IP de cada TV y la clave/passphrase que muestra la app.
-- [ ] Proyecto en Google Cloud Console, API de Drive habilitada, OAuth client de tipo "TV and Limited Input devices".
-- [ ] Cuenta de Google con archivos de prueba (mp4, mkv).
+**Hito 3 — Cliente de Drive y reproductor — parcial**
+- [x] Listado paginado de carpetas y medios, con clasificación por MIME (`src/drive/driveClient.js`).
+- [x] Pruebas unitarias del cliente con respuestas simuladas.
+- [ ] Reproductor `<video>` dentro de la app con URL autenticada. No construido.
+- [ ] Verificar `Range` en `alt=media` con una petición real. Requiere credenciales (Hito 4).
 
-**Hito 5 — Despliegue y pruebas en TV**
-- [ ] Configurar perfil de la CLI para cada TV (`ares-setup-device`).
-- [ ] `ares-package` + `ares-install` + `ares-launch` en el TV de 2020 y en el de 2023.
-- [ ] Pruebas: login, listado, reproducción, seek, pausa, reanudación, pérdida de red, expiración de sesión de Developer Mode.
+**Hito 4 — Credenciales y configuración (lo haces tú) — pendiente**
+- [x] Modelos, firmware y versión de webOS de las dos TV, leídos en pantalla.
+- [ ] Cuenta de desarrollador LG. No encontré correos de LG Developer en tu Gmail; verifícala tú.
+- [ ] Modo desarrollador en ambas TV, con IP de cada TV.
+- [ ] Proyecto en Google Cloud, API de Drive y cliente OAuth "TV and Limited Input devices".
+- [ ] Cuenta de Google con archivos de prueba (mp4, mkv, HEVC).
+
+**Hito 5 — Despliegue y pruebas en TV — no iniciado**
+- [ ] Perfil de la CLI para cada TV (`ares-setup-device`).
+- [ ] `ares-package` + `ares-install` + `ares-launch` en la TV 2019 (OLED55B9PSB, webOS 4.10.2) y en la TV 2021 (OLED48A1PSA, webOS 6.5.3).
+- [ ] Pruebas de login, listado, reproducción, seek, pausa, reanudación, pérdida de red y expiración de Developer Mode.
+- [ ] Pruebas con el Magic Remote físico: puntero, foco y rueda (ver `docs/pruebas.md`).
+- [ ] Validar el video real en el mini reproductor.
 - [ ] Registrar resultados por TV en `docs/pruebas.md`.
 
-**Hito 6 — Hardening y futuro**
+**Hito 6 — Hardening y futuro — no iniciado**
 - [ ] Manejo de errores y logs de depuración.
-- [ ] Preparar proveedores adicionales (abstracción de "fuente de contenido").
-- [ ] Evaluar requisitos de Content Store solo si se decide distribuir.
+- [ ] Abstracción de "fuente de contenido" para otros proveedores.
+- [ ] Evaluar requisitos de LG Content Store solo si se decide distribuir.
+
+**Trabajo fuera del plan original (completado)**
+- [x] Diseño de interfaz: propuesta en `docs/diseno-interfaz.md`, prototipo navegable en `docs/prototipo/CodeTV.html` y revisión en `docs/revision-prototipo.md`.
+- [x] Mini reproductor de video implementado en el prototipo, con factibilidad en `docs/factibilidad-mini-reproductor.md`.
+- [x] Correcciones del prototipo para el Magic Remote: foco por puntero y rueda. Pendiente de confirmar en TV.
+- [x] Tokens de diseño en borrador (`src/styles/tokens.json`, `tokens.css`).
+- [x] Compilación para Chrome 53 con esbuild, con verificación ES2015 (`npm run build`, `npm run check:es2015`).
 
 ## Preguntas abiertas para Diego (al final del trabajo, junto con los datos de la TV)
 
