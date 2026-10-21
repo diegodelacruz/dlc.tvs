@@ -31,7 +31,13 @@ async function prepareVideos(folderName) {
 	const videos = files.filter(function (f) { return f.kind === 'video'; });
 	return {
 		videos: videos,
-		url: function (file) { return drive.mediaUrl(file.id, token.accessToken); },
+		url: function (file) {
+			const config = window.CodeTVConfig;
+			if (config && config.proxyBase) {
+				return config.proxyBase + '/stream/' + file.id + '?s=' + encodeURIComponent(config.proxySecret);
+			}
+			return drive.mediaUrl(file.id, token.accessToken);
+		},
 	};
 }
 
