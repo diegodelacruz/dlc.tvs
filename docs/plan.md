@@ -162,3 +162,9 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 
 1. **Token en la URL del reproductor.** Un `<video>` no puede enviar cabeceras, así que `mediaUrl` pone `access_token` en la URL. El token puede quedar en registros o historial. Alternativa a evaluar: proxy propio que añada la cabecera.
 2. **Client secret en el dispositivo.** El flujo de TV de Google exige `client_secret` en el intercambio de token. Un secreto en una app distribuida no es confidencial. Para uso personal se guarda en un archivo local fuera del repositorio. Para distribución se evalúa un proxy.
+
+## Corrección de supuestos (2026-10-21, por etiquetas de las TV)
+
+- La TV "2023" es un **OLED48A1PSA** fabricada en 12/2021 (modelo 2021, webOS 6.0 según distribuidor). No es de 2023.
+- La TV "2020" es un **OLED55B9PSB** fabricada en 08/2019. Fuentes secundarias indican webOS 4.5 de fábrica. No está verificado si subió a webOS 5.
+- **Impacto en código:** `app/src/auth/deviceFlow.js` y `app/src/drive/driveClient.js` usan `async/await`, que requiere Chromium 55 o superior. Si la TV de 2020 queda en webOS 4.5, el motor es anterior a eso y hay que transpilar (por ejemplo, Babel con objetivo Chrome 53) antes de empaquetar. Decisión pendiente hasta leer la versión de webOS en la TV.
