@@ -212,3 +212,9 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - **Riesgo aceptado para uso personal:** la llave privada quedará en la TV. No es apta para distribución. Si se distribuye, habrá que cambiar a un servicio intermedio.
 - **Pendiente técnico (Hito 5):** confirmar en la TV 2019 (Chrome 53) si existe `crypto.subtle` para importar la llave PKCS8 y firmar RSASSA-PKCS1-v1_5 desde una app empaquetada. Si no existe, usar una implementación RSA en JavaScript ES5 (por ejemplo, jsrsasign o similar) y validarla con las mismas pruebas.
 - **Prueba de diagnóstico propuesta:** una página de diagnóstico dentro de la app que reporte si `crypto.subtle` existe, si acepta la importación y si firma. Se corre en las dos TV.
+
+## Resultado de diagnóstico de firma RSA (2026-10-21)
+
+- **TV 2021 (OLED48A1PSA, webOS 6.5.3):** `crypto.subtle` disponible en app empaquetada (`location.protocol: file:`, `isSecureContext: true`). Generar llave RSA 2048 en 2165 ms, exportar e importar PKCS8, firmar RSASSA-PKCS1-v1_5 y verificar: `true`.
+- **Motor reportado:** `Chrome/79.0.3945.79` en el userAgent de la TV 2021. Esto corrige la suposición de Chrome 87 para webOS 6.5; el dato real viene del propio dispositivo.
+- **Pendiente:** repetir el diagnóstico en la TV 2019 (webOS 4.10.2, motor esperado Chrome 53 según fuente secundaria). Ese resultado decide si hace falta una implementación RSA en JavaScript ES5.
