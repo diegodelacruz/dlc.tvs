@@ -11,8 +11,14 @@ async function probe(label, url, headers) {
 	const res = await fetch(url, { headers: headers });
 	const contentRange = res.headers.get('content-range') || '-';
 	const length = res.headers.get('content-length') || '-';
-	await res.body.cancel();
 	console.log(label + ': status ' + res.status + ' | Content-Range: ' + contentRange + ' | Content-Length: ' + length);
+	if (res.status >= 400) {
+		// El cuerpo de error de Google no contiene el token; se muestra su motivo.
+		const text = await res.text();
+		console.log('  motivo: ' + text.slice(0, 400).replace(/\s+/g, ' '));
+	} else {
+		await res.body.cancel();
+	}
 	return res.status;
 }
 
