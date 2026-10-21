@@ -227,3 +227,10 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - Listado de `CodeTV-prueba`: OK, 2 archivos (mkv y mp4) con tipo MIME y tamaño.
 - **Pendiente:** Range en `alt=media` (`scripts/range-check.mjs`, desde el Mac) y reproducción con `<video>` en la TV.
 - **Decisión:** la TV 2019 queda diferida. Su prueba de `crypto.subtle` se hará cuando Diego lo decida.
+
+## Reproducción en TV 2021 (2026-10-21)
+
+- **Causa confirmada:** Google rechaza `access_token` en la URL cuando la petición viene de un `<video>`. Se resolvió con un proxy local (`server/proxy.mjs`) que añade la cabecera y reenvía el Range.
+- **mkv:** reproduce y hace seek en la TV 2021 a través del proxy.
+- **mp4:** falla con código 4 (formato no soportado). Hipótesis a verificar: códec de audio o video no soportado por el motor de la TV. Pendiente con `ffprobe`.
+- **Pendiente:** proxy en la nube si se necesita uso fuera de la red local; prueba de la TV 2019 diferida.

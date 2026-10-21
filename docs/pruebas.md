@@ -112,3 +112,14 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 | Range en alt=media con access_token en URL (206) | pendiente | pendiente (script desde Mac) |
 | Reproducción mp4 en <video> | pendiente | pendiente |
 | Reproducción mkv en <video> | pendiente | pendiente |
+
+## Reproducción vía proxy (TV 2021, 2026-10-21)
+
+| Prueba | Resultado |
+|---|---|
+| Range con cabecera Authorization desde Drive (206) | OK (Mac) |
+| access_token en URL para <video> | FALLA: Google responde página "Sorry..." (403) |
+| Proxy local con Range (server/proxy.mjs) | OK en TV |
+| Reproducción mkv (TBBT, 1402 s) en <video> vía proxy | OK: loadedmetadata, playing |
+| Seek a 60 s en mkv vía proxy | OK: seeked |
+| Reproducción mp4 (Sakura, 157 MB) en <video> vía proxy | FALLA: código 4 (formato no soportado) — pendiente revisar códecs |
