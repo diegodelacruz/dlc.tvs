@@ -74,30 +74,32 @@ Estado al 2026-10-21. Leyenda: `[x]` completado · `[~]` parcial (código o docu
 - [x] Modo de uso inicial: personal.
 - [x] Formatos a soportar: audio, imágenes, video mp4, mkv y HEVC.
 - [~] Framework: JavaScript plano adoptado de forma provisional. Falta tu confirmación.
-- [ ] Proyecto en Google Cloud: pendiente (Hito 4).
+- [x] Proyecto en Google Cloud creado (`codetv-512304`).
 
 **Hito 2 — Autenticación con Google — parcial (código y pruebas simuladas)**
 - [x] Flujo de dispositivo: solicitud de código, sondeo, `slow_down`, errores y expiración en `src/auth/deviceFlow.js`.
 - [x] Renovación de token con conservación del refresh token y `invalid_grant` (volver a autorizar).
-- [ ] Validar que Google permite los scopes de Drive en el flujo de dispositivo. Requiere credenciales (Hito 4).
+- [x] Validar scopes de Drive en el flujo de dispositivo: **rechazado** (`invalid_scope`) con dos clientes OAuth de TV. Descartado.
+- [x] Decisión: autenticación con cuenta de servicio, firmando el JWT en la TV (ver sección de decisiones de autenticación).
 - [ ] Pantalla con código y URL de verificación en la TV. Depende del Hito 5.
 
 **Hito 3 — Cliente de Drive y reproductor — parcial**
 - [x] Listado paginado de carpetas y medios, con clasificación por MIME (`src/drive/driveClient.js`).
 - [x] Pruebas unitarias del cliente con respuestas simuladas.
 - [ ] Reproductor `<video>` dentro de la app con URL autenticada. No construido.
-- [ ] Verificar `Range` en `alt=media` con una petición real. Requiere credenciales (Hito 4).
+- [x] Acceso a Drive con cuenta de servicio verificado desde el Mac: lista `CodeTV-prueba` con mkv y mp4.
+- [ ] Verificar `Range` en `alt=media` con una petición real, usando la cuenta de servicio.
 
 **Hito 4 — Credenciales y configuración (lo haces tú) — pendiente**
 - [x] Modelos, firmware y versión de webOS de las dos TV, leídos en pantalla.
-- [ ] Cuenta de desarrollador LG. No encontré correos de LG Developer en tu Gmail; verifícala tú.
-- [ ] Modo desarrollador en ambas TV, con IP de cada TV.
-- [ ] Proyecto en Google Cloud, API de Drive y cliente OAuth "TV and Limited Input devices".
-- [ ] Cuenta de Google con archivos de prueba (mp4, mkv, HEVC).
+- [x] Cuenta de desarrollador LG creada (Diego, 2026-10-21).
+- [~] Modo desarrollador: TV 2021 activo (sesión de 999h:59m). TV 2019 pendiente.
+- [x] Proyecto `codetv-512304`, Drive API habilitada, cuenta de servicio `codetv-drive` con llave local (`~/.config/codetv/`) y carpeta `CodeTV-prueba` compartida como Lector. El cliente OAuth `codetv-tv` quedó creado, pero no se usará.
+- [~] Archivos de prueba en `CodeTV-prueba`: mp4 y mkv. Faltan mp3, jpg y HEVC.
 
 **Hito 5 — Despliegue y pruebas en TV — no iniciado**
-- [ ] Perfil de la CLI para cada TV (`ares-setup-device`).
-- [ ] `ares-package` + `ares-install` + `ares-launch` en la TV 2019 (OLED55B9PSB, webOS 4.10.2) y en la TV 2021 (OLED48A1PSA, webOS 6.5.3).
+- [~] Perfil `tv2021` registrado con `ares-setup-device` y llave SSH obtenida. Falta el perfil de la TV 2019.
+- [~] TV 2021 (OLED48A1PSA, webOS 6.5.3): app de Hito 0 instalada y lanzada con éxito. TV 2019 (OLED55B9PSB, webOS 4.10.2) pendiente.
 - [ ] Pruebas de login, listado, reproducción, seek, pausa, reanudación, pérdida de red y expiración de Developer Mode.
 - [ ] Pruebas con el Magic Remote físico: puntero, foco y rueda (ver `docs/pruebas.md`).
 - [ ] Validar el video real en el mini reproductor.
@@ -201,3 +203,12 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - **TV 2019 (OLED55B9PSB):** webOS TV 4.10.2-31. Firmware 05.50.00.
 - **TV 2021 (OLED48A1PSA):** webOS TV 6.5.3-47. Firmware 03.53.45. Sin actualizaciones disponibles.
 - **Impacto:** el objetivo de compilación `chrome53` cubre las dos TV. La TV de 2021 tiene un motor más nuevo, así que cualquier sintaxis válida para Chrome 53 también corre allí.
+
+## Decisiones de autenticación (2026-10-21)
+
+- **Flujo de dispositivo descartado para Drive.** Google rechazó `drive.readonly` (`invalid_scope`) con dos clientes OAuth de tipo TV. El flujo de dispositivo solo sirve para identificar al usuario en este caso.
+- **Decisión de Diego:** la TV firma el token por sí misma, con una cuenta de servicio y llave JWT RS256.
+- **Verificado:** la cuenta de servicio obtiene token y lista `CodeTV-prueba` con permiso de Lector (scope drive.readonly).
+- **Riesgo aceptado para uso personal:** la llave privada quedará en la TV. No es apta para distribución. Si se distribuye, habrá que cambiar a un servicio intermedio.
+- **Pendiente técnico (Hito 5):** confirmar en la TV 2019 (Chrome 53) si existe `crypto.subtle` para importar la llave PKCS8 y firmar RSASSA-PKCS1-v1_5 desde una app empaquetada. Si no existe, usar una implementación RSA en JavaScript ES5 (por ejemplo, jsrsasign o similar) y validarla con las mismas pruebas.
+- **Prueba de diagnóstico propuesta:** una página de diagnóstico dentro de la app que reporte si `crypto.subtle` existe, si acepta la importación y si firma. Se corre en las dos TV.
