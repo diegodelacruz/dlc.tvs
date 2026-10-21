@@ -6,7 +6,9 @@
 	"scripts": {
 		"build": "node scripts/build.mjs",
 		"test": "node --test",
-		"check:es2015": "node scripts/check-syntax.mjs"
+		"check:es2015": "node scripts/check-syntax.mjs",
+		"build:tv": "npm run build && node scripts/build-key.mjs",
+		"package:tv": "npm run build:tv && ares-package app -o dist"
 	},
 	"devDependencies": {
 		"acorn": "8.12.1",

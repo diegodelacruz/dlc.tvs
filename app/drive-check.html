@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CodeTV prueba de Drive</title>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-color: #000000;
+			color: #e9e9ed;
+			font-family: sans-serif;
+			font-size: 24px;
+			padding: 40px;
+		}
+
+		h1 {
+			font-size: 40px;
+			margin: 0 0 24px 0;
+		}
+
+		pre {
+			white-space: pre-wrap;
+			font-size: 22px;
+			line-height: 1.4;
+		}
+
+		a {
+			color: #b5abfc;
+			font-size: 26px;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>CodeTV · Prueba de Drive con cuenta de servicio</h1>
+	<pre id="out">Ejecutando…</pre>
+	<p><a href="index.html">Volver</a></p>
+	<script type="text/javascript" src="js/service-account.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+	<script type="text/javascript">
+		(function () {
+			var out = document.getElementById('out');
+			var lines = [];
+			function show(text) {
+				lines.push(text);
+				out.textContent = lines.join('\n');
+			}
+			if (!window.CodeTV) {
+				show('ERROR: no cargó js/app.js. Ejecuta npm run package:tv.');
+				return;
+			}
+			window.CodeTV.checkFolder('CodeTV-prueba', show).catch(function (e) {
+				show('ERROR: ' + (e && e.message ? e.message : String(e)));
+			});
+		})();
+	</script>
+</body>
+
+</html>
