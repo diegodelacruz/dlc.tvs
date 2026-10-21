@@ -175,3 +175,9 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - **Objetivo de compilación:** Chrome 53, script clásico (IIFE) generado con esbuild. Sin módulos ES en el navegador, porque Chrome 53 no los soporta en `<script type="module">`.
 - **Verificación:** `npm run check:es2015` (parser ES2015) y revisión del bundle sin APIs posteriores a Chrome 53. Carga correcta en Chromium moderno.
 - **Pendiente:** ejecutar en las TV reales. Chrome 53 no está disponible aquí, así que la prueba de compatibilidad sigue en el Hito 5.
+
+## Versión de webOS leída en la TV (2026-10-21)
+
+- **TV 2019 (OLED55B9PSB):** webOS TV 4.10.2-31. Según fuente secundaria, webOS 4.x usa Chromium 53. Por eso el objetivo de compilación `chrome53` se mantiene y no se cambia.
+- **TV 2021 (OLED48A1PSA):** pendiente de leer la versión de webOS en la misma pantalla.
+- Datos de identificación del equipo (número de serie, direcciones MAC, ESN, VSN y claves Widevine) no se guardan en el repositorio.
