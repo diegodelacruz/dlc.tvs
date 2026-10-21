@@ -30,11 +30,16 @@ npm install --prefix ~/webos-cli @webos-tools/cli@3.2.6
 export PATH="$HOME/webos-cli/node_modules/.bin:$PATH"
 ```
 
-## Empaquetado
+## Construcción y empaquetado
 
 ```bash
+npm install
+npm run build          # compila src/ a app/js/app.js (Chrome 53, script clásico)
+npm run check:es2015   # verifica que el bundle es ES2015
 ares-package app -o dist
 ```
+
+`app/js/` se genera; no se edita a mano ni se versiona.
 
 Genera `dist/com.diegodelacruz.codetv_<versión>_all.ipk`. La carpeta `dist/` está en `.gitignore`.
 
@@ -67,5 +72,11 @@ Usa el runner integrado de Node 22. Las pruebas de autenticación y Drive usan r
 
 ## Código
 
-- `app/src/auth/deviceFlow.js`: flujo de dispositivo de Google (código, sondeo, renovación).
-- `app/src/drive/driveClient.js`: listado de Drive y URL de contenido.
+- `src/auth/deviceFlow.js`: flujo de dispositivo de Google (código, sondeo, renovación).
+- `src/drive/driveClient.js`: listado de Drive y URL de contenido.
+- `src/main.js`: punto de entrada que compila a `app/js/app.js`.
+- `src/styles/`: tokens de diseño (borrador).
+
+## Compatibilidad
+
+Objetivo: las dos TV de prueba. OLED55B9PSB (webOS 4.5 de fábrica, según fuentes secundarias [No verificado en TV]) y OLED48A1PSA (webOS 6.0 según distribuidor [No verificado en TV]). El bundle se compila para Chrome 53 y no usa módulos ES en el navegador.

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { requestDeviceCode, pollForToken, refreshAccessToken, isExpired, AuthError, TOKEN_URL, DEVICE_CODE_URL } from '../app/src/auth/deviceFlow.js';
+import { requestDeviceCode, pollForToken, refreshAccessToken, isExpired, AuthError, TOKEN_URL, DEVICE_CODE_URL } from '../src/auth/deviceFlow.js';
 
 const config = { clientId: 'cid', clientSecret: 'secret', scope: 'https://www.googleapis.com/auth/drive.readonly' };
 

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { categorize, buildListQuery, listChildren, mediaUrl, DriveError, FOLDER_MIME, FILES_URL } from '../app/src/drive/driveClient.js';
+import { categorize, buildListQuery, listChildren, mediaUrl, DriveError, FOLDER_MIME, FILES_URL } from '../src/drive/driveClient.js';
 
 function jsonResponse(status, body) {
 	return { ok: status >= 200 && status < 300, status: status, json: async function () { return body; } };

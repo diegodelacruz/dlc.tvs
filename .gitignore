@@ -1,6 +1,7 @@
 dist/
 *.ipk
 node_modules/
+app/js/
 .env
 *.env.local
 credentials*.json

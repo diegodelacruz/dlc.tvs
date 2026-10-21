@@ -168,3 +168,10 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - La TV "2023" es un **OLED48A1PSA** fabricada en 12/2021 (modelo 2021, webOS 6.0 según distribuidor). No es de 2023.
 - La TV "2020" es un **OLED55B9PSB** fabricada en 08/2019. Fuentes secundarias indican webOS 4.5 de fábrica. No está verificado si subió a webOS 5.
 - **Impacto en código:** `app/src/auth/deviceFlow.js` y `app/src/drive/driveClient.js` usan `async/await`, que requiere Chromium 55 o superior. Si la TV de 2020 queda en webOS 4.5, el motor es anterior a eso y hay que transpilar (por ejemplo, Babel con objetivo Chrome 53) antes de empaquetar. Decisión pendiente hasta leer la versión de webOS en la TV.
+
+## Decisión de compatibilidad (2026-10-21)
+
+- **Confirmado por Diego:** las dos TV deben funcionar. Incluye la OLED55B9PSB (2019), que podría estar en webOS 4.5.
+- **Objetivo de compilación:** Chrome 53, script clásico (IIFE) generado con esbuild. Sin módulos ES en el navegador, porque Chrome 53 no los soporta en `<script type="module">`.
+- **Verificación:** `npm run check:es2015` (parser ES2015) y revisión del bundle sin APIs posteriores a Chrome 53. Carga correcta en Chromium moderno.
+- **Pendiente:** ejecutar en las TV reales. Chrome 53 no está disponible aquí, así que la prueba de compatibilidad sigue en el Hito 5.
