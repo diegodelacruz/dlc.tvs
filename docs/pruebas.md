@@ -73,7 +73,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Imagen webp / heic | pendiente | Parcial (Diego, 2026-10-27): webp OK; heic pendiente (sin archivo de prueba) |
 | Presentación automática | pendiente | pendiente |
 | Reproducción de audio en segundo plano | pendiente | pendiente |
-| Pistas múltiples en mkv (audio y subtítulos) | pendiente | FALLA (Diego, 2026-10-27): no cambia de pista de audio ni activa subtítulos con los controles del `<video>`. Diagnóstico (Diego, 2026-10-27): el `<video>` ve audio=2 y texto=0. El audio está expuesto; los subtítulos incrustados no. Cambio de pista de audio por la API (`audioTracks`): OK en TV 2021 (Diego, 2026-10-27). Subtítulos incrustados: extracción a WebVTT en el proxy implementada y verificada con ffmpeg real en Mac (pistas eng y spa). Pendiente de prueba en TV 2021 |
+| Pistas múltiples en mkv (audio y subtítulos) | pendiente | FALLA (Diego, 2026-10-27): no cambia de pista de audio ni activa subtítulos con los controles del `<video>`. Diagnóstico (Diego, 2026-10-27): el `<video>` ve audio=2 y texto=0. El audio está expuesto; los subtítulos incrustados no. Cambio de pista de audio por la API (`audioTracks`): OK en TV 2021 (Diego, 2026-10-27). Subtítulos incrustados: extracción a WebVTT en el proxy implementada y verificada con ffmpeg real en Mac (pistas eng y spa). En TV 2021 (Diego, 2026-10-27): el `<video>` ve texto=2 y el enlace activa "eng". Pendiente confirmar que el texto se ve en pantalla y el cambio a español |
 
 ## Control Magic Remote (requerido por Diego)
 
