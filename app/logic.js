@@ -82,7 +82,55 @@
 		return Math.max(0, Math.min(max, t));
 	}
 
+	var LANGUAGES = { eng: 'Inglés', en: 'Inglés', spa: 'Español', es: 'Español', fre: 'Francés', fra: 'Francés', fr: 'Francés', ger: 'Alemán', deu: 'Alemán', ita: 'Italiano', por: 'Portugués', jpn: 'Japonés', kor: 'Coreano', und: 'Sin idioma' };
+	var MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+	// Nombre en español de un código de idioma (eng, spa...). Si no se conoce, devuelve el código.
+	function languageName(code) {
+		var key = String(code || 'und').toLowerCase();
+		return LANGUAGES[key] || key;
+	}
+
+	// Fecha corta en español: "5 mar 2025". Vacía si no es válida.
+	function dateText(iso) {
+		var d = new Date(iso);
+		if (isNaN(d.getTime())) return '';
+		return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+	}
+
+	// Nombre sin extensión.
+	function titleOf(name) {
+		return String(name || '').replace(/\.[A-Za-z0-9]{2,4}$/, '');
+	}
+
+	// Extensión en mayúsculas (MP4, MKV...). Vacía si no tiene.
+	function extOf(name) {
+		var m = String(name || '').match(/\.([A-Za-z0-9]{2,4})$/);
+		return m ? m[1].toUpperCase() : '';
+	}
+
+	// Tamaño legible: 2,4 GB, 150 MB, 68 KB.
+	function sizeText(bytes) {
+		if (!bytes) return '';
+		if (bytes >= 1e9) return (bytes / 1e9).toFixed(1).replace('.', ',') + ' GB';
+		if (bytes >= 1e6) return (bytes / 1e6).toFixed(1).replace('.', ',') + ' MB';
+		return Math.round(bytes / 1e3) + ' KB';
+	}
+
+	// Minutos restantes para "Quedan 31 min". Cadena vacía si no hay datos.
+	function remainingText(time, duration) {
+		if (!duration || duration <= time) return '';
+		var min = Math.max(1, Math.round((duration - time) / 60));
+		return 'Quedan ' + min + ' min';
+	}
+
 	root.CodeLogic = {
+		languageName: languageName,
+		dateText: dateText,
+		titleOf: titleOf,
+		extOf: extOf,
+		sizeText: sizeText,
+		remainingText: remainingText,
 		sortItems: sortItems,
 		formatTime: formatTime,
 		isInProgress: isInProgress,

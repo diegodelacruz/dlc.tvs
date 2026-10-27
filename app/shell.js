@@ -1,17 +1,19 @@
 // Shell de la app: barra superior, reproductor (mini y vista completa), controles y reglas de Atrás.
-// - OK sobre una sección de la barra la abre. Mover el foco no cambia de sección.
+// - OK sobre una pestaña la abre. Mover el foco no cambia de sección.
 // - El <video> vive siempre dentro de #stage. Mini y vista completa solo cambian su posición y tamaño.
+// - Vista completa: foco en la barra de progreso. Izquierda/derecha saltan 10 s; OK pausa; las demás flechas navegan.
 // - Atrás: primero lo consume la pantalla (CodeScreens.back), luego la vista completa, y por último vuelve a Inicio.
 //   En Inicio no se intercepta: el sistema decide.
 (function (root) {
 	var SECTIONS = ['inicio', 'explorar', 'video', 'musica', 'fotos', 'ajustes'];
 	var CP = root.CodePlayer;
-	var CONTROLS_MS = 4000;
+	var ICON = root.CodeIcons.icon;
+	var L = root.CodeLogic;
 	var SKIP_S = 10;
 	var current = 'inicio';
 	var inFull = false;
-	var controlsTimer = null;
 
+	var app = document.getElementById('app');
 	var stage = document.getElementById('stage');
 	var slot = document.getElementById('mini-slot');
 	var player = document.getElementById('player');
@@ -20,14 +22,25 @@
 	var miniFull = document.getElementById('mini-full');
 	var miniToggle = document.getElementById('mini-toggle');
 	var miniClose = document.getElementById('mini-close');
-	var fullControls = document.getElementById('full-controls');
+	var pill = document.getElementById('now-pill');
+	var pillArt = document.getElementById('pill-art');
+	var pillTitle = document.getElementById('pill-title');
+	var fullTitle = document.getElementById('full-title');
+	var fullMeta = document.getElementById('full-meta');
+	var fullProgress = document.getElementById('full-progress');
 	var fullTime = document.getElementById('full-time');
+	var fullDuration = document.getElementById('full-duration');
+	var barFill = document.getElementById('bar-fill');
+	var barKnob = document.getElementById('bar-knob');
+	var fullBack = document.getElementById('full-back');
 	var fullToggle = document.getElementById('full-toggle');
+	var fullFwd = document.getElementById('full-fwd');
+	var fullTracks = document.getElementById('full-tracks');
 
 	var STATE_TEXT = { playing: 'Reproduciendo', paused: 'En pausa', ended: 'Terminado', idle: '' };
 
 	function tabFor(name) {
-		return document.querySelector('#tabs a[data-section="' + name + '"]');
+		return app.querySelector('[data-section="' + name + '"]');
 	}
 
 	function show(name) {
@@ -36,14 +49,13 @@
 		SECTIONS.forEach(function (s) {
 			document.getElementById('sec-' + s).hidden = (s !== name);
 			var tab = tabFor(s);
-			if (s === name) {
-				tab.className = 'current';
-				tab.setAttribute('aria-current', 'page');
-			} else {
-				tab.className = '';
-				tab.removeAttribute('aria-current');
+			if (tab.classList.contains('tab')) {
+				tab.className = 'tab' + (s === name ? ' current' : '');
 			}
+			if (s === name) tab.setAttribute('aria-current', 'page');
+			else tab.removeAttribute('aria-current');
 		});
+		window.scrollTo(0, 0);
 		root.CodeScreens.enter(name);
 	}
 
@@ -69,66 +81,55 @@
 		stage.style.height = r.height + 'px';
 	}
 
-	function controlsVisible() {
-		return !fullControls.hidden;
+	// Tarjeta de música en la barra: pista actual, o nada si no hay.
+	function renderPill(musicState) {
+		var item = musicState ? musicState.item : CodeMusicSnapshot().item;
+		var show = Boolean(item) && !(CP.snapshot().file && !inFull);
+		pill.hidden = !show;
+		if (!item) return;
+		var playing = musicState ? musicState.playing : CodeMusicSnapshot().playing;
+		pillArt.innerHTML = ICON('wave', 28);
+		pillTitle.textContent = L.titleOf(item.name) + (playing ? '' : ' · en pausa');
 	}
 
-	// Muestra los controles con el foco en Pausa, para que OK tenga a qué aplicarse.
-	function showControls() {
-		fullControls.hidden = false;
-		updateFullTime();
-		fullToggle.focus();
-		armHideTimer();
-	}
-
-	function hideControls() {
-		clearTimeout(controlsTimer);
-		controlsTimer = null;
-		fullControls.hidden = true;
-		if (document.activeElement && fullControls.contains(document.activeElement)) document.activeElement.blur();
-	}
-
-	function armHideTimer() {
-		clearTimeout(controlsTimer);
-		controlsTimer = setTimeout(function () {
-			if (!trackPanel.isOpen()) hideControls();
-		}, CONTROLS_MS);
+	function CodeMusicSnapshot() {
+		return root.CodeMusic.snapshot();
 	}
 
 	function updateFullTime() {
 		var st = CP.status();
-		fullTime.textContent = root.CodeLogic.formatTime(st.time) + ' / ' + root.CodeLogic.formatTime(st.duration);
-		fullToggle.textContent = player.paused ? 'Reproducir' : 'Pausa';
+		var pct = st.duration ? Math.min(100, (st.time / st.duration) * 100) : 0;
+		barFill.style.width = pct + '%';
+		barKnob.style.left = pct + '%';
+		fullTime.textContent = L.formatTime(st.time);
+		fullDuration.textContent = L.formatTime(st.duration);
+		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 26) + (player.paused ? ' Reproducir' : ' Pausa');
 	}
 
-	// Selector de audio y subtítulos. Mientras está abierto, la navegación queda dentro de él.
-	var trackPanel = root.CodeTracks.mount(stage, player, {
-		onOpen: function () {
-			stage.removeAttribute('data-modal');
-			clearTimeout(controlsTimer);
-		},
-		onClose: function () {
-			if (inFull) stage.setAttribute('data-modal', '');
-			armHideTimer();
-		},
-	});
-
 	function render(s) {
+		var wasFull = inFull;
 		inFull = s.file !== null && s.mode === 'full';
 		player.controls = false;
 		if (inFull) {
 			stage.setAttribute('data-modal', '');
+			if (s.file) {
+				fullTitle.textContent = L.titleOf(s.file.name);
+				fullMeta.textContent = L.extOf(s.file.name) + (s.state === 'playing' ? ' · reproduciendo' : '');
+			}
 		} else {
 			stage.removeAttribute('data-modal');
-			hideControls();
 			if (trackPanel.isOpen()) trackPanel.close();
 		}
 		placeStage(s);
+		// El foco solo puede ir a la barra cuando el reproductor ya está visible.
+		if (inFull && !wasFull) fullProgress.focus();
 		mini.className = (s.file && !inFull) ? 'show' : '';
-		if (s.file) {
+		if (s.file && !inFull) {
 			miniState.textContent = s.file.name + ' · ' + STATE_TEXT[s.state];
 			miniToggle.textContent = s.state === 'playing' ? 'Pausa' : (s.state === 'ended' ? 'Reiniciar' : 'Reproducir');
 		}
+		updateFullTime();
+		renderPill(null);
 	}
 
 	// Entrar a vista completa agrega una entrada al historial; Atrás la quita y vuelve al mini.
@@ -142,7 +143,6 @@
 
 	// Sale de vista completa. Solo usa el historial si la entrada la creó la app; si no, cambia el modo.
 	function leaveFull() {
-		hideControls();
 		if (history.state && history.state.full) history.back();
 		else CP.setMode('mini');
 	}
@@ -170,12 +170,26 @@
 		root.CodeStore.set('progress', progress);
 	}
 
+	// Selector de audio y subtítulos. Mientras está abierto, la navegación queda dentro de él.
+	var trackPanel = root.CodeTracks.mount(stage, player, {
+		onOpen: function () { stage.removeAttribute('data-modal'); },
+		onClose: function () { if (inFull) stage.setAttribute('data-modal', ''); },
+	});
+
 	SECTIONS.forEach(function (name) {
 		tabFor(name).onclick = function () {
 			show(name);
 			return false;
 		};
 	});
+
+	root.CodeShell = {
+		show: show,
+		current: function () { return current; },
+		playVideo: playVideo,
+		goFull: goFull,
+		renderPill: renderPill,
+	};
 
 	CP.init(player);
 	CP.subscribe(render);
@@ -190,21 +204,28 @@
 		return false;
 	};
 
-	document.getElementById('full-back').onclick = function () { CP.seekBy(-SKIP_S); updateFullTime(); armHideTimer(); return false; };
-	fullToggle.onclick = function () { CP.toggle(); updateFullTime(); armHideTimer(); return false; };
-	document.getElementById('full-fwd').onclick = function () { CP.seekBy(SKIP_S); updateFullTime(); armHideTimer(); return false; };
-	document.getElementById('full-tracks').onclick = function () {
-		trackPanel.open(this);
-		return false;
-	};
+	pill.onclick = function () { show('musica'); return false; };
+
+	fullProgress.onclick = function () { CP.toggle(); return false; };
+	fullBack.onclick = function () { CP.seekBy(-SKIP_S); return false; };
+	fullToggle.onclick = function () { CP.toggle(); return false; };
+	fullFwd.onclick = function () { CP.seekBy(SKIP_S); return false; };
+	fullTracks.onclick = function () { trackPanel.open(this); return false; };
+
+	fullBack.innerHTML = ICON('back10', 26) + ' 10 s';
+	fullFwd.innerHTML = ICON('fwd10', 26) + ' 10 s';
+	fullTracks.innerHTML = ICON('subtitles', 26) + ' Audio y subtítulos';
+	fullToggle.innerHTML = ICON('pause', 26) + ' Pausa';
+	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
 
 	player.addEventListener('timeupdate', function () {
-		if (controlsVisible()) updateFullTime();
+		if (inFull) updateFullTime();
 	});
+	player.addEventListener('play', updateFullTime);
+	player.addEventListener('pause', updateFullTime);
 
 	window.addEventListener('popstate', function () {
 		if (CP.snapshot().mode === 'full') {
-			hideControls();
 			CP.setMode('mini');
 			miniFull.focus();
 		}
@@ -212,60 +233,53 @@
 
 	window.addEventListener('resize', function () { placeStage(CP.snapshot()); });
 
-	// Teclas en vista completa. Con los controles ocultos, izquierda/derecha saltan y OK pausa.
-	// Con los controles visibles, la navegación la hace nav.js.
-	function fullKey(e) {
+	// Rueda del Magic Remote: desplaza la página cuando no hay vista completa ni visor.
+	document.addEventListener('wheel', function (e) {
+		if (inFull || root.CodeScreens.isViewerOpen()) return;
+		e.preventDefault();
+		window.scrollBy(0, e.deltaY);
+	}, { passive: false });
+
+	// Teclas en fase de captura: se resuelven antes que la navegación (nav.js).
+	document.addEventListener('keydown', function (e) {
 		var code = e.keyCode;
+		var isBack = code === 461 || code === 27 || code === 8;
+		if (!inFull) {
+			if (!isBack) return;
+			if (root.CodeScreens.back()) {
+				e.preventDefault();
+				return;
+			}
+			if (current === 'inicio') return;
+			e.preventDefault();
+			show('inicio');
+			tabFor('inicio').focus();
+			return;
+		}
 		if (trackPanel.isOpen()) {
-			if (code === 461 || code === 27 || code === 8) {
+			if (isBack) {
 				e.preventDefault();
 				trackPanel.close();
 			}
 			return;
 		}
-		if (code === 461 || code === 27 || code === 8) {
+		if (isBack) {
 			e.preventDefault();
-			if (controlsVisible()) hideControls();
-			else leaveFull();
+			leaveFull();
 			return;
 		}
-		if (!controlsVisible()) {
-			if (code === 37) { e.preventDefault(); CP.seekBy(-SKIP_S); showControls(); }
-			else if (code === 39) { e.preventDefault(); CP.seekBy(SKIP_S); showControls(); }
-			else if (code === 38 || code === 40) { e.preventDefault(); showControls(); fullToggle.focus(); }
-			else if (code === 13) { e.preventDefault(); CP.toggle(); }
-			return;
-		}
-		armHideTimer();
-	}
-
-	document.addEventListener('keydown', function (e) {
-		if (inFull) {
-			fullKey(e);
-			return;
-		}
-		if (e.keyCode !== 461 && e.keyCode !== 27 && e.keyCode !== 8) return;
-		if (root.CodeScreens.back()) {
-			e.preventDefault();
-			return;
-		}
-		if (current === 'inicio') return;
-		e.preventDefault();
-		show('inicio');
-		tabFor('inicio').focus();
-	});
+		if (document.activeElement !== fullProgress) return;
+		if (code === 37) { e.preventDefault(); CP.seekBy(-SKIP_S); updateFullTime(); }
+		else if (code === 39) { e.preventDefault(); CP.seekBy(SKIP_S); updateFullTime(); }
+		else if (code === 13) { e.preventDefault(); CP.toggle(); }
+	}, true);
 
 	var engine = document.getElementById('engine-info');
-	if (engine) engine.textContent = 'Motor web: ' + navigator.userAgent;
+	if (engine) engine.textContent = navigator.userAgent;
 
 	root.CodeScreens.init();
 	show('inicio');
 	placeStage(CP.snapshot());
+	renderPill(null);
 
-	root.CodeShell = {
-		show: show,
-		current: function () { return current; },
-		playVideo: playVideo,
-		goFull: goFull,
-	};
 })(window);

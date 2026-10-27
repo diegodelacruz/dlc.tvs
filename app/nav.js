@@ -72,6 +72,8 @@
 	});
 
 	document.addEventListener('keydown', function (e) {
+		// Si otra parte de la app ya resolvió la tecla, no la navegamos.
+		if (e.defaultPrevented) return;
 		var code = e.keyCode;
 		var active = document.activeElement;
 		var index = links().indexOf(active);

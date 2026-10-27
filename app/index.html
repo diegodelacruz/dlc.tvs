@@ -5,275 +5,30 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>CodeTV</title>
-	<style type="text/css">
-		body {
-			margin: 0;
-			width: 100%;
-			height: 100%;
-			background-color: #000000;
-			color: #e9e9ed;
-			font-family: sans-serif;
-			font-size: 28px;
-		}
-
-		/* Margen de seguridad de aproximadamente 5% en los bordes. */
-		#app {
-			padding: 54px 96px;
-			box-sizing: border-box;
-		}
-
-		#tabs {
-			display: flex;
-			align-items: center;
-			border-bottom: 2px solid #333333;
-			padding-bottom: 12px;
-			margin-bottom: 32px;
-		}
-
-		#tabs .spacer {
-			flex: 1;
-		}
-
-		/* Hueco del mini reproductor en la barra. El video se posiciona encima con JavaScript. */
-		#mini-slot {
-			width: 280px;
-			height: 158px;
-			margin-right: 24px;
-			flex: none;
-		}
-
-		a {
-			display: inline-block;
-			padding: 8px 16px;
-			border: 3px solid transparent;
-			border-radius: 10px;
-			text-decoration: none;
-			color: #ffd60a;
-			font-size: 30px;
-		}
-
-		a:focus {
-			outline: none;
-			border-color: #ffd60a;
-			background-color: #1a1a1a;
-			color: #ffffff;
-		}
-
-		/* La sección activa se marca con una línea inferior, no solo con color. */
-		#tabs a.current {
-			color: #ffffff;
-			border-bottom: 4px solid #ffd60a;
-			border-radius: 0;
-		}
-
-		/* Reproductor: vista completa o mini. Su posición la fija shell.js. */
-		#stage {
-			display: none;
-			position: fixed;
-			box-sizing: border-box;
-			background-color: #000000;
-			z-index: 20;
-			overflow: hidden;
-		}
-
-		#stage.full {
-			display: block;
-		}
-
-		#stage.mini {
-			display: block;
-			border: 3px solid #ffd60a;
-			border-radius: 8px;
-		}
-
-		#stage video {
-			width: 100%;
-			height: 100%;
-			background-color: #000000;
-		}
-
-		/* Controles del mini: sobre el video, visibles con puntero o foco. */
-		#mini {
-			display: none;
-			position: absolute;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			box-sizing: border-box;
-			padding: 6px 8px;
-			background-color: rgba(0, 0, 0, 0.75);
-			opacity: 0;
-		}
-
-		#mini.show {
-			display: block;
-		}
-
-		#stage.mini:hover #mini,
-		#stage.mini:focus-within #mini {
-			opacity: 1;
-		}
-
-		#mini p {
-			margin: 0 0 4px 0;
-			font-size: 18px;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-
-		.mini-actions {
-			display: flex;
-			justify-content: space-between;
-		}
-
-		#mini a {
-			font-size: 18px;
-			padding: 4px 6px;
-		}
-
-		/* Controles de la vista completa: aparecen con una tecla y se ocultan a los 4 s. */
-		#full-controls {
-			position: absolute;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			box-sizing: border-box;
-			padding: 24px 48px;
-			background-color: rgba(0, 0, 0, 0.7);
-		}
-
-		#full-controls[hidden] {
-			display: none;
-		}
-
-		#full-controls .full-actions a {
-			font-size: 26px;
-		}
-
-		#full-time {
-			margin: 0 0 8px 0;
-			font-size: 24px;
-		}
-
-		/* Selector de audio y subtítulos, dentro de la vista completa. */
-		.tracks-panel {
-			position: absolute;
-			left: 48px;
-			top: 48px;
-			width: 720px;
-			box-sizing: border-box;
-			padding: 24px;
-			background-color: #0a0a0a;
-			border: 3px solid #ffd60a;
-			border-radius: 12px;
-			z-index: 2;
-		}
-
-		.tracks-panel[hidden] {
-			display: none;
-		}
-
-		.tracks-panel h2 {
-			font-size: 28px;
-			margin: 12px 0 4px 0;
-		}
-
-		.tracks-panel a {
-			font-size: 24px;
-		}
-
-		/* Visor de fotos a pantalla completa. Se controla con las teclas. */
-		#viewer {
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			z-index: 30;
-			background-color: #000000;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-		}
-
-		#viewer[hidden] {
-			display: none;
-		}
-
-		#viewer img {
-			max-width: 100%;
-			max-height: 88%;
-			object-fit: contain;
-		}
-
-		#viewer-caption {
-			margin: 8px 0 0 0;
-			font-size: 24px;
-		}
-
-		#viewer-help {
-			position: absolute;
-			bottom: 24px;
-			left: 48px;
-			font-size: 22px;
-		}
-
-		/* Biblioteca: fotos en cuadrícula. */
-		#photo-grid {
-			display: flex;
-			flex-wrap: wrap;
-		}
-
-		#photo-grid a.photo {
-			width: 260px;
-			margin: 0 16px 16px 0;
-			font-size: 20px;
-			padding: 6px;
-			white-space: normal;
-		}
-
-		#photo-grid img.thumb {
-			width: 240px;
-			height: 135px;
-			object-fit: cover;
-			background-color: #111111;
-		}
-
-		h1 {
-			font-size: 40px;
-			margin: 0 0 16px 0;
-		}
-
-		h2 {
-			font-size: 32px;
-			margin: 24px 0 8px 0;
-		}
-
-		p {
-			margin: 8px 0;
-		}
-
-		.muted {
-			color: #9a9aa3;
-		}
-
-		[hidden] {
-			display: none !important;
-		}
-	</style>
+	<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 	<div id="app">
-		<nav id="tabs">
-			<a href="#" data-section="inicio" class="current">Inicio</a>
-			<a href="#" data-section="explorar">Explorar</a>
-			<a href="#" data-section="video">Video</a>
-			<a href="#" data-section="musica">Música</a>
-			<a href="#" data-section="fotos">Fotos</a>
-			<span class="spacer"></span>
+		<header id="header">
+			<div class="brand">
+				<span class="brand-bar"></span>
+				<span class="brand-name">CodeTV</span>
+			</div>
+			<nav id="tabs">
+				<a href="#" class="tab current" data-section="inicio">Inicio</a>
+				<a href="#" class="tab" data-section="explorar">Explorar</a>
+				<a href="#" class="tab" data-section="video">Video</a>
+				<a href="#" class="tab" data-section="musica">Música</a>
+				<a href="#" class="tab" data-section="fotos">Fotos</a>
+			</nav>
+			<div id="header-right">
+				<a href="#" id="now-pill" class="pill" hidden>
+					<span class="pill-art" id="pill-art"></span>
+					<span class="pill-title" id="pill-title"></span>
+				</a>
+				<a href="#" class="icon-btn" data-section="ajustes" aria-label="Ajustes" id="settings-btn"></a>
+			</div>
 			<div id="mini-slot"></div>
 			<div id="stage">
 				<video id="player"></video>
@@ -285,96 +40,161 @@
 						<a href="#" id="mini-close">Cerrar</a>
 					</div>
 				</div>
-				<div id="full-controls" hidden>
-					<p id="full-time"></p>
+				<div id="full-head">
+					<h1 id="full-title"></h1>
+					<p id="full-meta"></p>
+				</div>
+				<div id="full-controls">
+					<a href="#" id="full-progress">
+						<div class="bar">
+							<div class="bar-fill" id="bar-fill"></div>
+							<div class="bar-knob" id="bar-knob"></div>
+						</div>
+						<div class="bar-times">
+							<span id="full-time">0:00</span>
+							<span class="hint">Izquierda / derecha: 10 s · OK: pausa</span>
+							<span id="full-duration">0:00</span>
+						</div>
+					</a>
 					<div class="full-actions">
-						<a href="#" id="full-back">-10 s</a>
-						<a href="#" id="full-toggle">Pausa</a>
-						<a href="#" id="full-fwd">+10 s</a>
-						<a href="#" id="full-tracks">Audio y subtítulos</a>
+						<div class="group">
+							<a href="#" class="btn" id="full-back"></a>
+							<a href="#" class="btn" id="full-toggle">Pausa</a>
+							<a href="#" class="btn" id="full-fwd"></a>
+						</div>
+						<a href="#" class="btn on" id="full-tracks"></a>
 					</div>
 				</div>
 			</div>
-			<a href="#" data-section="ajustes">Ajustes</a>
-		</nav>
+		</header>
 
 		<section id="sec-inicio" class="section">
-			<h1>Inicio</h1>
-			<h2>Continuar viendo</h2>
-			<div id="home-continue"></div>
-			<h2>Recientes</h2>
-			<div id="home-recent"></div>
-			<h2>Carpetas favoritas</h2>
-			<div id="home-favs"></div>
+			<h2 class="sub">Continuar viendo <span class="count" id="continue-count"></span></h2>
+			<div class="grid" id="home-continue"></div>
+			<h2 class="sub">Recientes <span class="count" id="recent-count"></span></h2>
+			<div class="grid" id="home-recent"></div>
+			<h2 class="sub">Biblioteca</h2>
+			<div class="grid" id="home-library"></div>
+			<h2 class="sub">Carpetas favoritas</h2>
+			<div class="rows" id="home-favs"></div>
+			<div class="keys"><span class="hint"><kbd>OK</kbd>Abrir</span></div>
 		</section>
 
 		<section id="sec-explorar" class="section" hidden>
-			<h1>Explorar</h1>
-			<p id="explore-path"></p>
-			<p id="explore-tools"></p>
-			<p id="explore-status" class="muted"></p>
-			<div id="explore-list"></div>
+			<div class="section-head">
+				<div class="crumbs" id="explore-path"></div>
+				<div class="actions" id="explore-sort"></div>
+			</div>
+			<div class="statusbar">
+				<p class="status" id="explore-status"></p>
+				<div class="actions" id="explore-tools"></div>
+			</div>
+			<div class="columns" id="explore-columns"></div>
+			<div class="rows" id="explore-list"></div>
+			<div class="keys"><span class="hint"><kbd>OK</kbd>Abrir</span><span class="hint"><kbd>Atrás</kbd>Subir</span></div>
 		</section>
 
 		<section id="sec-video" class="section" hidden>
-			<h1>Video</h1>
-			<p id="video-status" class="muted"></p>
-			<div id="video-list"></div>
+			<div class="section-head">
+				<h1>Video <span class="count" id="video-count"></span></h1>
+			</div>
+			<p class="status" id="video-status"></p>
+			<div class="grid" id="video-list"></div>
 			<div id="video-detail" hidden></div>
+			<div class="keys"><span class="hint"><kbd>OK</kbd>Abrir</span><span class="hint"><kbd>Atrás</kbd>Inicio</span></div>
 		</section>
 
 		<section id="sec-musica" class="section" hidden>
-			<h1>Música</h1>
-			<div id="music-now">
-				<p id="music-now-title">Nada reproduciéndose.</p>
-				<p>
-					<a href="#" id="music-prev">Anterior</a>
-					<a href="#" id="music-toggle">Reproducir</a>
-					<a href="#" id="music-next">Siguiente</a>
-					<a href="#" id="music-shuffle">Aleatorio: no</a>
-					<a href="#" id="music-repeat">Repetir: no</a>
-				</p>
+			<div class="section-head">
+				<h1>Música <span class="count" id="music-count"></span></h1>
+				<div class="actions">
+					<a href="#" class="btn primary" id="music-play-all">Reproducir todo</a>
+					<a href="#" class="btn" id="music-shuffle-all">Aleatorio</a>
+				</div>
 			</div>
-			<p id="music-status" class="muted"></p>
-			<div id="music-list"></div>
+			<div class="setting" id="music-now" hidden>
+				<span class="k" id="music-now-title"></span>
+				<span class="v opts">
+					<a href="#" class="btn" id="music-prev">Anterior</a>
+					<a href="#" class="btn" id="music-toggle">Reproducir</a>
+					<a href="#" class="btn" id="music-next">Siguiente</a>
+					<a href="#" class="btn" id="music-shuffle">Aleatorio: no</a>
+					<a href="#" class="btn" id="music-repeat">Repetir: no</a>
+				</span>
+			</div>
+			<p class="status" id="music-status"></p>
+			<div class="rows" id="music-list"></div>
+			<div class="keys"><span class="hint"><kbd>OK</kbd>Reproducir</span><span class="hint"><kbd>Atrás</kbd>Inicio</span></div>
 		</section>
 
 		<section id="sec-fotos" class="section" hidden>
-			<h1>Fotos</h1>
-			<p id="photo-status" class="muted"></p>
-			<div id="photo-grid"></div>
+			<div class="section-head">
+				<h1>Fotos <span class="count" id="photo-count"></span></h1>
+				<div class="actions">
+					<a href="#" class="btn primary" id="photo-slideshow">Iniciar presentación</a>
+				</div>
+			</div>
+			<p class="status" id="photo-status"></p>
+			<div class="grid" id="photo-grid"></div>
+			<div class="keys"><span class="hint"><kbd>OK</kbd>Ver</span><span class="hint"><kbd>Atrás</kbd>Inicio</span></div>
 		</section>
 
 		<section id="sec-ajustes" class="section" hidden>
-			<h1>Ajustes</h1>
-			<h2>Presentación de fotos</h2>
-			<p>Intervalo: <span id="settings-slide"></span></p>
-			<h2>Orden por defecto</h2>
-			<p id="settings-sort"></p>
-			<h2>Biblioteca y cuenta</h2>
-			<p id="library-info"></p>
-			<p>Cuenta: acceso con la cuenta de servicio incluida en la app. No hay sesión que cerrar.</p>
-			<p id="proxy-info" class="muted"></p>
-			<p id="settings-clear"></p>
-			<p id="settings-status" class="muted"></p>
-			<h2>Información</h2>
-			<p>Versión de la app: 0.1.0</p>
-			<p id="engine-info" class="muted"></p>
-			<h2>Pruebas de desarrollo</h2>
-			<p><a href="diagnostic.html">Diagnóstico de firma RSA</a></p>
-			<p><a href="drive-check.html">Prueba de Drive</a></p>
-			<p><a href="player-check.html">Prueba de reproducción</a></p>
-			<p><a href="mini-check.html">Prueba de mini reproductor</a></p>
+			<div class="section-head">
+				<h1>Ajustes</h1>
+			</div>
+			<div class="setting">
+				<span class="k">Presentación de fotos</span>
+				<span class="v opts" id="settings-slide"></span>
+			</div>
+			<div class="setting">
+				<span class="k">Orden por defecto</span>
+				<span class="v opts" id="settings-sort"></span>
+			</div>
+			<div class="setting">
+				<span class="k">Biblioteca</span>
+				<span class="v" id="library-info"></span>
+			</div>
+			<div class="setting">
+				<span class="k">Cuenta</span>
+				<span class="v">Acceso con la cuenta de servicio incluida en la app. No hay sesión que cerrar.</span>
+			</div>
+			<div class="setting">
+				<span class="k">Reproducción</span>
+				<span class="v" id="proxy-info"></span>
+			</div>
+			<div class="setting">
+				<span class="k">Historial</span>
+				<span class="v opts" id="settings-clear"></span>
+			</div>
+			<p class="status" id="settings-status"></p>
+			<div class="setting">
+				<span class="k">Versión</span>
+				<span class="v">0.1.0</span>
+			</div>
+			<div class="setting">
+				<span class="k">Motor web</span>
+				<span class="v" id="engine-info"></span>
+			</div>
+			<h2 class="sub">Pruebas de desarrollo</h2>
+			<div class="opts">
+				<a href="#" class="btn" data-open="diagnostic.html">Diagnóstico de firma RSA</a>
+				<a href="#" class="btn" data-open="drive-check.html">Prueba de Drive</a>
+				<a href="#" class="btn" data-open="player-check.html">Prueba de reproducción</a>
+				<a href="#" class="btn" data-open="mini-check.html">Prueba de mini reproductor</a>
+			</div>
+			<div class="keys"><span class="hint"><kbd>OK</kbd>Cambiar</span><span class="hint"><kbd>Atrás</kbd>Inicio</span></div>
 		</section>
 
 		<div id="viewer" hidden>
 			<img id="viewer-img" alt="">
 			<p id="viewer-caption"></p>
-			<p id="viewer-help" class="muted">Izquierda/derecha: cambiar foto · OK: presentación · Atrás: cerrar</p>
+			<p id="viewer-help">Izquierda / derecha: cambiar foto · OK: presentación · Atrás: cerrar</p>
 		</div>
 	</div>
 	<audio id="music" preload="none"></audio>
 	<script type="text/javascript" src="nav.js"></script>
+	<script type="text/javascript" src="icons.js"></script>
 	<script type="text/javascript" src="logic.js"></script>
 	<script type="text/javascript" src="store.js"></script>
 	<script type="text/javascript" src="drive.js"></script>
@@ -383,7 +203,8 @@
 	<script type="text/javascript" src="music.js"></script>
 	<script type="text/javascript" src="screens.js"></script>
 	<script type="text/javascript" src="shell.js"></script>
-	<script src="js/app.js"></script>
+	<script type="text/javascript" src="service-account.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
 </body>
 
 </html>
