@@ -5,8 +5,13 @@
 (function () {
 	var current = -1;
 
+	// Si hay un panel abierto (data-modal sin hidden), el foco queda dentro de él.
+	// Solo cuentan los enlaces visibles.
 	function links() {
-		return Array.prototype.slice.call(document.querySelectorAll('a[href]'));
+		var scope = document.querySelector('[data-modal]:not([hidden])') || document;
+		return Array.prototype.slice.call(scope.querySelectorAll('a[href]')).filter(function (a) {
+			return a.offsetParent !== null;
+		});
 	}
 
 	function closestLink(node) {

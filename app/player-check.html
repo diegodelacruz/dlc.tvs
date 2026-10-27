@@ -65,6 +65,28 @@
 			font-size: 24px;
 			padding: 4px 12px;
 		}
+		#panel {
+			position: fixed;
+			left: 40px;
+			top: 120px;
+			width: 880px;
+			box-sizing: border-box;
+			padding: 24px;
+			background-color: #0a0a0a;
+			border: 3px solid #ffd60a;
+			border-radius: 12px;
+			z-index: 10;
+		}
+
+		#panel h2 {
+			font-size: 28px;
+			margin: 12px 0 4px 0;
+			color: #ffffff;
+		}
+
+		#panel a {
+			font-size: 26px;
+		}
 	</style>
 </head>
 
@@ -73,6 +95,13 @@
 	<video id="player" controls></video>
 	<img id="picture" alt="" style="display:none;width:960px;height:540px;object-fit:contain;">
 	<div id="videos"></div>
+	<div id="panel" data-modal hidden>
+		<h2>Audio</h2>
+		<div id="audio-options"></div>
+		<h2>Subtítulos</h2>
+		<div id="sub-options"></div>
+		<p><a href="#" id="panel-close">Cerrar</a></p>
+	</div>
 	<pre id="log">Cargando lista de Drive…</pre>
 	<script type="text/javascript" src="js/service-account.js"></script>
 	<script type="text/javascript" src="js/app.js"></script>
@@ -125,6 +154,104 @@
 					show('ERROR al leer subtítulos: ' + e.message);
 				});
 			}
+			// Selector de audio y subtítulos. El estado vive en el propio <video>; los textos se releen de ahí.
+			var panel = document.getElementById('panel');
+			var audioBox = document.getElementById('audio-options');
+			var subBox = document.getElementById('sub-options');
+			var audioLinks = [];
+			var subLinks = [];
+			var opener = null;
+
+			function clearBox(box) {
+				while (box.firstChild) box.removeChild(box.firstChild);
+			}
+
+			function refreshOptions() {
+				var audio = player.audioTracks;
+				audioLinks.forEach(function (a, i) {
+					a.textContent = 'Pista ' + i + ': ' + (audio[i].language || 'sin dato') + (audio[i].enabled ? ' (activa)' : '');
+				});
+				var texts = player.textTracks;
+				var anyShowing = false;
+				subLinks.forEach(function (a, i) {
+					if (i === texts.length) {
+						a.textContent = 'Desactivado' + (anyShowing ? '' : ' (activo)');
+						return;
+					}
+					var on = texts[i].mode === 'showing';
+					if (on) anyShowing = true;
+					a.textContent = 'Pista ' + i + ': ' + (texts[i].language || 'sin dato') + (on ? ' (activa)' : '');
+				});
+			}
+
+			function optionLink(onPick) {
+				var a = document.createElement('a');
+				a.href = '#';
+				a.onclick = function () { onPick(); return false; };
+				return a;
+			}
+
+			function openSelector(from) {
+				if (!player.src) {
+					show('Primero reproduce un video');
+					return;
+				}
+				opener = from;
+				clearBox(audioBox);
+				clearBox(subBox);
+				audioLinks = [];
+				subLinks = [];
+				var audio = player.audioTracks;
+				if (!audio) {
+					show('Selector de audio: la API no está disponible');
+				} else {
+					for (var i = 0; i < audio.length; i++) {
+						(function (index) {
+							var a = optionLink(function () {
+								for (var j = 0; j < audio.length; j++) audio[j].enabled = (j === index);
+								refreshOptions();
+							});
+							audioLinks.push(a);
+							audioBox.appendChild(a);
+						})(i);
+					}
+				}
+				var texts = player.textTracks;
+				for (var k = 0; k < texts.length; k++) {
+					(function (index) {
+						var a = optionLink(function () {
+							for (var j = 0; j < texts.length; j++) texts[j].mode = (j === index) ? 'showing' : 'disabled';
+							refreshOptions();
+						});
+						subLinks.push(a);
+						subBox.appendChild(a);
+					})(k);
+				}
+				var off = optionLink(function () {
+					for (var j = 0; j < texts.length; j++) texts[j].mode = 'disabled';
+					refreshOptions();
+				});
+				subLinks.push(off);
+				subBox.appendChild(off);
+				refreshOptions();
+				panel.hidden = false;
+				var first = audioLinks.concat(subLinks).filter(function (a) { return a.textContent.indexOf('(activa)') >= 0 || a.textContent.indexOf('(activo)') >= 0; })[0];
+				(first || audioLinks[0] || subLinks[0]).focus();
+			}
+
+			function closeSelector() {
+				panel.hidden = true;
+				if (opener) opener.focus();
+			}
+
+			document.getElementById('panel-close').onclick = function () { closeSelector(); return false; };
+			document.addEventListener('keydown', function (e) {
+				if (!panel.hidden && (e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8)) {
+					e.preventDefault();
+					closeSelector();
+				}
+			});
+
 			function countTracks(list) {
 				return list ? list.length : 'API no disponible';
 			}
@@ -228,6 +355,14 @@
 						return false;
 					};
 					container.appendChild(nextSub);
+					var openPanel = document.createElement('a');
+					openPanel.href = '#';
+					openPanel.textContent = 'Audio y subtítulos';
+					openPanel.onclick = function () {
+						openSelector(openPanel);
+						return false;
+					};
+					container.appendChild(openPanel);
 				show('Listo: ' + prepared.videos.length + ' video(s). Elige uno con OK.');
 			}).catch(function (e) {
 				show('ERROR: ' + (e && e.message ? e.message : String(e)));
