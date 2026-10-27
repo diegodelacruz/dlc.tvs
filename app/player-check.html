@@ -145,6 +145,26 @@
 				backward.textContent = 'Retroceder 60 s (prueba de seek)';
 				backward.onclick = relativeSeek(-60, 'Retroceso');
 				container.appendChild(backward);
+					var nextAudio = document.createElement('a');
+					nextAudio.href = '#';
+					nextAudio.textContent = 'Cambiar pista de audio (prueba)';
+					nextAudio.onclick = function () {
+						var tracks = player.audioTracks;
+						if (!tracks || tracks.length < 2) {
+							show('Cambio de audio no disponible: menos de 2 pistas o API ausente');
+							return false;
+						}
+						var next = 0;
+						for (var i = 0; i < tracks.length; i++) {
+							if (tracks[i].enabled) next = (i + 1) % tracks.length;
+						}
+						for (var j = 0; j < tracks.length; j++) {
+							tracks[j].enabled = (j === next);
+						}
+						show('Pista de audio ' + next + ' activa (idioma: ' + (tracks[next].language || 'sin dato') + ')');
+						return false;
+					};
+					container.appendChild(nextAudio);
 				show('Listo: ' + prepared.videos.length + ' video(s). Elige uno con OK.');
 			}).catch(function (e) {
 				show('ERROR: ' + (e && e.message ? e.message : String(e)));
