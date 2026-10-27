@@ -131,3 +131,14 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 | mp4 original (índice al final) en <video> vía proxy | FALLA: código 4 |
 | mp4 con índice al inicio (remux con `-movflags +faststart`, sin recodificar) | OK: loadedmetadata (1501 s), playing |
 | Seek a 1:00 en mp4 faststart | Pendiente de confirmar |
+
+## Audio, imagen y HEVC (TV 2021, 2026-10-27)
+
+| Prueba | Resultado |
+|---|---|
+| Listado de carpeta con video, audio e imagen (6 elementos) | OK |
+| Audio mp3 (prueba-audio.mp3, 20 s) en <video> vía proxy | OK: loadedmetadata, playing, ended |
+| Imagen jpg (prueba-imagen.jpg) en <img> vía proxy | OK: imagen cargada |
+| Video HEVC mp4 (prueba-hevc.mp4, 20 s) vía proxy | OK: loadedmetadata, playing, ended |
+| Sonido del mp3 en la TV | Pendiente de confirmar por Diego |
+| Navegación con flechas y marca de foco | OK |
