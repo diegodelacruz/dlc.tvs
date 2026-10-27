@@ -71,28 +71,44 @@
 			background-color: #000000;
 		}
 
+		/* Controles sobre el video del mini: solo visibles con el puntero encima o con foco en ellos. */
 		#mini {
 			display: none;
-			position: fixed;
-			top: 330px;
-			right: 40px;
-			width: 480px;
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
 			box-sizing: border-box;
-			padding: 8px 0;
-			z-index: 6;
+			padding: 6px 8px;
+			background-color: rgba(0, 0, 0, 0.75);
+			opacity: 0;
 		}
 
 		#mini.show {
 			display: block;
 		}
 
+		#stage.mini:hover #mini,
+		#stage.mini:focus-within #mini {
+			opacity: 1;
+		}
+
 		#mini p {
-			margin: 0 0 8px 0;
-			font-size: 22px;
+			margin: 0 0 4px 0;
+			font-size: 18px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.mini-actions {
+			display: flex;
+			justify-content: space-between;
 		}
 
 		#mini a {
-			font-size: 22px;
+			font-size: 20px;
+			padding: 4px 8px;
 		}
 
 		#log {
@@ -118,12 +134,14 @@
 	<h1>CodeTV · Mini reproductor (prueba)</h1>
 	<div id="stage">
 		<video id="player"></video>
-	</div>
-	<div id="mini">
-		<p id="mini-state"></p>
-		<a href="#" id="mini-full">Ver completo</a>
-		<a href="#" id="mini-toggle">Reproducir</a>
-		<a href="#" id="mini-close">Cerrar</a>
+		<div id="mini">
+			<p id="mini-state"></p>
+			<div class="mini-actions">
+				<a href="#" id="mini-full">Ver completo</a>
+				<a href="#" id="mini-toggle">Reproducir</a>
+				<a href="#" id="mini-close">Cerrar</a>
+			</div>
+		</div>
 	</div>
 	<div id="videos"></div>
 	<pre id="log">Cargando lista de Drive…</pre>
