@@ -123,3 +123,11 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 | Reproducción mkv (TBBT, 1402 s) en <video> vía proxy | OK: loadedmetadata, playing |
 | Seek a 60 s en mkv vía proxy | OK: seeked |
 | Reproducción mp4 (Sakura, 157 MB) en <video> vía proxy | FALLA: código 4 (formato no soportado) — pendiente revisar códecs |
+
+## Corrección del mp4 (TV 2021, 2026-10-27)
+
+| Prueba | Resultado |
+|---|---|
+| mp4 original (índice al final) en <video> vía proxy | FALLA: código 4 |
+| mp4 con índice al inicio (remux con `-movflags +faststart`, sin recodificar) | OK: loadedmetadata (1501 s), playing |
+| Seek a 1:00 en mp4 faststart | Pendiente de confirmar |

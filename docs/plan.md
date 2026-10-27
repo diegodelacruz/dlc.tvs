@@ -234,3 +234,9 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 - **mkv:** reproduce y hace seek en la TV 2021 a través del proxy.
 - **mp4:** falla con código 4 (formato no soportado). Hipótesis a verificar: códec de audio o video no soportado por el motor de la TV. Pendiente con `ffprobe`.
 - **Pendiente:** proxy en la nube si se necesita uso fuera de la red local; prueba de la TV 2019 diferida.
+
+## Causa del fallo del mp4 (2026-10-27)
+
+- El mp4 original tenía el índice (`moov`) al final. El `<video>` no pudo leerlo a través del proxy y falló con código 4.
+- Con `ffmpeg -c copy -movflags +faststart` (sin recodificar) el archivo reproduce en la TV 2021.
+- **Acción:** los archivos de Drive que se vayan a reproducir deben pasar por este remux antes de subirse. Pendiente decidir si el proxy lo hace automáticamente o si se deja como paso manual.
