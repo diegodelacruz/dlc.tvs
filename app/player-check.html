@@ -235,20 +235,30 @@
 				subBox.appendChild(off);
 				refreshOptions();
 				panel.hidden = false;
+				history.pushState({ panel: true }, '');
 				var first = audioLinks.concat(subLinks).filter(function (a) { return a.textContent.indexOf('(activa)') >= 0 || a.textContent.indexOf('(activo)') >= 0; })[0];
 				(first || audioLinks[0] || subLinks[0]).focus();
 			}
 
-			function closeSelector() {
+			// Cerrar vuelve atrás en el historial; popstate oculta el panel. Así el Back del Magic Remote
+			// cierra el panel y no sale de la app.
+			function requestClose() {
+				if (!panel.hidden) history.back();
+			}
+
+			function hidePanel() {
 				panel.hidden = true;
 				if (opener) opener.focus();
 			}
 
-			document.getElementById('panel-close').onclick = function () { closeSelector(); return false; };
+			window.addEventListener('popstate', function () {
+				if (!panel.hidden) hidePanel();
+			});
+			document.getElementById('panel-close').onclick = function () { requestClose(); return false; };
 			document.addEventListener('keydown', function (e) {
 				if (!panel.hidden && (e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8)) {
 					e.preventDefault();
-					closeSelector();
+					requestClose();
 				}
 			});
 
