@@ -28,9 +28,9 @@ async function prepareVideos(folderName) {
 	const token = await serviceAccount.exchangeToken(window.CodeTVKey, window.crypto);
 	const files = await drive.listFolderByName(folderName, token.accessToken);
 	if (files === null) throw new Error('No se encontró la carpeta "' + folderName + '"');
-	const videos = files.filter(function (f) { return f.kind === 'video'; });
+	const items = files.filter(function (f) { return f.kind === 'video' || f.kind === 'audio' || f.kind === 'image'; });
 	return {
-		videos: videos,
+		videos: items,
 		url: function (file) {
 			const config = window.CodeTVConfig;
 			if (config && config.proxyBase) {
