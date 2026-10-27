@@ -1,6 +1,7 @@
 // Navegación con control remoto para las páginas de la app.
+// - Flechas: navegación espacial. Cada flecha mueve el foco al enlace visible más cercano en esa dirección,
+//   penalizando los que quedan desalineados. Si no hay ninguno en esa dirección, el foco se queda.
 // - Puntero: al pasar sobre un enlace, ese enlace pasa a ser el foco; clic lo activa y luego lo libera.
-// - Flechas: mueven el foco desde el enlace marcado (el último que apuntó el puntero o que enfocaron las flechas).
 // - OK (13): activa el enlace enfocado.
 (function () {
 	var current = -1;
@@ -20,12 +21,45 @@
 		return node || null;
 	}
 
+	function center(el) {
+		var r = el.getBoundingClientRect();
+		return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+	}
+
+	// Enlace más cercano desde 'from' en la dirección indicada. Devuelve null si no hay ninguno.
+	function nearest(from, dir) {
+		var c = center(from);
+		var best = null;
+		var bestScore = Infinity;
+		links().forEach(function (el) {
+			if (el === from) return;
+			var p = center(el);
+			var dx = p.x - c.x;
+			var dy = p.y - c.y;
+			var along;
+			var across;
+			if (dir === 'right') { along = dx; across = dy; }
+			else if (dir === 'left') { along = -dx; across = dy; }
+			else if (dir === 'down') { along = dy; across = dx; }
+			else { along = -dy; across = dx; }
+			if (along <= 0) return;
+			var score = along + 2 * Math.abs(across);
+			if (score < bestScore) {
+				bestScore = score;
+				best = el;
+			}
+		});
+		return best;
+	}
+
 	function focusAt(index) {
 		var list = links();
 		if (list.length === 0) return;
 		current = (index + list.length) % list.length;
 		list[current].focus();
 	}
+
+	var DIRECTIONS = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
 
 	document.addEventListener('mouseover', function (e) {
 		var link = closestLink(e.target);
@@ -39,19 +73,18 @@
 
 	document.addEventListener('keydown', function (e) {
 		var code = e.keyCode;
-		var list = links();
 		var active = document.activeElement;
-		var index = list.indexOf(active);
+		var index = links().indexOf(active);
 
-		if (code === 40 || code === 39 || code === 38 || code === 37) {
+		if (DIRECTIONS[code]) {
 			e.preventDefault();
 			if (index < 0) {
 				// Nada enfocado (por ejemplo, tras un clic): continuar desde el último enlace marcado.
 				focusAt(current < 0 ? 0 : current);
 				return;
 			}
-			var forward = code === 40 || code === 39;
-			focusAt(forward ? index + 1 : index - 1);
+			var target = nearest(active, DIRECTIONS[code]);
+			if (target) target.focus();
 		} else if (code === 13) {
 			if (active && active.tagName === 'A') {
 				e.preventDefault();
