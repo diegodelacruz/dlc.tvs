@@ -82,13 +82,13 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 | Prueba | TV 2019 | TV 2021 |
 |---|---|---|
 | Puntero: clic en pestañas de la barra superior | pendiente | pendiente |
-| Puntero: el foco sigue al pasar sobre tarjetas y pestañas | pendiente | pendiente |
+| Puntero: el foco sigue al pasar sobre tarjetas y pestañas | pendiente | OK (2026-10-27) |
 | Puntero: clic en tarjeta abre detalle | pendiente | pendiente |
 | Puntero: clic en controles del reproductor (10 s, pausa, audio y subtítulos) | pendiente | pendiente |
 | Rueda: desplaza listas de videos, carpetas y fotos | pendiente | pendiente |
 | Botón Atrás del Magic Remote desde cada pantalla | pendiente | pendiente |
 | Botón OK del Magic Remote en tarjetas y controles | pendiente | pendiente |
-| Cambio entre D-pad y puntero sin perder el foco | pendiente | pendiente |
+| Cambio entre D-pad y puntero sin perder el foco | pendiente | OK (2026-10-27, tras quitar :hover y unificar foco en nav.js) |
 
 ## Mini reproductor de video
 
