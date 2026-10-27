@@ -239,4 +239,14 @@ Rama de trabajo: `claude/focused-cray-opspx4`.
 
 - El mp4 original tenía el índice (`moov`) al final. El `<video>` no pudo leerlo a través del proxy y falló con código 4.
 - Con `ffmpeg -c copy -movflags +faststart` (sin recodificar) el archivo reproduce en la TV 2021.
-- **Acción:** los archivos de Drive que se vayan a reproducir deben pasar por este remux antes de subirse. Pendiente decidir si el proxy lo hace automáticamente o si se deja como paso manual.
+- **Decisión (2026-10-27):** el remux es automático en el proxy (`server/faststart.mjs`). Detecta mp4 con el índice al final y guarda una copia en `server/cache/`. Verificado en TV 2021: el original abre en unos 3 s la primera vez.
+
+## Formatos no soportados y pendientes futuros (2026-10-27)
+
+- **OGG con Vorbis: no soportado en TV 2021.** Opus dentro de `.ogg` sí reproduce. Decisión de Diego: dejarlo como formato no soportado y tratarlo como pendiente para una corrección futura (convertir solo el audio a Opus en el proxy, sin recodificar el video).
+- **HEIC:** pendiente de probar; no hay archivo de prueba.
+- **TV 2019:** pendiente de todas las pruebas, según decisión de Diego.
+- **Desconexión del Wi-Fi del TV durante la reproducción:** pendiente; se probó solo el corte de la Mac.
+- **Expiración del modo desarrollador y reinstalación:** pendiente; se reinició la sesión el 2026-10-27.
+- **Presentación automática y audio en segundo plano:** no implementados en la app.
+- **Mejora de UX:** durante un congelamiento por red la app no muestra ningún mensaje.

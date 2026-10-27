@@ -67,7 +67,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Audio mp3 | pendiente | pendiente |
 | Audio aac / m4a | pendiente | pendiente |
 | Audio flac | pendiente | OK (Diego, 2026-10-27) |
-| Audio ogg / opus | pendiente | Parcial (Diego, 2026-10-27): `.opus` OK; Opus dentro de `.ogg` OK; `.ogg` con Vorbis FALLA. Conclusión: el TV no decodifica Vorbis (inferencia confirmada por la prueba) |
+| Audio ogg / opus | pendiente | Parcial (Diego, 2026-10-27): `.opus` OK; Opus dentro de `.ogg` OK; `.ogg` con Vorbis FALLA. Conclusión: el TV no decodifica Vorbis (confirmado). No soportado; pendiente para corrección futura (ver docs/plan.md) |
 | Imagen jpg | pendiente | pendiente |
 | Imagen png | pendiente | pendiente |
 | Imagen webp / heic | pendiente | Parcial (Diego, 2026-10-27): webp OK; heic pendiente (sin archivo de prueba) |
