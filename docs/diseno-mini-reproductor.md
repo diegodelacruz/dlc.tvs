@@ -69,3 +69,19 @@ Propongo construir primero el módulo `player` con la vista completa y el mini, 
 3. Confirmar que el video no se corta al navegar entre pantallas.
 4. Confirmar que Atrás no cierra el mini ni sale de la app.
 5. Si la TV 2019 no soporta el mini con video real, usar la alternativa de fotograma de la factibilidad.
+
+## Decisiones confirmadas (2026-10-27)
+
+1. **Música al cerrar el video:** queda en pausa.
+2. **Fin del video:** el mini muestra "Terminado" y permanece hasta cerrarlo.
+3. **Reabrir un video:** recuerda la posición mientras la app esté abierta.
+4. **Atrás en el mini:** no lo cierra.
+5. **Controles del mini:** solo reproducir/pausa y cerrar.
+
+## Implementación inicial (2026-10-27)
+
+- `app/player.js`: módulo `CodePlayer`. Un solo `<video>`, estados `idle`, `playing`, `paused` y `ended`, modo `full` o `mini`, y posición por archivo en memoria.
+- `test/player.test.js`: 5 pruebas de transiciones con un `<video>` simulado.
+- `app/mini-check.html`: página de prueba. Usa la misma capa `#stage` para la vista completa y el mini, y el mismo `<video>` en ambos casos.
+- Pendiente de validar en TV 2021: que el video siga reproduciéndose al cambiar entre completo y mini, y que los controles del mini queden encima del video.
+- En la página de prueba, Atrás no sale de la página en ningún modo, para no perder la prueba.

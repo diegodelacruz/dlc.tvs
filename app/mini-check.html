@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CodeTV prueba de mini reproductor</title>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-color: #000000;
+			color: #e9e9ed;
+			font-family: sans-serif;
+			font-size: 24px;
+			padding: 40px 580px 40px 40px;
+		}
+
+		h1 {
+			font-size: 36px;
+			margin: 0 0 16px 0;
+		}
+
+		a {
+			display: inline-block;
+			padding: 8px 16px;
+			border: 3px solid transparent;
+			border-radius: 10px;
+			text-decoration: none;
+			color: #ffd60a;
+			font-size: 26px;
+		}
+
+		a:focus {
+			outline: none;
+			border-color: #ffd60a;
+			background-color: #1a1a1a;
+			color: #ffffff;
+		}
+
+		#stage {
+			display: none;
+			background-color: #000000;
+		}
+
+		#stage.full {
+			display: block;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 5;
+		}
+
+		#stage.mini {
+			display: block;
+			position: fixed;
+			top: 40px;
+			right: 40px;
+			width: 480px;
+			height: 270px;
+			z-index: 6;
+			border: 3px solid #ffd60a;
+			border-radius: 8px;
+			overflow: hidden;
+		}
+
+		#stage video {
+			width: 100%;
+			height: 100%;
+			background-color: #000000;
+		}
+
+		#mini {
+			display: none;
+			position: fixed;
+			top: 330px;
+			right: 40px;
+			width: 480px;
+			box-sizing: border-box;
+			padding: 8px 0;
+			z-index: 6;
+		}
+
+		#mini.show {
+			display: block;
+		}
+
+		#mini p {
+			margin: 0 0 8px 0;
+			font-size: 22px;
+		}
+
+		#mini a {
+			font-size: 22px;
+		}
+
+		#log {
+			position: fixed;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			width: 520px;
+			box-sizing: border-box;
+			margin: 0;
+			padding: 32px 24px;
+			overflow: hidden;
+			white-space: pre-wrap;
+			background-color: #0a0a0a;
+			border-left: 2px solid #333333;
+			font-size: 22px;
+			line-height: 1.4;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>CodeTV · Mini reproductor (prueba)</h1>
+	<div id="stage">
+		<video id="player"></video>
+	</div>
+	<div id="mini">
+		<p id="mini-state"></p>
+		<a href="#" id="mini-full">Ver completo</a>
+		<a href="#" id="mini-toggle">Reproducir</a>
+		<a href="#" id="mini-close">Cerrar</a>
+	</div>
+	<div id="videos"></div>
+	<pre id="log">Cargando lista de Drive…</pre>
+	<script type="text/javascript" src="js/service-account.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+	<script type="text/javascript" src="player.js"></script>
+	<script type="text/javascript">
+		(function () {
+			var lines = [];
+			var log = document.getElementById('log');
+			var stage = document.getElementById('stage');
+			var mini = document.getElementById('mini');
+			var miniState = document.getElementById('mini-state');
+			var miniToggle = document.getElementById('mini-toggle');
+			var player = document.getElementById('player');
+			var CP = window.CodePlayer;
+			var inFull = false;
+
+			function show(text) {
+				lines.push(text);
+				log.textContent = lines.slice(-32).join('\n');
+			}
+
+			var STATE_TEXT = { playing: 'Reproduciendo', paused: 'En pausa', ended: 'Terminado', idle: '' };
+
+			function render(s) {
+				inFull = s.file !== null && s.mode === 'full';
+				player.controls = inFull;
+				if (!s.file) {
+					stage.className = '';
+					mini.className = '';
+					return;
+				}
+				if (inFull) {
+					stage.className = 'full';
+					mini.className = '';
+					return;
+				}
+				stage.className = 'mini';
+				mini.className = 'show';
+				miniState.textContent = s.file.name + ' · ' + STATE_TEXT[s.state];
+				miniToggle.textContent = s.state === 'playing' ? 'Pausa' : (s.state === 'ended' ? 'Reiniciar' : 'Reproducir');
+			}
+
+			// Entrar a vista completa agrega una entrada al historial; Atrás la quita y vuelve al mini.
+			function goFull() {
+				if (!inFull) {
+					CP.setMode('full');
+					history.pushState({ full: true }, '');
+				}
+			}
+
+			window.addEventListener('popstate', function () {
+				if (CP.snapshot().mode === 'full') CP.setMode('mini');
+			});
+
+			document.addEventListener('keydown', function (e) {
+				if (e.keyCode !== 461 && e.keyCode !== 27 && e.keyCode !== 8) return;
+				e.preventDefault();
+				if (inFull) history.back();
+			});
+
+			CP.init(player);
+			CP.subscribe(render);
+			CP.subscribe(function (s) {
+				if (s.state !== 'idle' && s.file) show('estado: ' + STATE_TEXT[s.state] + ' (' + s.file.name + ')');
+			});
+			CP.onStart(function (file) {
+				show('Música: pausada (simulado) al iniciar ' + file.name);
+			});
+
+			document.getElementById('mini-full').onclick = function () { goFull(); return false; };
+			miniToggle.onclick = function () { CP.toggle(); return false; };
+			document.getElementById('mini-close').onclick = function () { CP.close(); return false; };
+
+			if (!window.CodeTV) {
+				show('ERROR: no cargó js/app.js. Ejecuta npm run package:tv.');
+				return;
+			}
+
+			window.CodeTV.prepareVideos('CodeTV-prueba').then(function (prepared) {
+				var container = document.getElementById('videos');
+				prepared.videos.filter(function (f) { return f.kind !== 'image'; }).forEach(function (file) {
+					var link = document.createElement('a');
+					link.href = '#';
+					link.textContent = 'Reproducir: ' + file.name;
+					link.onclick = function () {
+						var wasFull = inFull;
+						CP.play(file, prepared.url(file));
+						if (!wasFull) history.pushState({ full: true }, '');
+						return false;
+					};
+					container.appendChild(link);
+					container.appendChild(document.createElement('br'));
+				});
+				show('Listo. Elige un video con OK.');
+			}).catch(function (e) {
+				show('ERROR: ' + (e && e.message ? e.message : String(e)));
+			});
+		})();
+	</script>
+	<script type="text/javascript" src="nav.js"></script>
+</body>
+
+</html>
