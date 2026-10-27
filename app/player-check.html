@@ -92,15 +92,25 @@
 					};
 					container.appendChild(link);
 				});
-				var seek = document.createElement('a');
-				seek.href = '#';
-				seek.textContent = 'Saltar a 1:00 (prueba de seek)';
-				seek.onclick = function () {
-					show('Salto solicitado a 60 s');
-					player.currentTime = 60;
-					return false;
-				};
-				container.appendChild(seek);
+				function relativeSeek(delta, label) {
+					return function () {
+						var from = Math.round(player.currentTime);
+						var target = Math.max(0, Math.min(player.duration || 0, player.currentTime + delta));
+						show(label + ': de ' + from + ' s a ' + Math.round(target) + ' s');
+						player.currentTime = target;
+						return false;
+					};
+				}
+				var forward = document.createElement('a');
+				forward.href = '#';
+				forward.textContent = 'Avanzar 60 s (prueba de seek)';
+				forward.onclick = relativeSeek(60, 'Avance');
+				container.appendChild(forward);
+				var backward = document.createElement('a');
+				backward.href = '#';
+				backward.textContent = 'Retroceder 60 s (prueba de seek)';
+				backward.onclick = relativeSeek(-60, 'Retroceso');
+				container.appendChild(backward);
 				show('Listo: ' + prepared.videos.length + ' video(s). Elige uno con OK.');
 			}).catch(function (e) {
 				show('ERROR: ' + (e && e.message ? e.message : String(e)));
