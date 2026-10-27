@@ -73,7 +73,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Imagen webp / heic | pendiente | Parcial (Diego, 2026-10-27): webp OK; heic pendiente (sin archivo de prueba) |
 | Presentación automática | pendiente | pendiente |
 | Reproducción de audio en segundo plano | pendiente | pendiente |
-| Pistas múltiples en mkv (audio y subtítulos) | pendiente | pendiente |
+| Pistas múltiples en mkv (audio y subtítulos) | pendiente | FALLA (Diego, 2026-10-27): no cambia de pista de audio ni activa subtítulos con los controles del `<video>`. Diagnóstico de pistas agregado a la página de prueba |
 
 ## Control Magic Remote (requerido por Diego)
 

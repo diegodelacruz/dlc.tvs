@@ -82,6 +82,12 @@
 					show(name + (player.duration ? ' (duración ' + Math.round(player.duration) + ' s)' : ''));
 				});
 			});
+			player.addEventListener('loadedmetadata', function () {
+				show('pistas: audio=' + countTracks(player.audioTracks) + ', texto=' + countTracks(player.textTracks));
+			});
+			function countTracks(list) {
+				return list ? list.length : 'API no disponible';
+			}
 			player.addEventListener('error', function () {
 				var code = player.error ? player.error.code : 'desconocido';
 				show('ERROR del <video>, código ' + code + ' (1 cancelado, 2 red, 3 decodificación, 4 formato no soportado)');
