@@ -9,8 +9,9 @@
 	// Solo cuentan los enlaces visibles.
 	function links() {
 		var scope = document.querySelector('[data-modal]:not([hidden])') || document;
+		// getClientRects sirve también dentro de elementos con posición fija (offsetParent no).
 		return Array.prototype.slice.call(scope.querySelectorAll('a[href]')).filter(function (a) {
-			return a.offsetParent !== null;
+			return a.getClientRects().length > 0;
 		});
 	}
 

@@ -34,6 +34,14 @@
 			flex: 1;
 		}
 
+		/* Hueco del mini reproductor en la barra. El video se posiciona encima con JavaScript. */
+		#mini-slot {
+			width: 280px;
+			height: 158px;
+			margin-right: 24px;
+			flex: none;
+		}
+
 		a {
 			display: inline-block;
 			padding: 8px 16px;
@@ -56,6 +64,72 @@
 			color: #ffffff;
 			border-bottom: 4px solid #ffd60a;
 			border-radius: 0;
+		}
+
+		/* Reproductor: vista completa o mini. Su posición la fija shell.js. */
+		#stage {
+			display: none;
+			position: fixed;
+			box-sizing: border-box;
+			background-color: #000000;
+			z-index: 20;
+			overflow: hidden;
+		}
+
+		#stage.full {
+			display: block;
+		}
+
+		#stage.mini {
+			display: block;
+			border: 3px solid #ffd60a;
+			border-radius: 8px;
+		}
+
+		#stage video {
+			width: 100%;
+			height: 100%;
+			background-color: #000000;
+		}
+
+		/* Controles del mini: sobre el video, visibles con puntero o foco. */
+		#mini {
+			display: none;
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			box-sizing: border-box;
+			padding: 6px 8px;
+			background-color: rgba(0, 0, 0, 0.75);
+			opacity: 0;
+		}
+
+		#mini.show {
+			display: block;
+		}
+
+		#stage.mini:hover #mini,
+		#stage.mini:focus-within #mini {
+			opacity: 1;
+		}
+
+		#mini p {
+			margin: 0 0 4px 0;
+			font-size: 18px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.mini-actions {
+			display: flex;
+			justify-content: space-between;
+		}
+
+		#mini a {
+			font-size: 18px;
+			padding: 4px 6px;
 		}
 
 		h1 {
@@ -91,6 +165,18 @@
 			<a href="#" data-section="musica">Música</a>
 			<a href="#" data-section="fotos">Fotos</a>
 			<span class="spacer"></span>
+			<div id="mini-slot"></div>
+			<div id="stage">
+				<video id="player"></video>
+				<div id="mini">
+					<p id="mini-state"></p>
+					<div class="mini-actions">
+						<a href="#" id="mini-full">Ver completo</a>
+						<a href="#" id="mini-toggle">Reproducir</a>
+						<a href="#" id="mini-close">Cerrar</a>
+					</div>
+				</div>
+			</div>
 			<a href="#" data-section="ajustes">Ajustes</a>
 		</nav>
 
@@ -111,7 +197,8 @@
 
 		<section id="sec-video" class="section" hidden>
 			<h1>Video</h1>
-			<p class="muted">Pendiente: lista de videos de la biblioteca.</p>
+			<p class="muted">Carpeta de prueba: CodeTV-prueba. Se reemplaza cuando se defina la raíz de la biblioteca.</p>
+			<div id="video-list"></div>
 		</section>
 
 		<section id="sec-musica" class="section" hidden>
@@ -137,6 +224,7 @@
 		</section>
 	</div>
 	<script type="text/javascript" src="nav.js"></script>
+	<script type="text/javascript" src="player.js"></script>
 	<script type="text/javascript" src="shell.js"></script>
 	<script src="js/app.js"></script>
 </body>
