@@ -11,17 +11,27 @@
 			width: 100%;
 			height: 100%;
 			background-color: #000000;
-			color: #FFFFFF;
+			color: #e9e9ed;
 			font-family: sans-serif;
+			font-size: 28px;
 		}
 
+		/* Margen de seguridad de aproximadamente 5% en los bordes. */
+		#app {
+			padding: 54px 96px;
+			box-sizing: border-box;
+		}
 
-		main {
+		#tabs {
 			display: flex;
-			flex-direction: column;
 			align-items: center;
-			justify-content: center;
-			height: 100vh;
+			border-bottom: 2px solid #333333;
+			padding-bottom: 12px;
+			margin-bottom: 32px;
+		}
+
+		#tabs .spacer {
+			flex: 1;
 		}
 
 		a {
@@ -31,7 +41,7 @@
 			border-radius: 10px;
 			text-decoration: none;
 			color: #ffd60a;
-			font-size: 32px;
+			font-size: 30px;
 		}
 
 		a:focus {
@@ -40,19 +50,94 @@
 			background-color: #1a1a1a;
 			color: #ffffff;
 		}
+
+		/* La sección activa se marca con una línea inferior, no solo con color. */
+		#tabs a.current {
+			color: #ffffff;
+			border-bottom: 4px solid #ffd60a;
+			border-radius: 0;
+		}
+
+		h1 {
+			font-size: 40px;
+			margin: 0 0 16px 0;
+		}
+
+		h2 {
+			font-size: 32px;
+			margin: 24px 0 8px 0;
+		}
+
+		p {
+			margin: 8px 0;
+		}
+
+		.muted {
+			color: #9a9aa3;
+		}
+
+		[hidden] {
+			display: none !important;
+		}
 	</style>
 </head>
 
 <body>
-	<main>
-		<h1>CodeTV</h1>
-		<p>Hito 0: estructura base. Sin autenticación ni reproducción todavía.</p>
-		<p><a href="diagnostic.html">Diagnóstico de firma RSA</a></p>
-		<p><a href="drive-check.html">Prueba de Drive</a></p>
-		<p><a href="player-check.html">Prueba de reproducción</a></p>
-		<p><a href="mini-check.html">Prueba de mini reproductor</a></p>
-	</main>
+	<div id="app">
+		<nav id="tabs">
+			<a href="#" data-section="inicio" class="current">Inicio</a>
+			<a href="#" data-section="explorar">Explorar</a>
+			<a href="#" data-section="video">Video</a>
+			<a href="#" data-section="musica">Música</a>
+			<a href="#" data-section="fotos">Fotos</a>
+			<span class="spacer"></span>
+			<a href="#" data-section="ajustes">Ajustes</a>
+		</nav>
+
+		<section id="sec-inicio" class="section">
+			<h1>Inicio</h1>
+			<h2>Continuar viendo</h2>
+			<p class="muted">Pendiente: se llena con el progreso guardado de cada video.</p>
+			<h2>Recientes</h2>
+			<p class="muted">Pendiente: se llena con los archivos abiertos recientemente.</p>
+			<h2>Carpetas favoritas</h2>
+			<p class="muted">Pendiente: se llena con las carpetas marcadas en Explorar.</p>
+		</section>
+
+		<section id="sec-explorar" class="section" hidden>
+			<h1>Explorar</h1>
+			<p class="muted">Pendiente: árbol de carpetas de Drive, tal como está organizado.</p>
+		</section>
+
+		<section id="sec-video" class="section" hidden>
+			<h1>Video</h1>
+			<p class="muted">Pendiente: lista de videos de la biblioteca.</p>
+		</section>
+
+		<section id="sec-musica" class="section" hidden>
+			<h1>Música</h1>
+			<p class="muted">Pendiente: lista de pistas de audio.</p>
+		</section>
+
+		<section id="sec-fotos" class="section" hidden>
+			<h1>Fotos</h1>
+			<p class="muted">Pendiente: cuadrícula de imágenes.</p>
+		</section>
+
+		<section id="sec-ajustes" class="section" hidden>
+			<h1>Ajustes</h1>
+			<h2>Información</h2>
+			<p>Versión de la app: 0.1.0</p>
+			<p id="engine-info" class="muted"></p>
+			<h2>Pruebas de desarrollo</h2>
+			<p><a href="diagnostic.html">Diagnóstico de firma RSA</a></p>
+			<p><a href="drive-check.html">Prueba de Drive</a></p>
+			<p><a href="player-check.html">Prueba de reproducción</a></p>
+			<p><a href="mini-check.html">Prueba de mini reproductor</a></p>
+		</section>
+	</div>
 	<script type="text/javascript" src="nav.js"></script>
+	<script type="text/javascript" src="shell.js"></script>
 	<script src="js/app.js"></script>
 </body>
 
