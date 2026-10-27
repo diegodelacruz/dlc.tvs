@@ -86,7 +86,7 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 | Puntero: clic en tarjeta abre detalle | pendiente | pendiente |
 | Puntero: clic en controles del reproductor (10 s, pausa, audio y subtítulos) | pendiente | pendiente |
 | Rueda: desplaza listas de videos, carpetas y fotos | pendiente | Pendiente (Diego, 2026-10-27): las 24 imágenes `prueba-rueda` ya están en `CodeTV-prueba` y se ven en la lista. Prueba de la rueda diferida |
-| Botón Atrás del Magic Remote desde cada pantalla | pendiente | pendiente |
+| Botón Atrás del Magic Remote desde cada pantalla | pendiente | Parcial: en el selector de audio y subtítulos, Atrás cierra el panel y el foco vuelve al botón (Diego, 2026-10-27). Pendiente en el resto de pantallas |
 | Botón OK del Magic Remote en tarjetas y controles | pendiente | pendiente |
 | Cambio entre D-pad y puntero sin perder el foco | pendiente | OK (2026-10-27, tras quitar :hover y unificar foco en nav.js) |
 
