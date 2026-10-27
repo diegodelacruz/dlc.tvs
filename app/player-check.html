@@ -85,6 +85,35 @@
 			player.addEventListener('loadedmetadata', function () {
 				show('pistas: audio=' + countTracks(player.audioTracks) + ', texto=' + countTracks(player.textTracks));
 			});
+			// Quita los <track> anteriores y agrega los subtítulos que el proxy reporte para este video.
+			function loadSubtitles(videoUrl) {
+				var old = player.getElementsByTagName('track');
+				while (old.length) player.removeChild(old[0]);
+				var parts = videoUrl.split('?');
+				if (parts[0].indexOf('/stream/') < 0) {
+					show('Sin subtítulos: la URL no pasa por el proxy');
+					return;
+				}
+				var base = parts[0].replace('/stream/', '/subs/');
+				var query = parts[1];
+				fetch(base + '?' + query).then(function (res) {
+					if (!res.ok) throw new Error('código ' + res.status);
+					return res.json();
+				}).then(function (tracks) {
+					tracks.forEach(function (t) {
+						var track = document.createElement('track');
+						track.kind = 'subtitles';
+						track.label = t.language;
+						track.srclang = t.language;
+						track.crossOrigin = 'anonymous';
+						track.src = base + '/' + t.n + '.vtt?' + query;
+						player.appendChild(track);
+					});
+					show('subtítulos: ' + tracks.length + ' pista(s) de texto');
+				}).catch(function (e) {
+					show('ERROR al leer subtítulos: ' + e.message);
+				});
+			}
 			function countTracks(list) {
 				return list ? list.length : 'API no disponible';
 			}
@@ -119,7 +148,9 @@
 						} else {
 							picture.style.display = 'none';
 							player.style.display = 'block';
-							player.src = prepared.url(file);
+							var videoUrl = prepared.url(file);
+							player.src = videoUrl;
+							loadSubtitles(videoUrl);
 							player.play();
 						}
 						return false;
@@ -165,6 +196,27 @@
 						return false;
 					};
 					container.appendChild(nextAudio);
+					var nextSub = document.createElement('a');
+					nextSub.href = '#';
+					nextSub.textContent = 'Cambiar subtítulo (prueba)';
+					nextSub.onclick = function () {
+						var tracks = player.textTracks;
+						if (!tracks || tracks.length === 0) {
+							show('Sin pistas de subtítulos cargadas');
+							return false;
+						}
+						var current = -1;
+						for (var i = 0; i < tracks.length; i++) {
+							if (tracks[i].mode === 'showing') current = i;
+						}
+						var next = current + 1 < tracks.length ? current + 1 : -1;
+						for (var j = 0; j < tracks.length; j++) {
+							tracks[j].mode = (j === next) ? 'showing' : 'disabled';
+						}
+						show('subtítulo: ' + (next < 0 ? 'desactivado' : tracks[next].language));
+						return false;
+					};
+					container.appendChild(nextSub);
 				show('Listo: ' + prepared.videos.length + ' video(s). Elige uno con OK.');
 			}).catch(function (e) {
 				show('ERROR: ' + (e && e.message ? e.message : String(e)));

@@ -9,11 +9,13 @@ import { Readable } from 'node:stream';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { getAccessToken } from '../scripts/drive-check.mjs';
 import { needsFaststart, remuxFaststart, topLevelAtoms } from './faststart.mjs';
+import { extractWebVtt, probeSubtitles, textSubtitleTracks } from './subtitles.mjs';
 
 const FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 const TOKEN_MARGIN_MS = 60000;
 const DEFAULT_CACHE_DIR = join(dirname(fileURLToPath(import.meta.url)), 'cache');
 const MP4_NAME = /\.(mp4|m4v|mov)$/i;
+const SUBS_PATH = /^\/subs\/([A-Za-z0-9_-]+)(?:\/(\d+)\.vtt)?$/;
 
 // Remux real: ffmpeg lee el archivo directamente de Drive con el token.
 function remuxFromDrive({ fileId, token, outPath }) {
@@ -24,9 +26,28 @@ function remuxFromDrive({ fileId, token, outPath }) {
 	});
 }
 
-// Crea el manejador HTTP. getToken() devuelve un token vigente. fetchFn y remux son inyectables para pruebas.
-export function createHandler({ getToken, secret, fetchFn = fetch, cacheDir = DEFAULT_CACHE_DIR, remux = remuxFromDrive }) {
+// Lectura real de pistas y conversión real a WebVTT, leyendo directamente de Drive.
+function probeFromDrive({ fileId, token }) {
+	return probeSubtitles(FILES_URL + '/' + fileId + '?alt=media', 'Bearer ' + token);
+}
+
+function extractFromDrive({ fileId, token, n, outPath }) {
+	return extractWebVtt(FILES_URL + '/' + fileId + '?alt=media', 'Bearer ' + token, n, outPath);
+}
+
+// Crea el manejador HTTP. getToken() devuelve un token vigente. fetchFn, remux, probe y extract son inyectables para pruebas.
+export function createHandler({
+	getToken,
+	secret,
+	fetchFn = fetch,
+	cacheDir = DEFAULT_CACHE_DIR,
+	remux = remuxFromDrive,
+	probe = probeFromDrive,
+	extract = extractFromDrive,
+}) {
 	const decisions = new Map();
+	const trackLists = new Map();
+	const vttJobs = new Map();
 
 	function driveFetch(id, token, extraHeaders, query) {
 		const headers = Object.assign({ Authorization: 'Bearer ' + token }, extraHeaders);
@@ -65,10 +86,62 @@ export function createHandler({ getToken, secret, fetchFn = fetch, cacheDir = DE
 		return decisions.get(id);
 	}
 
+	// Lista de pistas de texto del archivo, calculada una vez por archivo.
+	function tracksOf(id, token) {
+		if (!trackLists.has(id)) {
+			trackLists.set(id, probe({ fileId: id, token: token }).then(textSubtitleTracks).catch(function (e) {
+				trackLists.delete(id);
+				throw e;
+			}));
+		}
+		return trackLists.get(id);
+	}
+
+	// Pista convertida a WebVTT, en caché. Se convierte una sola vez aunque lleguen varias peticiones.
+	function vttOf(id, n, token) {
+		const outPath = join(cacheDir, id + '.sub' + n + '.vtt');
+		if (existsSync(outPath)) return Promise.resolve(outPath);
+		const key = id + '.' + n;
+		if (!vttJobs.has(key)) {
+			vttJobs.set(key, (async function () {
+				mkdirSync(cacheDir, { recursive: true });
+				const tmpPath = outPath + '.tmp';
+				await extract({ fileId: id, token: token, n: n, outPath: tmpPath });
+				renameSync(tmpPath, outPath);
+				return outPath;
+			})().catch(function (e) {
+				vttJobs.delete(key);
+				throw e;
+			}));
+		}
+		return vttJobs.get(key);
+	}
+
+	// Sin número: lista JSON de pistas. Con número: archivo WebVTT de esa pista.
+	async function serveSubtitles(res, id, n, token) {
+		const cors = { 'Access-Control-Allow-Origin': '*' };
+		const tracks = await tracksOf(id, token);
+		if (n === undefined) {
+			res.writeHead(200, Object.assign({ 'Content-Type': 'application/json' }, cors));
+			res.end(JSON.stringify(tracks));
+			return;
+		}
+		const track = tracks.find(function (t) { return t.n === Number(n); });
+		if (!track) {
+			res.writeHead(404);
+			res.end();
+			return;
+		}
+		const path = await vttOf(id, track.n, token);
+		res.writeHead(200, Object.assign({ 'Content-Type': 'text/vtt; charset=utf-8' }, cors));
+		createReadStream(path).pipe(res);
+	}
+
 	return async function (req, res) {
 		const url = new URL(req.url, 'http://localhost');
 		const match = url.pathname.match(/^\/stream\/([A-Za-z0-9_-]+)$/);
-		if (req.method !== 'GET' || !match) {
+		const subs = url.pathname.match(SUBS_PATH);
+		if (req.method !== 'GET' || (!match && !subs)) {
 			res.writeHead(404);
 			res.end();
 			return;
@@ -79,6 +152,10 @@ export function createHandler({ getToken, secret, fetchFn = fetch, cacheDir = DE
 			return;
 		}
 		const token = await getToken();
+		if (subs) {
+			await serveSubtitles(res, subs[1], subs[2], token);
+			return;
+		}
 		const source = await decide(match[1], token);
 		if (source.local) {
 			serveLocal(req, res, source.local);

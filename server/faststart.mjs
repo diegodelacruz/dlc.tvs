@@ -40,16 +40,9 @@ export function needsFaststart(atoms) {
 	return Boolean(moov && mdat && moov.offset > mdat.offset);
 }
 
-// Remuxa desde la URL de Drive a outPath con ffmpeg (-c copy, sin recodificar).
-export function remuxFaststart({ inputUrl, authorization, outPath, spawnFn = spawn }) {
+// Ejecuta ffmpeg con los argumentos dados. Rechaza si termina con error.
+export function runFfmpeg(args, spawnFn = spawn) {
 	return new Promise(function (resolve, reject) {
-		const args = [
-			'-v', 'error', '-y',
-			'-headers', 'Authorization: ' + authorization + '\r\n',
-			'-i', inputUrl,
-			'-c', 'copy', '-movflags', '+faststart',
-			'-f', 'mp4', outPath,
-		];
 		const child = spawnFn('ffmpeg', args);
 		let stderr = '';
 		child.stderr.on('data', function (chunk) { stderr += chunk; });
@@ -59,4 +52,17 @@ export function remuxFaststart({ inputUrl, authorization, outPath, spawnFn = spa
 			else reject(new Error('ffmpeg terminó con código ' + code + ': ' + stderr.trim()));
 		});
 	});
+}
+
+// Cabecera de autorización para que ffmpeg lea la URL de Drive.
+export function httpInputArgs(inputUrl, authorization) {
+	return ['-headers', 'Authorization: ' + authorization + '\r\n', '-i', inputUrl];
+}
+
+// Remuxa desde la URL de Drive a outPath con ffmpeg (-c copy, sin recodificar).
+export function remuxFaststart({ inputUrl, authorization, outPath, spawnFn = spawn }) {
+	return runFfmpeg(
+		['-v', 'error', '-y', ...httpInputArgs(inputUrl, authorization), '-c', 'copy', '-movflags', '+faststart', '-f', 'mp4', outPath],
+		spawnFn
+	);
 }
