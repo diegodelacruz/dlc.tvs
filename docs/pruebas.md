@@ -55,7 +55,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Reproducción HEVC | pendiente | pendiente |
 | Reproducción AV1 | pendiente | pendiente |
 | Seek (adelantar y retroceder) | pendiente | pendiente |
-| Pausa y reanudación | pendiente | pendiente |
+| Pausa y reanudación | pendiente | OK (Diego, 2026-10-27) |
 | Pérdida de red durante reproducción | pendiente | pendiente |
 | Expiración de sesión de Developer Mode | pendiente | pendiente |
 | Reinstalación tras expiración | pendiente | pendiente |
