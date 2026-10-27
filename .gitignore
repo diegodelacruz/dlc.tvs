@@ -6,3 +6,4 @@ app/js/
 *.env.local
 credentials*.json
 tokens*.json
+server/cache/
