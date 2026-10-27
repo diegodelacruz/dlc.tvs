@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { categorize, buildListQuery, listChildren, mediaUrl, DriveError, FOLDER_MIME, FILES_URL } from '../src/drive/driveClient.js';
+import { categorize, buildListQuery, listChildren, mediaUrl, DriveError, FOLDER_MIME, FILES_URL, findFolderId } from '../src/drive/driveClient.js';
 
 function jsonResponse(status, body) {
 	return { ok: status >= 200 && status < 300, status: status, json: async function () { return body; } };
@@ -53,4 +53,11 @@ test('mediaUrl codifica el id y pide alt=media', () => {
 	const url = mediaUrl('id/raro', 'tok');
 	assert.equal(url.indexOf(FILES_URL + '/id%2Fraro?alt=media'), 0);
 	assert.match(url, /access_token=tok/);
+});
+
+test('findFolderId devuelve el id de la carpeta o null si no existe', async () => {
+	const found = await findFolderId('CodeTV-prueba', 'tok', { fetchFn: async () => jsonResponse(200, { files: [{ id: 'ROOT1', name: 'CodeTV-prueba' }] }) });
+	assert.equal(found, 'ROOT1');
+	const missing = await findFolderId('No existe', 'tok', { fetchFn: async () => jsonResponse(200, { files: [] }) });
+	assert.equal(missing, null);
 });

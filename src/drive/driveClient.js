@@ -86,3 +86,17 @@ export async function listFolderByName(folderName, accessToken, opts) {
 	if (found.length === 0) return null;
 	return listChildren(found[0].id, accessToken, opts);
 }
+
+// Id de una carpeta compartida con la cuenta de servicio, buscada por nombre. Devuelve null si no existe.
+export async function findFolderId(folderName, accessToken, opts) {
+	const fetchFn = (opts && opts.fetchFn) || fetch;
+	const params = new URLSearchParams({
+		q: "name = '" + escapeQuery(folderName) + "' and mimeType = '" + FOLDER_MIME + "' and trashed = false",
+		fields: 'files(id,name)',
+		pageSize: '10',
+	});
+	const res = await fetchFn(FILES_URL + '?' + params.toString(), { headers: { Authorization: 'Bearer ' + accessToken } });
+	if (!res.ok) throw new DriveError(res.status, 'search_failed');
+	const found = (await res.json()).files || [];
+	return found.length === 0 ? null : found[0].id;
+}

@@ -1,6 +1,7 @@
 // Reproductor único de la app. Un solo <video> vive en una capa global y nunca cambia de padre:
 // la vista completa y el mini solo cambian el modo (mode), y la página decide cómo se ve.
-// Estados: idle, playing, paused, ended. Recuerda la posición de cada archivo mientras la app esté abierta.
+// Estados: idle, playing, paused, ended. Recuerda la posición de cada archivo mientras la app esté abierta
+// y avisa del progreso (onProgress) para guardarlo entre sesiones.
 (function (root) {
 	var video = null;
 	var current = null;
@@ -10,6 +11,8 @@
 	var positions = {};
 	var listeners = [];
 	var startHook = null;
+	var progressHooks = [];
+	var lastTick = 0;
 
 	function snapshot() {
 		return { file: current, state: state, mode: mode };
@@ -24,6 +27,13 @@
 		emit();
 	}
 
+	function reportProgress(ended) {
+		if (!current || !video) return;
+		progressHooks.forEach(function (fn) {
+			fn(current, ended ? 0 : video.currentTime, video.duration || 0, ended);
+		});
+	}
+
 	function savePosition() {
 		if (current && video && state !== 'ended') positions[current.id] = video.currentTime;
 	}
@@ -36,12 +46,22 @@
 		video.addEventListener('pause', function () {
 			if (!current || state === 'ended') return;
 			savePosition();
+			reportProgress(false);
 			setState('paused');
 		});
 		video.addEventListener('ended', function () {
 			if (!current) return;
 			positions[current.id] = 0;
+			reportProgress(true);
 			setState('ended');
+		});
+		video.addEventListener('timeupdate', function () {
+			if (!current || state !== 'playing') return;
+			var now = Date.now();
+			if (now - lastTick < 5000) return;
+			lastTick = now;
+			savePosition();
+			reportProgress(false);
 		});
 		video.addEventListener('loadedmetadata', function () {
 			if (pendingSeek > 0) {
@@ -51,14 +71,15 @@
 		});
 	}
 
-	// Inicia un archivo en vista completa. Usa la posición guardada si existe.
-	function play(file, url) {
+	// Inicia un archivo en vista completa. Si se indica startAt se usa esa posición; si no, la última guardada.
+	function play(file, url, startAt) {
 		if (!video) throw new Error('CodePlayer: falta init(video)');
 		savePosition();
 		current = file;
-		pendingSeek = positions[file.id] || 0;
+		pendingSeek = startAt !== undefined ? startAt : (positions[file.id] || 0);
 		video.src = url;
 		mode = 'full';
+		lastTick = 0;
 		if (startHook) startHook(file);
 		var promise = video.play();
 		if (promise && promise.catch) promise.catch(function () {});
@@ -80,10 +101,18 @@
 		}
 	}
 
+	// Avanza o retrocede delta segundos, dentro del archivo.
+	function seekBy(delta) {
+		if (!current || !video) return;
+		var max = video.duration || 0;
+		video.currentTime = Math.max(0, Math.min(max, video.currentTime + delta));
+	}
+
 	// Cierra el reproductor: detiene, guarda la posición y oculta el mini. La música queda en pausa.
 	function close() {
 		if (!current) return;
 		savePosition();
+		reportProgress(false);
 		current = null;
 		video.pause();
 		setState('idle');
@@ -99,14 +128,23 @@
 		fn(snapshot());
 	}
 
+	// Tiempo y duración actuales (0 si no hay archivo).
+	function status() {
+		if (!current || !video) return { time: 0, duration: 0 };
+		return { time: video.currentTime, duration: video.duration || 0 };
+	}
+
 	root.CodePlayer = {
 		init: init,
 		play: play,
 		toggle: toggle,
+		seekBy: seekBy,
 		close: close,
 		setMode: setMode,
 		subscribe: subscribe,
 		snapshot: snapshot,
+		status: status,
 		onStart: function (fn) { startHook = fn; },
+		onProgress: function (fn) { progressHooks.push(fn); },
 	};
-})(window);
+})(typeof window !== 'undefined' ? window : globalThis);
