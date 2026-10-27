@@ -131,7 +131,8 @@ Las pruebas deben cubrir el Magic Remote completo, no solo las flechas.
 | mp4 original (índice al final) en <video> vía proxy | FALLA: código 4 |
 | mp4 con índice al inicio (remux con `-movflags +faststart`, sin recodificar) | OK: loadedmetadata (1501 s), playing |
 | Seek a 1:00 en mp4 faststart | OK (Diego, 2026-10-27): adelantar y retroceder funcionan bien |
-| Remux automático en el proxy (detección por átomos + ffmpeg `-c copy +faststart`, caché en `server/cache/`) | Verificado con pruebas y con ffmpeg real en Mac; pendiente de probar en TV 2021 |
+| Remux automático en el proxy (detección por átomos + ffmpeg `-c copy +faststart`, caché en `server/cache/`) | Verificado con pruebas y con ffmpeg real en Mac. TV 2021: OK (Diego, 2026-10-27): abre el original `Sakura y el Misterioso Libro Mágico.mp4`, unos 3 s hasta empezar |
+| PNG en TV 2021 (Wallpaper Sainte-Catherine 939 KB, Fondo Miami Mac 7.1 MB, Fondo Miami iPad 5.3 MB) | OK (Diego, 2026-10-27): cargan. Sin medir tiempos |
 
 ## Audio, imagen y HEVC (TV 2021, 2026-10-27)
 
