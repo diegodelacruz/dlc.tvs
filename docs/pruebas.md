@@ -53,7 +53,7 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 | Reproducción mp4 H.264 AAC | pendiente | pendiente |
 | Reproducción mkv | pendiente | pendiente |
 | Reproducción HEVC | pendiente | pendiente |
-| Reproducción AV1 | pendiente | pendiente |
+| Reproducción AV1 | pendiente | OK (Diego, 2026-10-27) |
 | Seek (adelantar y retroceder) | pendiente | pendiente |
 | Pausa y reanudación | pendiente | OK (Diego, 2026-10-27) |
 | Pérdida de red durante reproducción | pendiente | Parcial (Diego, 2026-10-27): se cortó la red de la Mac (proxy). La reproducción siguió unos segundos con el buffer y luego se congeló cerca de un minuto. Al reconectar, continuó sin reabrir. Falta probar corte de red del TV y comportamiento con cortes más largos |
@@ -66,11 +66,11 @@ Registrar resultados por TV. Estado: `pendiente`, `ok`, `falla`, `no aplica`.
 |---|---|---|
 | Audio mp3 | pendiente | pendiente |
 | Audio aac / m4a | pendiente | pendiente |
-| Audio flac | pendiente | pendiente |
-| Audio ogg / opus | pendiente | pendiente |
+| Audio flac | pendiente | OK (Diego, 2026-10-27) |
+| Audio ogg / opus | pendiente | Parcial (Diego, 2026-10-27): `.opus` OK; `.ogg` con Vorbis FALLA. Diagnóstico pendiente con `prueba-audio-opus.ogg` (Opus dentro de .ogg) |
 | Imagen jpg | pendiente | pendiente |
 | Imagen png | pendiente | pendiente |
-| Imagen webp / heic | pendiente | pendiente |
+| Imagen webp / heic | pendiente | Parcial (Diego, 2026-10-27): webp OK; heic pendiente (sin archivo de prueba) |
 | Presentación automática | pendiente | pendiente |
 | Reproducción de audio en segundo plano | pendiente | pendiente |
 | Pistas múltiples en mkv (audio y subtítulos) | pendiente | pendiente |
