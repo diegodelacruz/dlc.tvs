@@ -577,6 +577,7 @@
 		});
 
 		$('engine-info').textContent = navigator.userAgent;
+		$('diag-info').textContent = root.CodeDrive.status();
 		$('proxy-info').textContent = root.CodeDrive.hasProxy()
 			? 'Con proxy: remux automático y subtítulos disponibles.'
 			: 'Sin proxy: solo reproducción directa.';

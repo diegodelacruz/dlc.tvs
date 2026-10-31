@@ -10,9 +10,18 @@
 	var listCache = {};
 	var crawlCache = {};
 
+	// Diagnóstico: qué parte de la biblioteca cargó. Se muestra en Ajustes.
+	function status() {
+		return 'Módulo Drive (js/app.js): ' + (root.CodeTV ? 'cargado' : 'NO cargado') +
+			' · Llave (js/service-account.js): ' + (root.CodeTVKey ? 'cargada' : 'NO cargada');
+	}
+
 	function ready() {
-		if (!root.CodeTV || !root.CodeTVKey) {
-			return Promise.reject(new Error('Falta la biblioteca (ejecuta npm run package:tv).'));
+		if (!root.CodeTV) {
+			return Promise.reject(new Error('Falta js/app.js: el módulo de Drive no cargó. ' + status()));
+		}
+		if (!root.CodeTVKey) {
+			return Promise.reject(new Error('Falta js/service-account.js: la llave no cargó. ' + status()));
 		}
 		return Promise.resolve();
 	}
@@ -102,5 +111,6 @@
 		urlFor: urlFor,
 		hasProxy: function () { return Boolean(root.CodeTVConfig && root.CodeTVConfig.proxyBase); },
 		ready: ready,
+		status: status,
 	};
 })(window);
