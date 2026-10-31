@@ -41,3 +41,27 @@ test('reenvía Range con Authorization y devuelve 206 con Content-Range', async 
 	assert.equal(upstreamHeaders.Range, 'bytes=0-2');
 	server.close();
 });
+
+test('rechaza con 413 y un mensaje claro un mp4 con el índice al final que supera el límite', async () => {
+	const atom = (type, len) => { const b = Buffer.alloc(8 + len); b.writeUInt32BE(8 + len, 0); b.write(type, 4, 'latin1'); return b; };
+	const data = Buffer.concat([atom('ftyp', 4), atom('mdat', 16), atom('moov', 8)]);
+	const fetchFn = async function (url, init) {
+		if (url.includes('fields=')) return new Response(JSON.stringify({ name: 'enorme.mp4', size: String(data.length) }), { headers: { 'Content-Type': 'application/json' } });
+		const m = init.headers.Range.match(/bytes=(\d+)-(\d+)/);
+		return new Response(data.subarray(Number(m[1]), Number(m[2]) + 1), { status: 206 });
+	};
+	const handler = createHandler({ getToken: async () => 'tok', secret: 'abc', fetchFn: fetchFn, maxRemuxBytes: 10, remux: async () => { throw new Error('no debe remuxar'); } });
+	const server = await startServer(function (req, res) {
+		Promise.resolve(handler(req, res)).catch(function (e) {
+			res.writeHead(e.status || 502, { 'Content-Type': 'text/plain; charset=utf-8' });
+			res.end(e.message);
+		});
+	});
+	try {
+		const res = await fetch('http://127.0.0.1:' + server.address().port + '/stream/FILE1?s=abc');
+		assert.equal(res.status, 413);
+		assert.match(await res.text(), /índice al inicio/);
+	} finally {
+		server.close();
+	}
+});

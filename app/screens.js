@@ -694,12 +694,41 @@
 		else if (name === 'ajustes') renderSettings();
 	}
 
-	// Devuelve true si Atrás se consumió dentro de la pantalla (visor, detalle o carpeta anterior).
+	// Lista principal de cada sección (la que se recorre con las flechas).
+	function listIdFor(section) {
+		if (section === 'explorar') return 'explore-list';
+		if (section === 'video') return videoState.detail ? 'video-detail' : 'video-list';
+		if (section === 'musica') return 'music-list';
+		if (section === 'fotos') return 'photo-grid';
+		if (section === 'ajustes') return 'settings-list';
+		return null;
+	}
+
+	// Atrás primero lleva al principio de la lista donde está el foco. Si ya está arriba, no hace nada.
+	function toTopOfList() {
+		var section = root.CodeShell.current();
+		var content = document.getElementById('sec-' + section);
+		if (!content || !content.contains(document.activeElement)) return false;
+		if (window.scrollY > 0) {
+			window.scrollTo(0, 0);
+			return true;
+		}
+		var id = listIdFor(section);
+		if (!id) return false;
+		var first = $(id).querySelector('a');
+		if (!first || document.activeElement === first) return false;
+		first.focus();
+		return true;
+	}
+
+	// Devuelve true si Atrás se consumió dentro de la pantalla. Orden: visor, inicio de la lista,
+	// nivel superior (detalle o carpeta). Si no queda nada, la shell vuelve a la sección anterior.
 	function back() {
 		if (viewer.open) {
 			closeViewer();
 			return true;
 		}
+		if (toTopOfList()) return true;
 		if (root.CodeShell.current() === 'video' && videoState.detail) {
 			showVideoList();
 			return true;

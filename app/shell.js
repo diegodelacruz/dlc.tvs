@@ -15,6 +15,11 @@
 	var CHROME_MS = 4000;
 	var chromeTimer = null;
 	var lastTracksLabel = '';
+	var sectionHistory = [];
+	var loadTimer = null;
+	var LOAD_MS = 30000;
+	var playingSeen = false;
+	var ERROR_CODES = { 1: 'cancelado', 2: 'error de red', 3: 'error al decodificar', 4: 'formato no soportado por la TV' };
 
 	var app = document.getElementById('app');
 	var stage = document.getElementById('stage');
@@ -46,8 +51,10 @@
 		return app.querySelector('[data-section="' + name + '"]');
 	}
 
-	function show(name) {
+	// Sección anterior: Atrás vuelve a ella. fromBack evita volver a apilar la sección que se deja.
+	function show(name, fromBack) {
 		if (SECTIONS.indexOf(name) < 0) return;
+		if (!fromBack && name !== current) sectionHistory.push(current);
 		current = name;
 		SECTIONS.forEach(function (s) {
 			document.getElementById('sec-' + s).hidden = (s !== name);
@@ -60,6 +67,44 @@
 		});
 		window.scrollTo(0, 0);
 		root.CodeScreens.enter(name);
+		// Si la pantalla no dejó el foco en su contenido, va al primer elemento de la sección.
+		var section = document.getElementById('sec-' + name);
+		if (!section.contains(document.activeElement)) {
+			var first = section.querySelector('a');
+			if (first) first.focus();
+		}
+	}
+
+	// Aviso visible en la pantalla: los errores de reproducción y de conexión se leen aquí, no solo en consola.
+	function notify(text) {
+		console.error('CodeTV: ' + text);
+		var box = document.getElementById('notice');
+		box.textContent = text;
+		box.hidden = false;
+	}
+
+	function clearNotice() {
+		document.getElementById('notice').hidden = true;
+	}
+
+	// Comprueba que el proxy responda antes de reproducir. Devuelve '' si todo está bien, o el motivo.
+	function probeStream(url) {
+		return fetch(url, { headers: { Range: 'bytes=0-0' } }).then(function (res) {
+			if (res.ok || res.status === 206) return '';
+			return res.text().then(function (body) {
+				return 'El proxy respondió ' + res.status + ': ' + (body || 'sin detalle');
+			});
+		}, function () {
+			return 'No hay conexión con el proxy. Revisa que esté corriendo y que la IP de PROXY_BASE sea la de la Mac.';
+		});
+	}
+
+	function armLoadTimer() {
+		clearTimeout(loadTimer);
+		playingSeen = false;
+		loadTimer = setTimeout(function () {
+			if (!playingSeen) notify('El video no empieza tras ' + (LOAD_MS / 1000) + ' s. Revisa la red y que el proxy esté encendido.');
+		}, LOAD_MS);
 	}
 
 	// Coloca #stage encima del hueco del mini (modo mini) o de toda la pantalla (vista completa).
@@ -190,15 +235,39 @@
 	// Reproduce un archivo de video desde una posición (o desde el inicio).
 	function playVideo(file, startAt) {
 		var wasFull = inFull;
+		clearNotice();
 		root.CodeDrive.urlFor(file).then(function (url) {
-			CP.play(file, url, startAt || 0);
-			root.CodeTracks.loadSubtitles(player, url);
-			root.CodeScreens.remember(file);
-			if (!wasFull) history.pushState({ full: true }, '');
+			var check = root.CodeDrive.hasProxy() ? probeStream(url) : Promise.resolve('');
+			return check.then(function (problem) {
+				if (problem) {
+					notify('No se pudo abrir "' + file.name + '": ' + problem);
+					return;
+				}
+				CP.play(file, url, startAt || 0);
+				armLoadTimer();
+				root.CodeTracks.loadSubtitles(player, url);
+				root.CodeScreens.remember(file);
+				if (!wasFull) history.pushState({ full: true }, '');
+			});
 		}).catch(function (e) {
-			miniState.textContent = 'No se pudo abrir ' + file.name + ': ' + (e && e.message ? e.message : String(e));
+			notify('No se pudo abrir "' + file.name + '": ' + (e && e.message ? e.message : String(e)));
 		});
 	}
+
+	// Errores del propio <video>: se muestran con su código, no quedan en silencio.
+	player.addEventListener('error', function () {
+		clearTimeout(loadTimer);
+		var err = player.error;
+		var code = err ? err.code : 0;
+		notify('La TV no pudo reproducir el archivo (código ' + code + ': ' + (ERROR_CODES[code] || 'desconocido') + ').' +
+			(err && err.message ? ' Detalle: ' + err.message : ''));
+		if (inFull) showChrome();
+	});
+	player.addEventListener('playing', function () {
+		playingSeen = true;
+		clearTimeout(loadTimer);
+		clearNotice();
+	});
 
 	function saveProgress(file, time, duration, ended) {
 		var progress = root.CodeStore.get('progress', {});
@@ -299,8 +368,8 @@
 			}
 			if (current === 'inicio') return;
 			e.preventDefault();
-			show('inicio');
-			tabFor('inicio').focus();
+			// Atrás vuelve a la sección de la que se llegó; sin historial, a Inicio.
+			show(sectionHistory.length ? sectionHistory.pop() : 'inicio', true);
 			return;
 		}
 		if (trackPanel.isOpen()) {

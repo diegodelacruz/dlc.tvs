@@ -397,8 +397,8 @@ p {
 
 .card {
 	display: block;
-	width: 400px;
-	margin: 0 16px 36px 16px;
+	width: 340px;
+	margin: 0 14px 30px 14px;
 	background-color: var(--surface);
 	border-radius: var(--radius-l);
 	overflow: hidden;
@@ -412,7 +412,7 @@ a.card:focus {
 
 .thumb {
 	position: relative;
-	height: 236px;
+	height: 190px;
 	background: repeating-linear-gradient(135deg, #2a2d3d 0 16px, #232532 16px 32px);
 	overflow: hidden;
 }
@@ -1040,4 +1040,24 @@ a.srow:focus {
 	font-size: 24px;
 	color: var(--muted);
 	margin: 8px 0;
+}
+
+/* Aviso de error o de estado, visible sobre el contenido. */
+.notice {
+	position: absolute;
+	left: var(--safe-x);
+	right: var(--safe-x);
+	top: 150px;
+	z-index: 15;
+	margin: 0;
+	padding: 16px 22px;
+	border-left: 6px solid #e0a040;
+	border-radius: 8px;
+	background-color: var(--surface);
+	font-size: 26px;
+	line-height: 1.35;
+}
+
+.notice[hidden] {
+	display: none;
 }

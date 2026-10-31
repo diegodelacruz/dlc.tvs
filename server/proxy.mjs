@@ -15,6 +15,20 @@ const FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 const TOKEN_MARGIN_MS = 60000;
 const DEFAULT_CACHE_DIR = join(dirname(fileURLToPath(import.meta.url)), 'cache');
 const MP4_NAME = /\.(mp4|m4v|mov)$/i;
+// Límite para convertir un mp4 con el índice al final. La conversión copia el archivo entero al disco de la Mac.
+const MAX_REMUX_BYTES = 10 * 1024 * 1024 * 1024;
+
+// Error con código HTTP y mensaje para la app.
+export class ProxyError extends Error {
+	constructor(status, message) {
+		super(message);
+		this.status = status;
+	}
+}
+
+function gb(bytes) {
+	return (bytes / (1024 * 1024 * 1024)).toFixed(1);
+}
 const SUBS_PATH = /^\/subs\/([A-Za-z0-9_-]+)(?:\/(\d+)\.vtt)?$/;
 
 // Remux real: ffmpeg lee el archivo directamente de Drive con el token.
@@ -42,6 +56,7 @@ export function createHandler({
 	fetchFn = fetch,
 	cacheDir = DEFAULT_CACHE_DIR,
 	remux = remuxFromDrive,
+	maxRemuxBytes = MAX_REMUX_BYTES,
 	probe = probeFromDrive,
 	extract = extractFromDrive,
 }) {
@@ -68,9 +83,14 @@ export function createHandler({
 		if (!MP4_NAME.test(meta.name)) return { direct: true };
 		const atoms = await topLevelAtoms(function (start, end) { return readRange(id, token, start, end); }, Number(meta.size));
 		if (!needsFaststart(atoms)) return { direct: true };
+		const size = Number(meta.size);
+		if (size > maxRemuxBytes) {
+			throw new ProxyError(413, 'El archivo "' + meta.name + '" pesa ' + gb(size) + ' GB y tiene el índice al final. ' +
+				'No se convierte automáticamente (límite ' + gb(maxRemuxBytes) + ' GB). Sube una copia con el índice al inicio.');
+		}
 		mkdirSync(cacheDir, { recursive: true });
 		const tmpPath = join(cacheDir, id + '.tmp.mp4');
-		console.log('Remux faststart: ' + id);
+		console.log('Remux faststart: ' + id + ' (' + gb(size) + ' GB)');
 		await remux({ fileId: id, token: token, outPath: tmpPath });
 		renameSync(tmpPath, cachedPath);
 		return { local: cachedPath };
@@ -165,7 +185,7 @@ export function createHandler({
 		if (req.headers.range) headers.Range = req.headers.range;
 		const upstream = await driveFetch(match[1], token, headers, '?alt=media');
 		const passthrough = ['content-type', 'content-length', 'content-range', 'accept-ranges'];
-		const outHeaders = {};
+		const outHeaders = { 'Access-Control-Allow-Origin': '*' };
 		passthrough.forEach(function (name) {
 			const value = upstream.headers.get(name);
 			if (value) outHeaders[name] = value;
@@ -201,6 +221,7 @@ export function serveLocal(req, res, path) {
 	const range = parseRange(req.headers.range, size);
 	const headers = {
 		'Content-Type': 'video/mp4',
+		'Access-Control-Allow-Origin': '*',
 		'Accept-Ranges': 'bytes',
 		'Content-Length': range.end - range.start + 1,
 	};
@@ -234,7 +255,12 @@ async function main() {
 	createServer(function (req, res) {
 		handler(req, res).catch(function (e) {
 			console.error('error: ' + e.message);
-			if (!res.headersSent) res.writeHead(502);
+			const status = e instanceof ProxyError ? e.status : 502;
+			if (!res.headersSent) {
+				res.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+				res.end(e instanceof ProxyError ? e.message : 'Error del proxy: ' + e.message);
+				return;
+			}
 			res.end();
 		});
 	}).listen(port, '0.0.0.0', function () {
