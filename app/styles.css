@@ -5,6 +5,10 @@
 @font-face { font-family: 'CodeInter'; font-weight: 600; src: url(fonts/inter-latin-600-normal.woff2) format('woff2'); }
 @font-face { font-family: 'CodeInter'; font-weight: 700; src: url(fonts/inter-latin-700-normal.woff2) format('woff2'); }
 @font-face { font-family: 'CodeAtkinson'; font-weight: 400; src: url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'CodeFira'; font-weight: 400; src: url(fonts/fira-code-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'CodeFira'; font-weight: 500; src: url(fonts/fira-code-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'CodeFira'; font-weight: 600; src: url(fonts/fira-code-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'CodeFira'; font-weight: 700; src: url(fonts/fira-code-latin-700-normal.woff2) format('woff2'); }
 @font-face { font-family: 'CodeAtkinson'; font-weight: 700; src: url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format('woff2'); }
 
 :root {
@@ -45,6 +49,10 @@ body {
 
 body.font-atkinson {
 	font-family: CodeAtkinson, 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+
+body.font-fira {
+	font-family: CodeFira, 'Fira Code', ui-monospace, Menlo, monospace;
 }
 
 [hidden] {

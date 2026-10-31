@@ -552,8 +552,9 @@
 	});
 
 	// ---------- Ajustes ----------
-	var FONTS = [{ key: 'inter', label: 'Inter' }, { key: 'atkinson', label: 'Atkinson Hyperlegible' }];
-	var TEXT_SIZES = [{ key: 'minimo', label: 'Mínimo', zoom: 0.9 }, { key: 'normal', label: 'Normal', zoom: 1 }, { key: 'grande', label: 'Grande', zoom: 1.15 }];
+	var FONTS = [{ key: 'inter', label: 'Inter' }, { key: 'atkinson', label: 'Atkinson Hyperlegible' }, { key: 'fira', label: 'Fira Code' }];
+	// Normal es el tamaño más grande; los demás reducen el texto.
+	var TEXT_SIZES = [{ key: 'normal', label: 'Normal', zoom: 1 }, { key: 'pequeno', label: 'Pequeño', zoom: 0.9 }, { key: 'muy-pequeno', label: 'Muy pequeño', zoom: 0.8 }, { key: 'minimo', label: 'Mínimo', zoom: 0.7 }];
 	var SLIDE_OPTIONS = [5, 10, 30];
 
 	function indexOfKey(list, key) {
@@ -567,7 +568,7 @@
 	function applySettings() {
 		var s = root.CodeStore.settings();
 		root.CodeTheme.apply(s.theme);
-		document.body.className = s.font === 'atkinson' ? 'font-atkinson' : '';
+		document.body.className = s.font === 'atkinson' ? 'font-atkinson' : (s.font === 'fira' ? 'font-fira' : '');
 		var size = TEXT_SIZES[indexOfKey(TEXT_SIZES, s.textSize)];
 		document.querySelectorAll('.section').forEach(function (sec) {
 			sec.style.zoom = size.zoom;
