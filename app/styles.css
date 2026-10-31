@@ -216,6 +216,22 @@ a:focus {
 	display: none !important;
 }
 
+/* Vista completa: los controles solo aparecen con data-chrome (una tecla los muestra; se ocultan solos). */
+#stage.full #full-head,
+#stage.full #full-controls {
+	display: none;
+}
+
+#stage.full[data-chrome] #full-head,
+#stage.full[data-chrome] #full-controls {
+	display: block;
+}
+
+#stage.full[data-chrome] #full-head {
+	padding-bottom: 80px;
+	background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+}
+
 #mini {
 	display: none;
 	position: absolute;
@@ -715,9 +731,11 @@ a.row:focus {
 
 #full-controls {
 	position: absolute;
-	left: var(--safe-x);
-	right: var(--safe-x);
-	bottom: var(--safe-y);
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 90px var(--safe-x) var(--safe-y);
+	background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.88) 45%);
 }
 
 #full-progress {
@@ -787,10 +805,10 @@ a.row:focus {
 	top: 0;
 	right: 0;
 	bottom: 0;
-	width: 820px;
+	width: 560px;
 	box-sizing: border-box;
-	padding: 60px 72px;
-	background-color: var(--surface);
+	padding: 60px 56px;
+	background-color: rgba(20, 21, 30, 0.7);
 	z-index: 3;
 }
 

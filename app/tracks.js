@@ -122,9 +122,27 @@
 			if (opener) opener.focus();
 		}
 
+		// Texto corto de lo que suena: "Audio: Español · Subtítulos: Inglés" o "Subtítulos: desactivados".
+		function summary() {
+			var audio = video.audioTracks;
+			var a = 'Audio';
+			if (audio) {
+				for (var i = 0; i < audio.length; i++) {
+					if (audio[i].enabled) a = 'Audio: ' + L.languageName(audio[i].language);
+				}
+			}
+			var texts = video.textTracks;
+			var s = 'Subtítulos: desactivados';
+			for (var j = 0; j < texts.length; j++) {
+				if (texts[j].mode === 'showing') s = 'Subtítulos: ' + L.languageName(texts[j].language);
+			}
+			return a + ' · ' + s;
+		}
+
 		return {
 			open: open,
 			close: close,
+			summary: summary,
 			isOpen: function () { return !panel.hidden; },
 			element: panel,
 		};

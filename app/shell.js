@@ -12,6 +12,9 @@
 	var SKIP_S = 10;
 	var current = 'inicio';
 	var inFull = false;
+	var CHROME_MS = 4000;
+	var chromeTimer = null;
+	var lastTracksLabel = '';
 
 	var app = document.getElementById('app');
 	var stage = document.getElementById('stage');
@@ -96,6 +99,41 @@
 		return root.CodeMusic.snapshot();
 	}
 
+	// Controles de la vista completa: aparecen con una tecla y se ocultan solos. Atrás los oculta primero.
+	function chromeOn() {
+		return stage.hasAttribute('data-chrome');
+	}
+
+	function armChrome() {
+		clearTimeout(chromeTimer);
+		chromeTimer = null;
+		if (trackPanel.isOpen()) return;
+		chromeTimer = setTimeout(hideChrome, CHROME_MS);
+	}
+
+	function showChrome() {
+		stage.setAttribute('data-chrome', '');
+		updateFullTime();
+		fullProgress.focus();
+		armChrome();
+	}
+
+	function hideChrome() {
+		clearTimeout(chromeTimer);
+		chromeTimer = null;
+		stage.removeAttribute('data-chrome');
+		var active = document.activeElement;
+		if (active && document.getElementById('full-controls').contains(active)) active.blur();
+	}
+
+	// Texto del botón de audio y subtítulos: muestra la pista activa sin abrir el panel.
+	function updateTracksLabel() {
+		var label = trackPanel.summary();
+		if (label === lastTracksLabel) return;
+		lastTracksLabel = label;
+		fullTracks.innerHTML = ICON('subtitles', 26) + ' ' + label;
+	}
+
 	function updateFullTime() {
 		var st = CP.status();
 		var pct = st.duration ? Math.min(100, (st.time / st.duration) * 100) : 0;
@@ -104,6 +142,7 @@
 		fullTime.textContent = L.formatTime(st.time);
 		fullDuration.textContent = L.formatTime(st.duration);
 		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 26) + (player.paused ? ' Reproducir' : ' Pausa');
+		updateTracksLabel();
 	}
 
 	function render(s) {
@@ -121,8 +160,9 @@
 			if (trackPanel.isOpen()) trackPanel.close();
 		}
 		placeStage(s);
-		// El foco solo puede ir a la barra cuando el reproductor ya está visible.
-		if (inFull && !wasFull) fullProgress.focus();
+		// Al entrar, los controles aparecen un momento con el foco en la barra; el reproductor ya está visible.
+		if (inFull && !wasFull) showChrome();
+		if (!inFull) hideChrome();
 		mini.className = (s.file && !inFull) ? 'show' : '';
 		if (s.file && !inFull) {
 			miniState.textContent = s.file.name + ' · ' + STATE_TEXT[s.state];
@@ -172,8 +212,15 @@
 
 	// Selector de audio y subtítulos. Mientras está abierto, la navegación queda dentro de él.
 	var trackPanel = root.CodeTracks.mount(stage, player, {
-		onOpen: function () { stage.removeAttribute('data-modal'); },
-		onClose: function () { if (inFull) stage.setAttribute('data-modal', ''); },
+		onOpen: function () {
+			stage.removeAttribute('data-modal');
+			clearTimeout(chromeTimer);
+			chromeTimer = null;
+		},
+		onClose: function () {
+			if (inFull) stage.setAttribute('data-modal', '');
+			armChrome();
+		},
 	});
 
 	SECTIONS.forEach(function (name) {
@@ -265,9 +312,19 @@
 		}
 		if (isBack) {
 			e.preventDefault();
-			leaveFull();
+			if (chromeOn()) hideChrome();
+			else leaveFull();
 			return;
 		}
+		// Con los controles ocultos, cualquier tecla los muestra; izquierda/derecha y OK también actúan.
+		if (!chromeOn()) {
+			if (code === 37) { e.preventDefault(); CP.seekBy(-SKIP_S); showChrome(); }
+			else if (code === 39) { e.preventDefault(); CP.seekBy(SKIP_S); showChrome(); }
+			else if (code === 13) { e.preventDefault(); CP.toggle(); showChrome(); }
+			else if (code === 38 || code === 40) { e.preventDefault(); showChrome(); }
+			return;
+		}
+		armChrome();
 		if (document.activeElement !== fullProgress) return;
 		if (code === 37) { e.preventDefault(); CP.seekBy(-SKIP_S); updateFullTime(); }
 		else if (code === 39) { e.preventDefault(); CP.seekBy(SKIP_S); updateFullTime(); }
