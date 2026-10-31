@@ -10,6 +10,7 @@
 	var ICON = root.CodeIcons.icon;
 	var L = root.CodeLogic;
 	var SKIP_S = 10;
+	var PREV_RESTART_S = 5;
 	var current = 'inicio';
 	var inFull = false;
 	var CHROME_MS = 4000;
@@ -289,7 +290,12 @@
 		if (queueIndex >= 0 && queueIndex < queue.length - 1) playVideo(queue[queueIndex + 1], 0);
 	}
 
+	// Con más de 5 s vistos, anterior vuelve al inicio del mismo video; si no, va al video anterior.
 	function prevVideo() {
+		if (CP.status().time > PREV_RESTART_S) {
+			CP.seekBy(-CP.status().time);
+			return;
+		}
 		if (queueIndex > 0) playVideo(queue[queueIndex - 1], 0);
 	}
 
