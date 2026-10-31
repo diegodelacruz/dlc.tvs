@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { categorize, buildListQuery, listChildren, mediaUrl, DriveError, FOLDER_MIME, FILES_URL, findFolderId } from '../src/drive/driveClient.js';
+import { categorize, buildListQuery, listChildren, mediaUrl, DriveError, FOLDER_MIME, FILES_URL, findFolderId, listSharedFolders } from '../src/drive/driveClient.js';
 
 function jsonResponse(status, body) {
 	return { ok: status >= 200 && status < 300, status: status, json: async function () { return body; } };
@@ -60,4 +60,16 @@ test('findFolderId devuelve el id de la carpeta o null si no existe', async () =
 	assert.equal(found, 'ROOT1');
 	const missing = await findFolderId('No existe', 'tok', { fetchFn: async () => jsonResponse(200, { files: [] }) });
 	assert.equal(missing, null);
+});
+
+test('listSharedFolders recorre todas las páginas y conserva los padres', async () => {
+	const pages = [
+		jsonResponse(200, { nextPageToken: 'p2', files: [{ id: 'A', name: 'Películas', parents: ['root'] }] }),
+		jsonResponse(200, { files: [{ id: 'B', name: 'Música' }] }),
+	];
+	const folders = await listSharedFolders('tok', { fetchFn: async () => pages.shift() });
+	assert.deepEqual(folders, [
+		{ id: 'A', name: 'Películas', parents: ['root'] },
+		{ id: 'B', name: 'Música', parents: [] },
+	]);
 });

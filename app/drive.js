@@ -1,12 +1,13 @@
 // Acceso a la biblioteca de Drive para las pantallas. Usa el módulo compilado (window.CodeTV) y la llave de la TV.
-// La raíz es la carpeta compartida con la cuenta de servicio. Por ahora: CodeTV-prueba.
+// La biblioteca son las carpetas compartidas con la cuenta de servicio. Cada una es una raíz de la biblioteca.
 (function (root) {
-	var ROOT_NAME = 'CodeTV-prueba';
+	var ROOTS_ID = '__biblioteca__';
+	var FOLDER_MIME = 'application/vnd.google-apps.folder';
 	var TOKEN_TTL_MS = 50 * 60 * 1000;
 	var MAX_FOLDERS = 300;
 	var token = null;
 	var tokenUntil = 0;
-	var rootId = null;
+	var rootsPromise = null;
 	var listCache = {};
 	var crawlCache = {};
 
@@ -37,19 +38,31 @@
 		});
 	}
 
-	function rootFolder() {
-		if (rootId) return Promise.resolve(rootId);
-		return tokenNow().then(function (t) {
-			return root.CodeTV.drive.findFolderId(ROOT_NAME, t);
-		}).then(function (id) {
-			if (!id) throw new Error('No se encontró la carpeta "' + ROOT_NAME + '" compartida con la cuenta de servicio.');
-			rootId = id;
-			return id;
+	// Carpetas de la biblioteca: las compartidas con la cuenta de servicio cuyo padre no es otra compartida.
+	function roots() {
+		if (rootsPromise) return rootsPromise;
+		rootsPromise = tokenNow().then(function (t) {
+			return root.CodeTV.drive.listSharedFolders(t);
+		}).then(function (folders) {
+			var shared = {};
+			folders.forEach(function (f) { shared[f.id] = true; });
+			var list = folders.filter(function (f) {
+				return !f.parents.some(function (p) { return shared[p]; });
+			}).map(function (f) {
+				return { id: f.id, name: f.name, kind: 'folder', mimeType: FOLDER_MIME, size: 0, modifiedTime: '' };
+			});
+			list.sort(function (a, b) { return a.name.localeCompare(b.name); });
+			return list;
+		}).catch(function (e) {
+			rootsPromise = null;
+			throw e;
 		});
+		return rootsPromise;
 	}
 
-	// Hijos de una carpeta (carpetas y medios), con caché en memoria.
+	// Hijos de una carpeta (carpetas y medios), con caché en memoria. ROOTS_ID lista las raíces.
 	function children(folderId) {
+		if (folderId === ROOTS_ID) return roots();
 		if (listCache[folderId]) return Promise.resolve(listCache[folderId]);
 		return tokenNow().then(function (t) {
 			return root.CodeTV.drive.listChildren(folderId, t);
@@ -59,13 +72,13 @@
 		});
 	}
 
-	// Recorre la raíz y sus subcarpetas (hasta MAX_FOLDERS) y devuelve los archivos del tipo pedido con su ruta.
+	// Recorre todas las raíces y sus subcarpetas (hasta MAX_FOLDERS) y devuelve los archivos del tipo pedido con su ruta.
 	// kinds: lista como ['video'] o ['audio'] o ['image'].
 	function crawl(kinds) {
 		var key = kinds.join(',');
 		if (crawlCache[key]) return crawlCache[key];
-		crawlCache[key] = rootFolder().then(function (id) {
-			var queue = [{ id: id, path: '' }];
+		crawlCache[key] = roots().then(function (rootList) {
+			var queue = rootList.map(function (r) { return { id: r.id, path: r.name }; });
 			var found = [];
 			var visited = 0;
 			function step() {
@@ -104,8 +117,8 @@
 	}
 
 	root.CodeDrive = {
-		ROOT_NAME: ROOT_NAME,
-		rootFolder: rootFolder,
+		ROOTS_ID: ROOTS_ID,
+		roots: roots,
 		children: children,
 		crawl: crawl,
 		urlFor: urlFor,

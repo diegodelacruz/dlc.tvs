@@ -245,11 +245,9 @@
 			renderExplore();
 			return;
 		}
-		status('explore-status', 'Cargando…');
-		root.CodeDrive.rootFolder().then(function (id) {
-			explore.stack = [{ id: id, name: root.CodeDrive.ROOT_NAME }];
-			renderExplore();
-		}).catch(function (e) { fail('explore-status', e); });
+		// La primera pantalla lista las carpetas compartidas con la app (la biblioteca).
+		explore.stack = [{ id: root.CodeDrive.ROOTS_ID, name: 'Biblioteca' }];
+		renderExplore();
 	}
 
 	function renderExplore() {
@@ -283,10 +281,12 @@
 
 			var tools = $('explore-tools');
 			clear(tools);
-			tools.appendChild(action('btn', isFavorite(top.id) ? 'Quitar de favoritas' : 'Marcar como favorita', function () {
-				toggleFavorite(top);
-				renderExplore();
-			}));
+			if (top.id !== root.CodeDrive.ROOTS_ID) {
+				tools.appendChild(action('btn', isFavorite(top.id) ? 'Quitar de favoritas' : 'Marcar como favorita', function () {
+					toggleFavorite(top);
+					renderExplore();
+				}));
+			}
 
 			var cols = $('explore-columns');
 			clear(cols);
@@ -656,7 +656,14 @@
 		$('acct-avatar').textContent = key && key.client_email ? key.client_email.charAt(0).toUpperCase() : 'C';
 		$('acct-mail').textContent = key && key.client_email ? key.client_email : 'Sin llave: revisa js/service-account.js';
 
-		$('library-info').textContent = 'Biblioteca: ' + root.CodeDrive.ROOT_NAME + ' (carpeta compartida con la cuenta de servicio).';
+		$('library-info').textContent = 'Biblioteca: cargando carpetas compartidas…';
+		root.CodeDrive.roots().then(function (list) {
+			$('library-info').textContent = list.length
+				? 'Biblioteca: ' + list.length + ' carpeta(s) compartida(s): ' + list.map(function (f) { return f.name; }).join(', ') + '.'
+				: 'Biblioteca: no hay carpetas compartidas con la cuenta de servicio.';
+		}).catch(function (e) {
+			$('library-info').textContent = 'Biblioteca: ' + (e && e.message ? e.message : String(e));
+		});
 		$('proxy-info').textContent = root.CodeDrive.hasProxy()
 			? 'Reproducción: con proxy (remux automático y subtítulos disponibles).'
 			: 'Reproducción: sin proxy (solo reproducción directa).';

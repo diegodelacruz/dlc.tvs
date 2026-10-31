@@ -100,3 +100,26 @@ export async function findFolderId(folderName, accessToken, opts) {
 	const found = (await res.json()).files || [];
 	return found.length === 0 ? null : found[0].id;
 }
+
+// Carpetas visibles para la cuenta de servicio (las que alguien compartió con ella), con sus padres.
+export async function listSharedFolders(accessToken, opts) {
+	const fetchFn = (opts && opts.fetchFn) || fetch;
+	const folders = [];
+	let pageToken = null;
+	do {
+		const params = new URLSearchParams({
+			q: "mimeType = '" + FOLDER_MIME + "' and trashed = false",
+			fields: 'nextPageToken, files(id, name, parents)',
+			pageSize: '100',
+		});
+		if (pageToken) params.set('pageToken', pageToken);
+		const res = await fetchFn(FILES_URL + '?' + params.toString(), { headers: { Authorization: 'Bearer ' + accessToken } });
+		if (!res.ok) throw new DriveError(res.status, 'shared_failed');
+		const data = await res.json();
+		(data.files || []).forEach(function (f) {
+			folders.push({ id: f.id, name: f.name, parents: f.parents || [] });
+		});
+		pageToken = data.nextPageToken || null;
+	} while (pageToken);
+	return folders;
+}
