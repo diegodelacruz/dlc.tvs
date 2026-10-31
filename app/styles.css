@@ -291,6 +291,12 @@ a:focus {
 	padding: 4px 6px;
 }
 
+/* Anterior y siguiente sin destino: atenuados y sin enlace (no se pueden enfocar). */
+.btn.disabled,
+.mini-btn.disabled {
+	opacity: 0.35;
+}
+
 /* Controles del mini como iconos. */
 #mini .mini-actions {
 	justify-content: center;

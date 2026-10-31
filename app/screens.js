@@ -223,7 +223,9 @@
 	// Abre un archivo según su tipo. siblings: lista de la que forma parte (audio e imágenes).
 	function openItem(item, siblings, index) {
 		if (item.kind === 'video') {
-			root.CodeShell.playVideo(item, 0);
+			// La lista de reproducción son los videos de la misma carpeta, en orden alfabético.
+			var videos = siblings.filter(function (s) { return s.kind === 'video'; });
+			root.CodeShell.playVideo(item, 0, videos.length > 1 ? L.sortItems(videos, 'name') : undefined);
 		} else if (item.kind === 'audio') {
 			var tracks = siblings.filter(function (s) { return s.kind === 'audio'; });
 			var at = tracks.indexOf(item);
@@ -377,14 +379,14 @@
 		var actions = el('div', 'detail-actions');
 		if (resume) {
 			actions.appendChild(action('btn primary', 'Continuar desde ' + L.formatTime(entry.time), function () {
-				root.CodeShell.playVideo(item, entry.time);
+				root.CodeShell.playVideo(item, entry.time, videoState.list);
 			}, ICON('play', 26) + ' '));
 			actions.appendChild(action('btn', 'Reproducir desde el inicio', function () {
-				root.CodeShell.playVideo(item, 0);
+				root.CodeShell.playVideo(item, 0, videoState.list);
 			}));
 		} else {
 			actions.appendChild(action('btn primary', 'Reproducir', function () {
-				root.CodeShell.playVideo(item, 0);
+				root.CodeShell.playVideo(item, 0, videoState.list);
 			}, ICON('play', 26) + ' '));
 		}
 		actions.appendChild(action('btn', 'Volver a la lista', function () { showVideoList(); }));

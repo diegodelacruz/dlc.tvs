@@ -16,6 +16,13 @@
 	var chromeTimer = null;
 	var lastTracksLabel = '';
 	var sectionHistory = [];
+	// Lista de reproducción: videos en orden alfabético desde donde se eligió el video.
+	var queue = [];
+	var queueIndex = -1;
+	var miniPrev = document.getElementById('mini-prev');
+	var miniNext = document.getElementById('mini-next');
+	var fullPrev = document.getElementById('full-prev');
+	var fullNext = document.getElementById('full-next');
 	var loadTimer = null;
 	var LOAD_MS = 30000;
 	var playingSeen = false;
@@ -235,11 +242,64 @@
 		else CP.setMode('mini');
 	}
 
-	// Reproduce un archivo de video desde una posición (o desde el inicio).
-	function playVideo(file, startAt) {
+	function indexById(list, id) {
+		for (var i = 0; i < list.length; i++) {
+			if (list[i].id === id) return i;
+		}
+		return -1;
+	}
+
+	// Anterior y siguiente: sin destino quedan atenuados y sin enlace, así no se pueden enfocar.
+	function setNav(a, enabled) {
+		if (enabled) a.setAttribute('href', '#');
+		else a.removeAttribute('href');
+		a.classList.toggle('disabled', !enabled);
+	}
+
+	function updateNavButtons() {
+		var prev = queueIndex > 0;
+		var next = queueIndex >= 0 && queueIndex < queue.length - 1;
+		setNav(miniPrev, prev);
+		setNav(fullPrev, prev);
+		setNav(miniNext, next);
+		setNav(fullNext, next);
+	}
+
+	// Ajusta la lista: la que llega desde la pantalla, o la que ya estaba, o toda la biblioteca.
+	function ensureQueue(file, list) {
+		if (list && indexById(list, file.id) >= 0) {
+			queue = list;
+			queueIndex = indexById(list, file.id);
+			updateNavButtons();
+			return Promise.resolve();
+		}
+		if (indexById(queue, file.id) >= 0) {
+			queueIndex = indexById(queue, file.id);
+			updateNavButtons();
+			return Promise.resolve();
+		}
+		return root.CodeDrive.crawl(['video']).then(function (items) {
+			queue = L.sortItems(items, 'name');
+			queueIndex = indexById(queue, file.id);
+			updateNavButtons();
+		});
+	}
+
+	function nextVideo() {
+		if (queueIndex >= 0 && queueIndex < queue.length - 1) playVideo(queue[queueIndex + 1], 0);
+	}
+
+	function prevVideo() {
+		if (queueIndex > 0) playVideo(queue[queueIndex - 1], 0);
+	}
+
+	// Reproduce un archivo de video desde una posición (o desde el inicio). list: lista de la que sale el video.
+	function playVideo(file, startAt, list) {
 		var wasFull = inFull;
 		clearNotice();
-		root.CodeDrive.urlFor(file).then(function (url) {
+		ensureQueue(file, list).then(function () {
+			return root.CodeDrive.urlFor(file);
+		}).then(function (url) {
 			var check = root.CodeDrive.hasProxy() ? probeStream(url) : Promise.resolve('');
 			return check.then(function (problem) {
 				if (problem) {
@@ -256,6 +316,11 @@
 			notify('No se pudo abrir "' + file.name + '": ' + (e && e.message ? e.message : String(e)));
 		});
 	}
+
+	// Al terminar, sigue con el siguiente video de la lista (si hay).
+	player.addEventListener('ended', function () {
+		if (queueIndex >= 0 && queueIndex < queue.length - 1) nextVideo();
+	});
 
 	// Errores del propio <video>: se muestran con su código, no quedan en silencio.
 	player.addEventListener('error', function () {
@@ -338,6 +403,14 @@
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
 	miniFull.innerHTML = ICON('expand', 28);
 	miniSize.innerHTML = ICON('resize', 28);
+	miniPrev.innerHTML = ICON('prev', 28);
+	miniNext.innerHTML = ICON('next', 28);
+	fullPrev.innerHTML = ICON('prev', 26) + ' Anterior';
+	fullNext.innerHTML = ICON('next', 26) + ' Siguiente';
+	miniPrev.onclick = function () { prevVideo(); return false; };
+	miniNext.onclick = function () { nextVideo(); return false; };
+	fullPrev.onclick = function () { prevVideo(); return false; };
+	fullNext.onclick = function () { nextVideo(); return false; };
 	miniClose.innerHTML = ICON('close', 28);
 	miniSize.onclick = function () {
 		var next = root.CodeStore.settings().miniSize === 'grande' ? 'normal' : 'grande';
@@ -479,5 +552,6 @@
 	show('inicio');
 	placeStage(CP.snapshot());
 	renderPill(null);
+	updateNavButtons();
 
 })(window);
