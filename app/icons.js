@@ -19,6 +19,15 @@
 		shuffle: '<path d="M3 6h4l10 12h4M3 18h4l3-4M14 10l3-4h4"/>',
 		arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
 		wave: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 10v4"/>',
+		palette: '<circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 1.5-3.3 2 2 0 0 1 1.5-3.2H18a4 4 0 0 0 4-4C22 6 17.5 2 12 2z"/>',
+		font: '<path d="M4 20l5-14 5 14M6.5 14h5M14 20l3-8 3 8M15 17h4"/>',
+		text: '<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',
+		globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+		timer: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>',
+		sort: '<path d="M4 6h10M4 12h7M4 18h4M17 4v16M14 17l3 3 3-3"/>',
+		logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+		info: '<circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/>',
+		cycle: '<path d="M4 12a8 8 0 0 1 14-5M20 12a8 8 0 0 1-14 5M18 3v4h-4M6 21v-4h4"/>',
 		repeat: '<path d="M4 12V9a3 3 0 0 1 3-3h11M20 12v3a3 3 0 0 1-3 3H6"/><path d="M17 3l3 3-3 3M7 21l-3-3 3-3"/>',
 	};
 

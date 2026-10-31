@@ -552,50 +552,127 @@
 	});
 
 	// ---------- Ajustes ----------
+	var FONTS = [{ key: 'inter', label: 'Inter' }, { key: 'atkinson', label: 'Atkinson Hyperlegible' }];
+	var TEXT_SIZES = [{ key: 'minimo', label: 'Mínimo', zoom: 0.9 }, { key: 'normal', label: 'Normal', zoom: 1 }, { key: 'grande', label: 'Grande', zoom: 1.15 }];
+	var SLIDE_OPTIONS = [5, 10, 30];
+
+	function indexOfKey(list, key) {
+		for (var i = 0; i < list.length; i++) {
+			if (list[i].key === key) return i;
+		}
+		return 0;
+	}
+
+	// Aplica tema, tipo de letra y tamaño de texto guardados. El tamaño escala las secciones, no la barra.
+	function applySettings() {
+		var s = root.CodeStore.settings();
+		root.CodeTheme.apply(s.theme);
+		document.body.className = s.font === 'atkinson' ? 'font-atkinson' : '';
+		var size = TEXT_SIZES[indexOfKey(TEXT_SIZES, s.textSize)];
+		document.querySelectorAll('.section').forEach(function (sec) {
+			sec.style.zoom = size.zoom;
+		});
+	}
+
+	// Fila de ajustes del prototipo: icono, nombre, valor actual y, si cambia, icono de ciclo.
+	function settingRow(iconName, label, value, onPick, cycles) {
+		var a = el('a', 'srow');
+		a.href = '#';
+		a.onclick = function () { onPick(); return false; };
+		a.innerHTML = ICON(iconName, 30);
+		a.firstChild.setAttribute('class', 'lead');
+		a.appendChild(el('span', 'label', label));
+		a.appendChild(el('span', 'value', value));
+		if (cycles) {
+			var c = document.createElement('span');
+			c.innerHTML = ICON('cycle', 26);
+			c.firstChild.setAttribute('class', 'cycle');
+			a.appendChild(c);
+		}
+		return a;
+	}
+
+	function setStatus(msg) {
+		$('settings-status').textContent = msg || '';
+	}
+
 	function renderSettings() {
 		var s = root.CodeStore.settings();
-		var slide = $('settings-slide');
-		clear(slide);
-		[5, 10, 30].forEach(function (sec) {
-			var on = s.slideSeconds === sec;
-			slide.appendChild(action('btn' + (on ? ' on' : ''), sec + ' s', function () {
-				root.CodeStore.saveSettings({ slideSeconds: sec });
-				renderSettings();
-			}, on ? ICON('check', 26) + ' ' : ''));
-			slide.appendChild(document.createTextNode(' '));
-		});
+		var list = $('settings-list');
+		clear(list);
 
-		var sort = $('settings-sort');
-		clear(sort);
-		SORT_ORDER.forEach(function (mode) {
-			var on = s.sort === mode;
-			sort.appendChild(action('btn' + (on ? ' on' : ''), SORT_LABEL[mode], function () {
-				root.CodeStore.saveSettings({ sort: mode });
-				renderSettings();
-			}, on ? ICON('check', 26) + ' ' : ''));
-			sort.appendChild(document.createTextNode(' '));
-		});
+		var theme = root.CodeTheme.names;
+		list.appendChild(settingRow('palette', 'Tema', s.theme, function () {
+			var next = theme[(theme.indexOf(s.theme) + 1) % theme.length];
+			root.CodeStore.saveSettings({ theme: next });
+			applySettings();
+			renderSettings();
+		}, true));
 
-		$('engine-info').textContent = navigator.userAgent;
-		$('diag-info').textContent = root.CodeDrive.status();
-		$('proxy-info').textContent = root.CodeDrive.hasProxy()
-			? 'Con proxy: remux automático y subtítulos disponibles.'
-			: 'Sin proxy: solo reproducción directa.';
-		$('library-info').textContent = root.CodeDrive.ROOT_NAME + ' (carpeta compartida con la cuenta de servicio).';
+		var font = FONTS[indexOfKey(FONTS, s.font)];
+		list.appendChild(settingRow('font', 'Tipo de letra', font.label, function () {
+			var next = FONTS[(indexOfKey(FONTS, s.font) + 1) % FONTS.length];
+			root.CodeStore.saveSettings({ font: next.key });
+			applySettings();
+			renderSettings();
+		}, true));
 
-		var clearBox = $('settings-clear');
-		clear(clearBox);
-		clearBox.appendChild(action('btn', 'Borrar historial de reproducción y recientes', function () {
+		var size = TEXT_SIZES[indexOfKey(TEXT_SIZES, s.textSize)];
+		list.appendChild(settingRow('text', 'Tamaño de texto', size.label, function () {
+			var next = TEXT_SIZES[(indexOfKey(TEXT_SIZES, s.textSize) + 1) % TEXT_SIZES.length];
+			root.CodeStore.saveSettings({ textSize: next.key });
+			applySettings();
+			renderSettings();
+		}, true));
+
+		list.appendChild(settingRow('globe', 'Idioma', 'Español', function () {
+			setStatus('Por ahora la app solo está en español.');
+		}, false));
+
+		list.appendChild(settingRow('timer', 'Intervalo de presentación', s.slideSeconds + ' segundos', function () {
+			var next = SLIDE_OPTIONS[(SLIDE_OPTIONS.indexOf(s.slideSeconds) + 1) % SLIDE_OPTIONS.length];
+			root.CodeStore.saveSettings({ slideSeconds: next });
+			renderSettings();
+		}, true));
+
+		list.appendChild(settingRow('sort', 'Orden por defecto', SORT_LABEL[s.sort], function () {
+			var next = SORT_ORDER[(SORT_ORDER.indexOf(s.sort) + 1) % SORT_ORDER.length];
+			root.CodeStore.saveSettings({ sort: next });
+			renderSettings();
+		}, true));
+
+		list.appendChild(settingRow('logout', 'Cerrar sesión', '', function () {
 			root.CodeStore.set('progress', {});
 			root.CodeStore.set('recent', []);
-			status('settings-status', 'Historial borrado.');
-		}));
+			root.CodeStore.set('favs', []);
+			root.CodeStore.set('settings', {});
+			applySettings();
+			setStatus('Datos de esta TV borrados: progreso, recientes, favoritas y ajustes. El acceso a Drive sigue con la cuenta de servicio de la app.');
+			renderSettings();
+		}, false));
 
-		document.querySelectorAll('[data-open]').forEach(function (a) {
-			a.onclick = function () {
-				window.location.href = a.getAttribute('data-open');
-				return false;
-			};
+		var key = root.CodeTVKey;
+		$('acct-avatar').textContent = key && key.client_email ? key.client_email.charAt(0).toUpperCase() : 'C';
+		$('acct-mail').textContent = key && key.client_email ? key.client_email : 'Sin llave: revisa js/service-account.js';
+
+		$('library-info').textContent = 'Biblioteca: ' + root.CodeDrive.ROOT_NAME + ' (carpeta compartida con la cuenta de servicio).';
+		$('proxy-info').textContent = root.CodeDrive.hasProxy()
+			? 'Reproducción: con proxy (remux automático y subtítulos disponibles).'
+			: 'Reproducción: sin proxy (solo reproducción directa).';
+		$('diag-info').textContent = root.CodeDrive.status();
+		$('engine-info').textContent = 'Motor web: ' + navigator.userAgent;
+
+		var dev = $('dev-links');
+		clear(dev);
+		[
+			{ file: 'diagnostic.html', label: 'Diagnóstico de firma RSA' },
+			{ file: 'drive-check.html', label: 'Prueba de Drive' },
+			{ file: 'player-check.html', label: 'Prueba de reproducción' },
+			{ file: 'mini-check.html', label: 'Prueba de mini reproductor' },
+		].forEach(function (d) {
+			dev.appendChild(settingRow('info', d.label, '', function () {
+				window.location.href = d.file;
+			}, false));
 		});
 	}
 
@@ -643,6 +720,7 @@
 
 	root.CodeScreens = {
 		init: function () {
+			applySettings();
 			initMusic();
 		},
 		enter: enter,

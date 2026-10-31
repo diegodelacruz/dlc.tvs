@@ -20,7 +20,7 @@
 		}
 	}
 
-	var DEFAULTS = { slideSeconds: 10, sort: 'name' };
+	var DEFAULTS = { slideSeconds: 10, sort: 'name', theme: 'Negro OLED', font: 'inter', textSize: 'normal' };
 
 	root.CodeStore = {
 		get: get,
@@ -30,6 +30,9 @@
 			return {
 				slideSeconds: s.slideSeconds || DEFAULTS.slideSeconds,
 				sort: s.sort || DEFAULTS.sort,
+				theme: s.theme || DEFAULTS.theme,
+				font: s.font || DEFAULTS.font,
+				textSize: s.textSize || DEFAULTS.textSize,
 			};
 		},
 		saveSettings: function (patch) {
