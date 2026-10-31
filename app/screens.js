@@ -708,37 +708,38 @@
 	function toTopOfList() {
 		var section = root.CodeShell.current();
 		var content = document.getElementById('sec-' + section);
-		if (!content || !content.contains(document.activeElement)) return false;
+		if (!content || !content.contains(document.activeElement)) return '';
 		if (window.scrollY > 0) {
 			window.scrollTo(0, 0);
-			return true;
+			return 'Vuelve al inicio de la página';
 		}
 		var id = listIdFor(section);
-		if (!id) return false;
+		if (!id) return '';
 		var first = $(id).querySelector('a');
-		if (!first || document.activeElement === first) return false;
+		if (!first || document.activeElement === first) return '';
 		first.focus();
-		return true;
+		return 'Vuelve al inicio de la lista';
 	}
 
-	// Devuelve true si Atrás se consumió dentro de la pantalla. Orden: visor, inicio de la lista,
-	// nivel superior (detalle o carpeta). Si no queda nada, la shell vuelve a la sección anterior.
+	// Atrás dentro de la pantalla. Devuelve el nombre de la acción, o '' si la pantalla no tenía nada que hacer.
+	// Orden: visor, inicio de la lista, nivel superior (detalle o carpeta).
 	function back() {
 		if (viewer.open) {
 			closeViewer();
-			return true;
+			return 'Cierra el visor';
 		}
-		if (toTopOfList()) return true;
+		var top = toTopOfList();
+		if (top) return top;
 		if (root.CodeShell.current() === 'video' && videoState.detail) {
 			showVideoList();
-			return true;
+			return 'Vuelve a la lista de videos';
 		}
 		if (root.CodeShell.current() === 'explorar' && explore.stack.length > 1) {
 			explore.stack.pop();
 			renderExplore();
-			return true;
+			return 'Sube a la carpeta anterior';
 		}
-		return false;
+		return '';
 	}
 
 	function initMusic() {

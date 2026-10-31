@@ -291,6 +291,24 @@ a:focus {
 	padding: 4px 6px;
 }
 
+/* Controles del mini como iconos. */
+#mini .mini-actions {
+	justify-content: center;
+}
+
+#mini .mini-actions > a.mini-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	margin: 0 8px;
+	padding: 0;
+	border-radius: 12px;
+	background-color: rgba(35, 37, 50, 0.9);
+	color: var(--text);
+}
+
 /* ---------- Secciones ---------- */
 .section-head {
 	display: flex;

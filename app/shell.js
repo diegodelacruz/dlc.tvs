@@ -30,6 +30,7 @@
 	var miniFull = document.getElementById('mini-full');
 	var miniToggle = document.getElementById('mini-toggle');
 	var miniClose = document.getElementById('mini-close');
+	var miniSize = document.getElementById('mini-size');
 	var pill = document.getElementById('now-pill');
 	var pillArt = document.getElementById('pill-art');
 	var pillTitle = document.getElementById('pill-title');
@@ -56,6 +57,7 @@
 		if (SECTIONS.indexOf(name) < 0) return;
 		if (!fromBack && name !== current) sectionHistory.push(current);
 		current = name;
+		if (name !== 'inicio') armSentinel();
 		SECTIONS.forEach(function (s) {
 			document.getElementById('sec-' + s).hidden = (s !== name);
 			var tab = tabFor(s);
@@ -122,11 +124,12 @@
 			return;
 		}
 		var r = slot.getBoundingClientRect();
+		var scale = root.CodeStore.settings().miniSize === 'grande' ? 2 : 1;
 		stage.className = 'mini';
-		stage.style.left = r.left + 'px';
+		stage.style.width = r.width * scale + 'px';
+		stage.style.height = r.height * scale + 'px';
+		stage.style.left = (r.right - r.width * scale) + 'px';
 		stage.style.top = r.top + 'px';
-		stage.style.width = r.width + 'px';
-		stage.style.height = r.height + 'px';
 	}
 
 	// Tarjeta de música en la barra: pista actual, o nada si no hay.
@@ -211,7 +214,7 @@
 		mini.className = (s.file && !inFull) ? 'show' : '';
 		if (s.file && !inFull) {
 			miniState.textContent = s.file.name + ' · ' + STATE_TEXT[s.state];
-			miniToggle.textContent = s.state === 'playing' ? 'Pausa' : (s.state === 'ended' ? 'Reiniciar' : 'Reproducir');
+			miniToggle.innerHTML = ICON(s.state === 'playing' ? 'pause' : 'play', 28);
 		}
 		updateFullTime();
 		renderPill(null);
@@ -333,6 +336,15 @@
 	fullTracks.innerHTML = ICON('subtitles', 26) + ' Audio y subtítulos';
 	fullToggle.innerHTML = ICON('pause', 26) + ' Pausa';
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
+	miniFull.innerHTML = ICON('expand', 28);
+	miniSize.innerHTML = ICON('resize', 28);
+	miniClose.innerHTML = ICON('close', 28);
+	miniSize.onclick = function () {
+		var next = root.CodeStore.settings().miniSize === 'grande' ? 'normal' : 'grande';
+		root.CodeStore.saveSettings({ miniSize: next });
+		placeStage(CP.snapshot());
+		return false;
+	};
 
 	player.addEventListener('timeupdate', function () {
 		if (inFull) updateFullTime();
@@ -344,7 +356,22 @@
 		if (CP.snapshot().mode === 'full') {
 			CP.setMode('mini');
 			miniFull.focus();
+			return;
 		}
+		// El sistema quitó la entrada centinela: es un Atrás.
+		sentinel = false;
+		var result = backOnce();
+		if (result === null) {
+			armSentinel();
+			return;
+		}
+		if (result) hint(result);
+		if (current === 'inicio') {
+			// Atrás en Inicio: sin más historial, el sistema cierra la app.
+			if (!result) history.back();
+			return;
+		}
+		armSentinel();
 	});
 
 	window.addEventListener('resize', function () { placeStage(CP.snapshot()); });
@@ -356,20 +383,65 @@
 		window.scrollBy(0, e.deltaY);
 	}, { passive: false });
 
+	// ---------- Atrás ----------
+	// En webOS, Atrás llega como tecla (keydown) y también puede llegar como navegación del historial
+	// (popstate). Fuera de Inicio hay una entrada de historial "centinela": si el sistema la quita,
+	// es un Atrás. Si la tecla llega primero, el evento de historial que llegue después se ignora.
+	var sentinel = false;
+	var lastBackAt = 0;
+	var hintTimer = null;
+	var SECTION_NAME = { inicio: 'Inicio', explorar: 'Explorar', video: 'Video', musica: 'Música', fotos: 'Fotos', ajustes: 'Ajustes' };
+
+	function armSentinel() {
+		if (!sentinel && !inFull && current !== 'inicio') {
+			history.pushState({ codetv: true }, '');
+			sentinel = true;
+		}
+	}
+
+	// Aviso breve con la acción que hizo Atrás (se oculta solo).
+	function hint(text) {
+		clearTimeout(hintTimer);
+		var box = document.getElementById('notice');
+		box.textContent = text;
+		box.hidden = false;
+		hintTimer = setTimeout(function () { box.hidden = true; }, 1800);
+	}
+
+	// Una acción de Atrás fuera de la vista completa. Devuelve el texto de la acción, o '' si no hubo ninguna.
+	function handleBack() {
+		var label = root.CodeScreens.back();
+		if (label) return label;
+		if (current === 'inicio') return '';
+		var previous = sectionHistory.length ? sectionHistory.pop() : 'inicio';
+		show(previous, true);
+		return 'Vuelve a ' + SECTION_NAME[previous];
+	}
+
+	// Atiende un Atrás una sola vez aunque llegue como tecla y como historial. null = ya atendido.
+	function backOnce() {
+		if (Date.now() - lastBackAt < 200) return null;
+		lastBackAt = Date.now();
+		return handleBack();
+	}
+
 	// Teclas en fase de captura: se resuelven antes que la navegación (nav.js).
 	document.addEventListener('keydown', function (e) {
 		var code = e.keyCode;
 		var isBack = code === 461 || code === 27 || code === 8;
 		if (!inFull) {
 			if (!isBack) return;
-			if (root.CodeScreens.back()) {
+			var result = backOnce();
+			if (result === null) {
 				e.preventDefault();
 				return;
 			}
-			if (current === 'inicio') return;
-			e.preventDefault();
-			// Atrás vuelve a la sección de la que se llegó; sin historial, a Inicio.
-			show(sectionHistory.length ? sectionHistory.pop() : 'inicio', true);
+			// En Inicio sin nada que hacer no se previene: el sistema decide (cerrar la app).
+			if (result) {
+				e.preventDefault();
+				hint(result);
+				armSentinel();
+			}
 			return;
 		}
 		if (trackPanel.isOpen()) {
