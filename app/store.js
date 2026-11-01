@@ -22,7 +22,7 @@
 		}
 	}
 
-	var DEFAULTS = { slideSeconds: 10, sort: 'name', theme: 'Negro OLED', font: 'inter', textSize: 'normal', miniSize: 'normal', miniCorner: 'arriba', sortDir: 'asc', explorerView: 'detalle' };
+	var DEFAULTS = { slideSeconds: 10, sort: 'name', theme: 'Negro OLED', font: 'inter', textSize: 'normal', miniSize: 'normal', miniCorner: 'arriba', sortDir: 'asc', explorerView: 'detalle', lang: 'es' };
 
 	root.CodeStore = {
 		get: get,
@@ -39,6 +39,7 @@
 				miniCorner: s.miniCorner || DEFAULTS.miniCorner,
 				sortDir: s.sortDir || DEFAULTS.sortDir,
 				explorerView: s.explorerView || DEFAULTS.explorerView,
+				lang: s.lang || DEFAULTS.lang,
 			};
 		},
 		saveSettings: function (patch) {

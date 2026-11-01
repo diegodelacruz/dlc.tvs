@@ -61,7 +61,7 @@ Desactivada por defecto (interruptor `videoSection` en `app/flags.js`). Los vide
 - **Tema:** Negro OLED, Nocturne, Grafito ámbar, Bosque o Alto contraste.
 - **Tipo de letra:** Inter, Atkinson Hyperlegible o Fira Code.
 - **Tamaño de texto:** Normal, Pequeño, Muy pequeño o Mínimo.
-- **Idioma:** por ahora solo español.
+- **Idioma:** Español o English. Al cambiarlo, la app se recarga y todo se muestra en el idioma elegido.
 - **Intervalo de presentación:** 5, 10 o 30 segundos.
 - **Orden por defecto:** el orden inicial de las listas.
 - **Errores recientes:** registro con fecha, hora, explicación, qué hacer y detalle técnico. El más reciente va primero. Se puede borrar.
@@ -154,7 +154,7 @@ En **Ajustes → Errores recientes** cada registro muestra:
 - El retroceso no puede ser continuo en el navegador de la TV; se hace por pasos.
 - Las listas grandes se dibujan por bloques de 60 elementos; la búsqueda recorre hasta 300 carpetas por biblioteca.
 - La sección Video está desactivada; sus videos siguen disponibles desde Inicio y Explorar.
-- La app está solo en español.
+- La traducción al inglés cubre la interfaz. Los nombres de archivos y los detalles técnicos de los errores se muestran tal como están.
 
 ## 9. Reporte de problemas
 

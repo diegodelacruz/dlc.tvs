@@ -923,8 +923,10 @@
 			renderSettings();
 		}, true));
 
-		list.appendChild(settingRow('globe', 'Idioma', 'Español', function () {
-			setStatus('Por ahora la app solo está en español.');
+		list.appendChild(settingRow('globe', 'Idioma', s.lang === 'en' ? 'English' : 'Español', function () {
+			// Cambiar el idioma guarda la preferencia y recarga la app para dibujar todo de nuevo.
+			root.CodeStore.saveSettings({ lang: s.lang === 'en' ? 'es' : 'en' });
+			window.location.reload();
 		}, false));
 
 		list.appendChild(settingRow('timer', 'Intervalo de presentación', s.slideSeconds + ' segundos', function () {

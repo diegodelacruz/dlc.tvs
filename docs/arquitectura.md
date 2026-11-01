@@ -49,6 +49,7 @@ Todos los módulos son IIFE que se cuelgan de `window` (`CodeXxx`). **Por qué:*
 | `icons.js` | Iconos SVG de trazo, con tamaño. | Un solo lugar para el estilo de iconos. |
 | `logic.js` | Funciones puras: orden, progreso, tiempos, carpetas y cola. | Sin DOM ni red, así se prueban con `node --test`. |
 | `store.js` | Lectura y escritura de `localStorage` con prefijo `codetv.`. | Si el almacenamiento falla, la app sigue sin guardar. |
+| `i18n.js` | Traducción a inglés: diccionario, patrones y un `MutationObserver` que traduce lo que se dibuja. | Así las pantallas no se tocan una por una; cambiar el idioma recarga la app. |
 | `errors.js` | Registro de errores, clasificación y saneamiento del detalle. | Un error explicado y con acción es más útil que un mensaje técnico. |
 | `drive.js` | Biblioteca de Drive para las pantallas: raíces, hijos, recorrido, miniaturas y URL. | Concentra la caché y la espera al módulo compilado. |
 | `player.js` | Reproductor único (`CodePlayer`): un solo `<video>`, estados y progreso. | Un solo elemento evita dos fuentes de audio y de posición. |
@@ -167,7 +168,7 @@ Todas las claves tienen el prefijo `codetv.`.
 
 | Clave | Contenido | Quién la escribe |
 |---|---|---|
-| `settings` | Tema, fuente, tamaño de texto, intervalo, orden, vista, tamaño y esquina del mini. | `screens.js`, `shell.js` |
+| `settings` | Tema, fuente, tamaño de texto, idioma, intervalo, orden, vista, tamaño y esquina del mini. | `screens.js`, `shell.js` |
 | `progress` | `{id: {name, path, time, duration, updated}}` | `shell.js` (`saveProgress`) |
 | `recent` | Lista de los últimos 30 archivos abiertos, con su ruta. | `screens.js` (`remember`) |
 | `favs` | Carpetas favoritas. | `screens.js` |
