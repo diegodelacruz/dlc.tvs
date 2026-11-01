@@ -1146,3 +1146,43 @@ a.srow:focus {
 #full-controls a.ctl.disabled {
 	opacity: 0.35;
 }
+
+/* Indicador de carga: aparece al elegir un video y desaparece cuando empieza. Atrás lo cancela. */
+#busy {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 40;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-color: rgba(0, 0, 0, 0.55);
+}
+
+#busy[hidden] {
+	display: none;
+}
+
+#busy .spinner {
+	width: 96px;
+	height: 96px;
+	border-radius: 50%;
+	border: 8px solid var(--line);
+	border-top-color: var(--accent-hi);
+	animation: busy-spin 0.9s linear infinite;
+}
+
+#busy p {
+	margin: 28px 0 0 0;
+	font-size: 30px;
+	color: var(--text);
+}
+
+@keyframes busy-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

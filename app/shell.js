@@ -55,6 +55,11 @@
 	var fullTracks = document.getElementById('full-tracks');
 	var fullControls = document.getElementById('full-controls');
 	var fileExt = '';
+	var busyEl = document.getElementById('busy');
+	var busyText = document.getElementById('busy-text');
+	// Cada carga tiene un número; si llega otra antes de terminar, la anterior se ignora.
+	var loadToken = 0;
+	var expectPop = false;
 	// Proporción del video (ancho/alto). El mini la toma para no mostrar franjas.
 	var videoRatio = 16 / 9;
 	var MINI_MAX_H = 540;
@@ -258,8 +263,26 @@
 
 	// Sale de vista completa. Solo usa el historial si la entrada la creó la app; si no, cambia el modo.
 	function leaveFull() {
-		if (history.state && history.state.full) history.back();
-		else CP.setMode('mini');
+		if (history.state && history.state.full) {
+			// La entrada del reproductor se quita aquí; su evento de historial no debe tratarse como Atrás.
+			expectPop = true;
+			CP.setMode('mini');
+			history.back();
+		} else {
+			CP.setMode('mini');
+		}
+		miniFull.focus();
+	}
+
+	// Indicador de carga visible en cualquier pantalla, desde el clic hasta que empieza el video.
+	function setBusy(on, name) {
+		busyEl.hidden = !on;
+		if (on) busyText.textContent = 'Cargando' + (name ? ' «' + name + '»' : '') + '…';
+	}
+
+	function cancelLoad() {
+		loadToken++;
+		setBusy(false);
 	}
 
 	function indexById(list, id) {
@@ -321,13 +344,18 @@
 	// Reproduce un archivo de video desde una posición (o desde el inicio). list: lista de la que sale el video.
 	function playVideo(file, startAt, list) {
 		var wasFull = inFull;
+		var token = ++loadToken;
 		clearNotice();
+		setBusy(true, file.name);
 		ensureQueue(file, list).then(function () {
 			return root.CodeDrive.urlFor(file);
 		}).then(function (url) {
+			if (token !== loadToken) return;
 			var check = root.CodeDrive.hasProxy() ? probeStream(url) : Promise.resolve('');
 			return check.then(function (problem) {
+				if (token !== loadToken) return;
 				if (problem) {
+					setBusy(false);
 					notify('No se pudo abrir "' + file.name + '": ' + problem);
 					return;
 				}
@@ -338,6 +366,8 @@
 				if (!wasFull) history.pushState({ full: true }, '');
 			});
 		}).catch(function (e) {
+			if (token !== loadToken) return;
+			setBusy(false);
 			notify('No se pudo abrir "' + file.name + '": ' + (e && e.message ? e.message : String(e)));
 		});
 	}
@@ -350,6 +380,7 @@
 	// Errores del propio <video>: se muestran con su código, no quedan en silencio.
 	player.addEventListener('error', function () {
 		clearTimeout(loadTimer);
+		setBusy(false);
 		var err = player.error;
 		var code = err ? err.code : 0;
 		notify('La TV no pudo reproducir el archivo (código ' + code + ': ' + (ERROR_CODES[code] || 'desconocido') + ').' +
@@ -358,6 +389,7 @@
 	});
 	player.addEventListener('playing', function () {
 		playingSeen = true;
+		setBusy(false);
 		clearTimeout(loadTimer);
 		clearNotice();
 	});
@@ -458,7 +490,16 @@
 	player.addEventListener('pause', updateFullTime);
 
 	window.addEventListener('popstate', function () {
+		if (expectPop) {
+			expectPop = false;
+			return;
+		}
 		if (CP.snapshot().mode === 'full') {
+			// Si la tecla ya atendió este Atrás (menú, controles), el sistema repite la navegación: se rehace la entrada.
+			if (Date.now() - lastBackAt < 400) {
+				history.pushState({ full: true }, '');
+				return;
+			}
 			CP.setMode('mini');
 			miniFull.focus();
 			return;
@@ -529,6 +570,13 @@
 	document.addEventListener('keydown', function (e) {
 		var code = e.keyCode;
 		var isBack = code === 461 || code === 27 || code === 8;
+		// Con una carga en curso, Atrás la cancela.
+		if (isBack && !busyEl.hidden) {
+			e.preventDefault();
+			cancelLoad();
+			return;
+		}
+		if (isBack && inFull) lastBackAt = Date.now();
 		if (!inFull) {
 			if (!isBack) return;
 			var result = backOnce();
