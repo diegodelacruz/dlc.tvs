@@ -244,6 +244,7 @@
 	}
 
 	function render(s) {
+		if (typeof updateScrollInd === 'function' && scrollInd) updateScrollInd();
 		var wasFull = inFull;
 		inFull = s.file !== null && s.mode === 'full';
 		player.controls = false;
@@ -830,7 +831,8 @@
 	var EDGE = 8;
 	function updateScrollInd() {
 		scrollInd.hidden = true;
-		if (current !== 'explorar') return;
+		// Con un video en reproducción (completo o en mini), el indicador no se muestra.
+		if (current !== 'explorar' || inFull || CP.snapshot().file) return;
 		var listRect = exploreList.getBoundingClientRect();
 		var topRect = exploreTop.getBoundingClientRect();
 		// Región visible de la lista: desde debajo del encabezado fijo hasta el borde inferior de la pantalla.
