@@ -83,6 +83,7 @@
 		if (!fromBack && name !== current) sectionHistory.push(current);
 		current = name;
 		updateReloadButton();
+		updateScrollInd();
 		if (name !== 'inicio') armSentinel();
 		SECTIONS.forEach(function (s) {
 			document.getElementById('sec-' + s).hidden = (s !== name);
@@ -706,29 +707,42 @@
 		var videoTab = document.querySelector('#tabs a[data-section="video"]');
 		if (videoTab) videoTab.hidden = true;
 	}
-	// Indicador de posición (ascensor): muestra qué parte de la página se ve.
+	// Indicador de posición (ascensor): solo en Explorar y solo sobre la región de la lista de archivos.
 	var scrollInd = document.getElementById('scroll-ind');
 	var scrollThumb = document.getElementById('scroll-thumb');
+	var exploreTop = document.getElementById('explore-top');
+	var exploreList = document.getElementById('explore-list');
+	var EDGE = 8;
 	function updateScrollInd() {
-		var total = document.documentElement.scrollHeight;
-		var view = window.innerHeight;
-		if (total <= view + 8) {
-			scrollInd.hidden = true;
-			return;
-		}
+		scrollInd.hidden = true;
+		if (current !== 'explorar') return;
+		var listRect = exploreList.getBoundingClientRect();
+		var topRect = exploreTop.getBoundingClientRect();
+		// Región visible de la lista: desde debajo del encabezado fijo hasta el borde inferior de la pantalla.
+		var r0 = Math.max(topRect.bottom, listRect.top, EDGE);
+		var r1 = Math.min(window.innerHeight - EDGE, listRect.bottom);
+		var len = r1 - r0;
+		var total = listRect.height;
+		if (len <= 0 || total <= len + 2) return;
+		var a0 = r0 - listRect.top;
+		var vis = Math.min(total, a0 + len) - a0;
+		var thumbH = Math.max(40, len * vis / total);
+		var thumbTop = Math.min(len - thumbH, len * a0 / total);
+		scrollInd.style.top = r0 + 'px';
+		scrollInd.style.height = len + 'px';
+		scrollThumb.style.height = thumbH + 'px';
+		scrollThumb.style.top = Math.max(0, thumbTop) + 'px';
 		scrollInd.hidden = false;
-		var track = view - 16;
-		var h = Math.max(56, track * view / total);
-		var maxScroll = total - view;
-		var y = window.pageYOffset || 0;
-		scrollThumb.style.height = h + 'px';
-		scrollThumb.style.top = (8 + (y / maxScroll) * (track - h)) + 'px';
 	}
 	window.addEventListener('scroll', updateScrollInd);
 	window.addEventListener('resize', updateScrollInd);
-	if (window.ResizeObserver) new ResizeObserver(updateScrollInd).observe(document.getElementById('app'));
-	else setInterval(updateScrollInd, 500);
-	updateScrollInd();
+	if (window.ResizeObserver) {
+		var scrollObserver = new ResizeObserver(updateScrollInd);
+		scrollObserver.observe(exploreList);
+		scrollObserver.observe(exploreTop);
+	} else {
+		setInterval(updateScrollInd, 500);
+	}
 
 	show('inicio');
 	placeStage(CP.snapshot());

@@ -1260,6 +1260,7 @@ a.srow:focus {
 .sort-arrow svg {
 	width: 22px;
 	height: 22px;
+	margin: 0;
 }
 
 /* Botones solo con icono (orden, favorita, vistas, Música y Fotos). */
@@ -1271,6 +1272,11 @@ a.srow:focus {
 	height: 64px;
 	padding: 0;
 	margin-left: 8px;
+}
+
+/* El icono va centrado: sin el margen de .btn svg que lo empuja a la izquierda. */
+.btn.iconbtn svg {
+	margin: 0;
 }
 
 /* Favorita: separada del orden por una línea y con un borde propio. */
@@ -1295,10 +1301,8 @@ a.srow:focus {
 /* Indicador de posición (ascensor) en el borde derecho. */
 #scroll-ind {
 	position: fixed;
-	top: 0;
 	right: 6px;
 	width: 8px;
-	height: 100%;
 	z-index: 30;
 	pointer-events: none;
 }
