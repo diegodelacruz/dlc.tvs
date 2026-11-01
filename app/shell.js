@@ -36,6 +36,7 @@
 	var player = document.getElementById('player');
 	var mini = document.getElementById('mini');
 	var miniState = document.getElementById('mini-state');
+	var settingsBtn = document.getElementById('settings-btn');
 	var miniFull = document.getElementById('mini-full');
 	var miniToggle = document.getElementById('mini-toggle');
 	var miniClose = document.getElementById('mini-close');
@@ -107,6 +108,7 @@
 	// Aviso visible en la pantalla: los errores de reproducción y de conexión se leen aquí, no solo en consola.
 	function notify(text) {
 		console.error('CodeTV: ' + text);
+		root.CodeErrors.record('Reproducción', text);
 		var box = document.getElementById('notice');
 		box.textContent = text;
 		box.hidden = false;
@@ -230,7 +232,8 @@
 		barFill.style.width = pct + '%';
 		barKnob.style.left = pct + '%';
 		fullTime.textContent = L.formatTime(st.time);
-		fullDuration.textContent = L.formatTime(st.duration);
+		// Tiempo restante en la misma línea, con signo menos.
+		fullDuration.textContent = '-' + L.formatTime(Math.max(0, st.duration - st.time));
 		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 30);
 		updateTracksLabel();
 	}
@@ -257,7 +260,7 @@
 		mini.className = (s.file && !inFull) ? 'show' : '';
 		if (s.file && !inFull) {
 			miniState.textContent = s.file.name + ' · ' + STATE_TEXT[s.state];
-			miniToggle.innerHTML = ICON(s.state === 'playing' ? 'pause' : 'play', 20);
+			miniToggle.innerHTML = ICON(s.state === 'playing' ? 'pause' : 'play', 16);
 		}
 		updateFullTime();
 		renderPill(null);
@@ -734,6 +737,20 @@
 		scrollThumb.style.top = Math.max(0, thumbTop) + 'px';
 		scrollInd.hidden = false;
 	}
+	// Semáforo de Ajustes: rojo solo mientras haya errores sin revisar, y solo al navegar (se oculta en reposo).
+	var navTimer = null;
+	function refreshAlert() {
+		settingsBtn.classList.toggle('alert', root.CodeErrors.unseen() > 0);
+	}
+	function markNavigating() {
+		settingsBtn.classList.add('nav');
+		clearTimeout(navTimer);
+		navTimer = setTimeout(function () { settingsBtn.classList.remove('nav'); }, 5000);
+	}
+	root.CodeErrors.subscribe(refreshAlert);
+	refreshAlert();
+	document.addEventListener('keydown', markNavigating, true);
+	document.addEventListener('mousemove', markNavigating);
 	window.addEventListener('scroll', updateScrollInd);
 	window.addEventListener('resize', updateScrollInd);
 	if (window.ResizeObserver) {

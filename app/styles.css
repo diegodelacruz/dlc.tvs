@@ -1326,3 +1326,128 @@ a.srow:focus {
 	background-color: var(--accent-hi);
 	opacity: 0.75;
 }
+
+/* Semáforo de Ajustes: rojo discreto solo con errores sin revisar y mientras se navega. */
+#settings-btn.alert.nav {
+	color: #d9534f;
+}
+
+/* Registro de errores en Ajustes (el más reciente primero). */
+#error-list {
+	margin-bottom: 24px;
+}
+
+.error-item {
+	padding: 14px 16px;
+	margin-bottom: 12px;
+	border-left: 4px solid #d9534f;
+	border-radius: 8px;
+	background-color: var(--surface-2);
+}
+
+.error-when {
+	font-size: 18px;
+	color: var(--muted);
+}
+
+.error-title {
+	font-size: 24px;
+	font-weight: 500;
+	margin: 4px 0;
+}
+
+.error-text {
+	font-size: 19px;
+	margin: 4px 0;
+	color: var(--text-2);
+}
+
+.error-detail {
+	display: block;
+	font-family: CodeFira, 'Fira Code', ui-monospace, Menlo, monospace;
+	font-size: 16px;
+	color: var(--muted);
+	white-space: pre-wrap;
+	word-break: break-word;
+	margin-top: 6px;
+}
+
+/* Mini: cierre arriba a la derecha; reproducción a un lado y ver/tamaño/esquina al otro. */
+#mini-close {
+	display: none;
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	z-index: 2;
+	opacity: 0;
+}
+
+/* Cerrar aparece con los controles del mini, arriba a la derecha de todo el mini. */
+#stage.mini #mini-close {
+	display: flex;
+}
+
+#stage.mini:hover #mini-close,
+#stage.mini[data-mini-chrome] #mini-close {
+	opacity: 1;
+}
+
+#mini p {
+	padding-right: 44px;
+}
+
+#mini .mini-actions {
+	justify-content: space-between;
+	align-items: center;
+}
+
+#mini .mini-group {
+	display: flex;
+	align-items: center;
+}
+
+/* Iconos centrados dentro de cada botón de control. */
+.mini-btn svg,
+#full-controls a.ctl svg {
+	display: block;
+	margin: 0;
+}
+
+/* Barra de progreso: una línea (inicio, barra, restante). Solo el indicador se resalta al enfocar. */
+#full-progress {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 6px 8px;
+	background: none;
+	border: 2px solid transparent;
+	border-radius: 8px;
+}
+
+#full-progress:focus {
+	border-color: transparent;
+	box-shadow: none;
+}
+
+#full-progress .bar {
+	flex: 1;
+}
+
+#full-progress .bar-time {
+	min-width: 84px;
+	font-size: 18px;
+	color: var(--text-2);
+	font-variant-numeric: tabular-nums;
+}
+
+#full-progress #full-duration {
+	text-align: right;
+}
+
+#full-progress:focus .bar-knob {
+	width: 30px;
+	height: 30px;
+	margin-left: -15px;
+	top: -11px;
+	box-shadow: 0 0 0 4px var(--accent-hi);
+}

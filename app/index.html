@@ -34,32 +34,34 @@
 			<div id="mini-slot"></div>
 			<div id="stage">
 				<video id="player"></video>
+				<a href="#" id="mini-close" class="mini-btn" aria-label="Cerrar"></a>
 				<div id="mini">
 					<p id="mini-state"></p>
 					<div class="mini-actions">
-						<a href="#" id="mini-prev" class="mini-btn" aria-label="Video anterior"></a>
-						<a href="#" id="mini-full" class="mini-btn" aria-label="Ver completo"></a>
-						<a href="#" id="mini-toggle" class="mini-btn" aria-label="Reproducir o pausar"></a>
-						<a href="#" id="mini-next" class="mini-btn" aria-label="Video siguiente"></a>
-						<a href="#" id="mini-size" class="mini-btn" aria-label="Cambiar tamaño"></a>
-						<a href="#" id="mini-corner" class="mini-btn" aria-label="Cambiar esquina"></a>
-						<a href="#" id="mini-close" class="mini-btn" aria-label="Cerrar"></a>
+						<div class="mini-group">
+							<a href="#" id="mini-prev" class="mini-btn" aria-label="Video anterior"></a>
+							<a href="#" id="mini-toggle" class="mini-btn" aria-label="Reproducir o pausar"></a>
+							<a href="#" id="mini-next" class="mini-btn" aria-label="Video siguiente"></a>
+						</div>
+						<div class="mini-group">
+							<a href="#" id="mini-full" class="mini-btn" aria-label="Ver completo"></a>
+							<a href="#" id="mini-size" class="mini-btn" aria-label="Cambiar tamaño"></a>
+							<a href="#" id="mini-corner" class="mini-btn" aria-label="Cambiar esquina"></a>
+						</div>
 					</div>
 				</div>
-				<div id="full-head">
+			<div id="full-head">
 					<h1 id="full-title"></h1>
 					<p id="full-meta"></p>
 				</div>
 				<div id="full-controls">
 					<a href="#" id="full-progress" aria-label="Posición del video">
+						<span class="bar-time" id="full-time">0:00</span>
 						<div class="bar">
 							<div class="bar-fill" id="bar-fill"></div>
 							<div class="bar-knob" id="bar-knob"></div>
 						</div>
-						<div class="bar-times">
-							<span id="full-time">0:00</span>
-							<span id="full-duration">0:00</span>
-						</div>
+						<span class="bar-time" id="full-duration">-0:00</span>
 					</a>
 					<div class="full-actions">
 						<a href="#" class="ctl" id="full-prev" aria-label="Video anterior"></a>
@@ -165,6 +167,8 @@
 					<p class="status" id="settings-status"></p>
 				</div>
 				<div class="settings-col side">
+					<h2 class="sub">Errores recientes <span class="count" id="error-count"></span></h2>
+					<div id="error-list"></div>
 					<h2 class="sub">Estado</h2>
 					<p class="side-note" id="library-info"></p>
 					<p class="side-note" id="proxy-info"></p>
@@ -193,6 +197,7 @@
 	<script type="text/javascript" src="icons.js"></script>
 	<script type="text/javascript" src="logic.js"></script>
 	<script type="text/javascript" src="store.js"></script>
+	<script type="text/javascript" src="errors.js"></script>
 	<script type="text/javascript" src="drive.js"></script>
 	<script type="text/javascript" src="player.js"></script>
 	<script type="text/javascript" src="tracks.js"></script>

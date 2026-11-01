@@ -2,6 +2,7 @@
 // Cada pantalla se dibuja al entrar. Atrás pasa primero por back(), que deshace un nivel dentro de la pantalla.
 (function (root) {
 	var SORT_LABEL = { name: 'Nombre', date: 'Fecha', size: 'Tamaño' };
+	var AREA = { explore: 'Explorar', music: 'Música', photo: 'Fotos', video: 'Video' };
 	var SORT_ORDER = ['name', 'date', 'size'];
 	// Dirección por defecto de cada orden: nombre A-Z; fecha y tamaño, de mayor a menor.
 	var SORT_DEFAULT_DIR = { name: 'asc', date: 'desc', size: 'desc' };
@@ -54,6 +55,7 @@
 
 	function fail(id, e) {
 		status(id, 'Error: ' + (e && e.message ? e.message : String(e)));
+		root.CodeErrors.record(AREA[id.split('-')[0]] || 'Pantalla', e);
 	}
 
 	function focusFirst(id) {
@@ -656,6 +658,33 @@
 		$('settings-status').textContent = msg || '';
 	}
 
+	// Registro de errores: el más reciente primero, con explicación, acción y detalle técnico.
+	function renderErrors() {
+		var box = $('error-list');
+		clear(box);
+		var list = root.CodeErrors.list();
+		$('error-count').textContent = list.length ? plural(list.length, 'registro', 'registros') : '';
+		if (list.length === 0) {
+			box.appendChild(el('p', 'side-note', 'Sin errores registrados.'));
+		} else {
+			list.forEach(function (e) {
+				var item = el('div', 'error-item');
+				item.appendChild(el('div', 'error-when', root.CodeErrors.stamp(e.at) + ' · ' + e.area));
+				item.appendChild(el('div', 'error-title', e.title));
+				item.appendChild(el('p', 'error-text', e.explain));
+				item.appendChild(el('p', 'error-text', 'Qué hacer: ' + e.action));
+				item.appendChild(el('code', 'error-detail', e.detail));
+				box.appendChild(item);
+			});
+			box.appendChild(action('btn', 'Borrar registro', function () {
+				root.CodeErrors.clear();
+				renderErrors();
+			}));
+		}
+		// Abrir Ajustes equivale a haber visto los errores: el semáforo se apaga.
+		root.CodeErrors.markAllSeen();
+	}
+
 	function renderSettings() {
 		var s = root.CodeStore.settings();
 		var list = $('settings-list');
@@ -722,11 +751,14 @@
 				: 'Biblioteca: no hay carpetas compartidas con la cuenta de servicio.';
 		}).catch(function (e) {
 			$('library-info').textContent = 'Biblioteca: ' + (e && e.message ? e.message : String(e));
+			root.CodeErrors.record('Biblioteca', e);
+			renderErrors();
 		});
 		$('proxy-info').textContent = root.CodeDrive.hasProxy()
 			? 'Reproducción: con proxy (remux automático y subtítulos disponibles).'
 			: 'Reproducción: sin proxy (solo reproducción directa).';
 		$('diag-info').textContent = root.CodeDrive.status();
+		renderErrors();
 		$('engine-info').textContent = 'Motor web: ' + navigator.userAgent;
 
 		var dev = $('dev-links');
