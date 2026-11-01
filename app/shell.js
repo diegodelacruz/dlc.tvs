@@ -239,7 +239,7 @@
 		fullTime.textContent = L.formatTime(st.time);
 		// Tiempo restante en la misma línea, con signo menos.
 		fullDuration.textContent = '-' + L.formatTime(Math.max(0, st.duration - st.time));
-		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 30);
+		renderToggle();
 		updateTracksLabel();
 	}
 
@@ -394,8 +394,20 @@
 	}
 
 	function showRates() {
-		document.getElementById('ff-rate').textContent = RATES[rate.fwd] + 'x' + (RATES[rate.fwd] !== 1 ? ' · mudo' : '');
+		document.getElementById('ff-rate').textContent = RATES[rate.fwd] + 'x';
 		document.getElementById('rew-rate').textContent = (rate.rewTimer ? '-' : '') + RATES[rate.rew] + 'x';
+		renderToggle();
+	}
+
+	// Botón central: reproducir/pausar, o volver a 1x mientras avanzas a otra velocidad.
+	function renderToggle() {
+		if (rate.fwd !== 1 && !rate.rewTimer) {
+			fullToggle.innerHTML = ICON('cycle', 30);
+			fullToggle.setAttribute('aria-label', 'Volver a 1x');
+		} else {
+			fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 30);
+			fullToggle.setAttribute('aria-label', 'Reproducir o pausar');
+		}
 	}
 
 	function stopRewind() {
@@ -562,7 +574,19 @@
 
 	fullProgress.onclick = function () { CP.toggle(); return false; };
 	fullBack.onclick = function () { CP.seekBy(-SKIP_S); return false; };
-	fullToggle.onclick = function () { stopRewind(); showRates(); CP.toggle(); return false; };
+	fullToggle.onclick = function () {
+		// Con avance a otra velocidad, este botón vuelve a 1x; si no, reproduce o pausa.
+		if (rate.fwd !== 1 && !rate.rewTimer) {
+			rate.fwd = 1;
+			applyForwardRate();
+			showRates();
+			return false;
+		}
+		stopRewind();
+		showRates();
+		CP.toggle();
+		return false;
+	};
 	fullFwd.onclick = function () { CP.seekBy(SKIP_S); return false; };
 	fullRew.onclick = function () { pressRewind(); return false; };
 	fullFf.onclick = function () { pressForward(); return false; };
