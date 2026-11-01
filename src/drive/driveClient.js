@@ -67,6 +67,7 @@ export class DriveError extends Error {
 	}
 }
 
+// Escapa barras y comillas simples de un nombre antes de meterlo en una consulta de Drive, para que un nombre raro no rompa la búsqueda.
 function escapeQuery(text) {
 	return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }

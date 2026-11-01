@@ -14,6 +14,7 @@ export class AuthError extends Error {
 	}
 }
 
+// Arma un cuerpo application/x-www-form-urlencoded y omite los campos vacíos, como exige el servidor de Google.
 function formBody(fields) {
 	const params = new URLSearchParams();
 	Object.keys(fields).forEach(function (key) {
@@ -22,6 +23,7 @@ function formBody(fields) {
 	return params.toString();
 }
 
+// Lee la respuesta como JSON sin romper el flujo si llega vacía o no es JSON; devuelve {} en ese caso.
 async function readJson(res) {
 	try {
 		return await res.json();
@@ -98,6 +100,7 @@ export async function refreshAccessToken(config, refreshToken, opts) {
 	return toTokens(data, now(), refreshToken);
 }
 
+// Convierte la respuesta de Google en tokens con fecha de vencimiento. Conserva el refresh token anterior si Google no envía uno nuevo.
 function toTokens(data, issuedAt, fallbackRefresh) {
 	return {
 		accessToken: data.access_token,

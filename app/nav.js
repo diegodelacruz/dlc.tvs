@@ -16,11 +16,13 @@
 		});
 	}
 
+	// Sube por el árbol del DOM hasta el enlace más cercano, porque el foco puede estar en un elemento interior.
 	function closestLink(node) {
 		while (node && node.tagName !== 'A') node = node.parentNode;
 		return node || null;
 	}
 
+	// Centro geométrico de un elemento. La navegación espacial lo usa para medir distancias entre enlaces.
 	function center(el) {
 		var r = el.getBoundingClientRect();
 		return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -52,6 +54,7 @@
 		return best;
 	}
 
+	// Enfoca un enlace por posición en la lista, con vuelta al principio o al final. Sirve para retomar la navegación tras un clic.
 	function focusAt(index) {
 		var list = links();
 		if (list.length === 0) return;

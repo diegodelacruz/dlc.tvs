@@ -26,6 +26,7 @@ export class ProxyError extends Error {
 	}
 }
 
+// Convierte bytes a gigabytes con un decimal, para mensajes de error legibles.
 function gb(bytes) {
 	return (bytes / (1024 * 1024 * 1024)).toFixed(1);
 }
@@ -45,6 +46,7 @@ function probeFromDrive({ fileId, token }) {
 	return probeSubtitles(FILES_URL + '/' + fileId + '?alt=media', 'Bearer ' + token);
 }
 
+// Extrae una pista de subtítulos de un archivo de Drive a WebVTT, usando el token de la app.
 function extractFromDrive({ fileId, token, n, outPath }) {
 	return extractWebVtt(FILES_URL + '/' + fileId + '?alt=media', 'Bearer ' + token, n, outPath);
 }
@@ -64,11 +66,13 @@ export function createHandler({
 	const trackLists = new Map();
 	const vttJobs = new Map();
 
+	// Hace una petición a Drive con el token en la cabecera. El token nunca va en la URL, para que no quede en registros.
 	function driveFetch(id, token, extraHeaders, query) {
 		const headers = Object.assign({ Authorization: 'Bearer ' + token }, extraHeaders);
 		return fetchFn(FILES_URL + '/' + id + query, { headers: headers });
 	}
 
+	// Lee un rango de bytes de Drive. Se usa para leer el índice de un mp4 sin descargar el archivo completo.
 	async function readRange(id, token, start, end) {
 		const res = await driveFetch(id, token, { Range: 'bytes=' + start + '-' + end }, '?alt=media');
 		if (res.status !== 206) throw new Error('Drive no devolvió Range (código ' + res.status + ')');
@@ -96,6 +100,7 @@ export function createHandler({
 		return { local: cachedPath };
 	}
 
+	// Decide una sola vez por archivo si se sirve directo desde Drive o desde la caché local. Las peticiones simultáneas comparten la decisión.
 	function decide(id, token) {
 		if (!decisions.has(id)) {
 			decisions.set(id, resolveSource(id, token).catch(function (e) {
@@ -255,6 +260,7 @@ export function createTokenProvider(key, fetchFn) {
 	};
 }
 
+// Arranca el servidor HTTP con la llave y el secreto de los argumentos. Sin ellos no arranca, para no exponer Drive sin control.
 async function main() {
 	const keyPath = process.argv[2];
 	const secret = process.argv[3];

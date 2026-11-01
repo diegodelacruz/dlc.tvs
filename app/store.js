@@ -3,6 +3,7 @@
 (function (root) {
 	var PREFIX = 'codetv.';
 
+	// Lee una clave guardada. Si el JSON está dañado o el almacenamiento no existe, devuelve el valor por defecto para que la app no se detenga.
 	function get(key, fallback) {
 		try {
 			var raw = root.localStorage.getItem(PREFIX + key);
@@ -12,6 +13,7 @@
 		}
 	}
 
+	// Guarda una clave. Si falla (almacenamiento lleno o bloqueado), la app sigue funcionando sin persistir ese dato.
 	function set(key, value) {
 		try {
 			root.localStorage.setItem(PREFIX + key, JSON.stringify(value));

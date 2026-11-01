@@ -17,6 +17,7 @@
 			' · Llave (js/service-account.js): ' + (root.CodeTVKey ? 'cargada' : 'NO cargada');
 	}
 
+	// Comprueba que app.js y la llave de la cuenta de servicio estén cargados antes de pedir nada a Drive; da un mensaje claro si falta alguno.
 	function ready() {
 		if (!root.CodeTV) {
 			return Promise.reject(new Error('Falta js/app.js: el módulo de Drive no cargó. ' + status()));
@@ -27,6 +28,7 @@
 		return Promise.resolve();
 	}
 
+	// Devuelve un token de acceso reutilizable. Lo pide de nuevo solo cuando caduca, para no firmar un JWT en cada petición.
 	function tokenNow() {
 		if (token && Date.now() < tokenUntil) return Promise.resolve(token);
 		return ready().then(function () {
@@ -82,6 +84,7 @@
 			var queue = rootList.map(function (r) { return { id: r.id, path: r.name }; });
 			var found = [];
 			var visited = 0;
+			// Recorre una carpeta a la vez (amplitud primero). Así la lista de carpetas se completa por niveles y el límite MAX_FOLDERS corta recorridos enormes.
 			function step() {
 				if (queue.length === 0 || visited >= MAX_FOLDERS) return Promise.resolve(found);
 				var current = queue.shift();
@@ -122,6 +125,7 @@
 	var THUMB_TTL_MS = 20 * 60 * 1000;
 	var thumbCache = {};
 
+	// Obtiene la miniatura de Drive para un archivo. Usa la caché y comparte consultas repetidas; si Drive no tiene miniatura, devuelve vacío y la tarjeta queda sin imagen.
 	function thumbUrl(file) {
 		var hit = thumbCache[file.id];
 		if (hit && Date.now() - hit.at < THUMB_TTL_MS) return hit.promise;

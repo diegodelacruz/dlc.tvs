@@ -79,6 +79,7 @@
 
 	var STATE_TEXT = { playing: 'Reproduciendo', paused: 'En pausa', ended: 'Terminado', idle: '' };
 
+	// Busca el enlace de pestaña de una sección por su nombre, para marcarla como activa o enfocarla.
 	function tabFor(name) {
 		return app.querySelector('[data-section="' + name + '"]');
 	}
@@ -120,6 +121,7 @@
 		box.hidden = false;
 	}
 
+	// Oculta el aviso de la pantalla. Se llama cuando el problema ya no existe o al cambiar de video.
 	function clearNotice() {
 		document.getElementById('notice').hidden = true;
 	}
@@ -136,6 +138,7 @@
 		});
 	}
 
+	// Si el video no empieza en LOAD_MS, avisa en pantalla. Así un proxy apagado no deja la pantalla de carga para siempre.
 	function armLoadTimer() {
 		clearTimeout(loadTimer);
 		playingSeen = false;
@@ -187,6 +190,7 @@
 		pillTitle.textContent = L.titleOf(item.name) + (playing ? '' : ' · en pausa');
 	}
 
+	// Acceso al estado de la música con un nombre fijo, para que la barra superior no dependa del módulo de música directamente.
 	function CodeMusicSnapshot() {
 		return root.CodeMusic.snapshot();
 	}
@@ -196,6 +200,7 @@
 		return stage.hasAttribute('data-chrome');
 	}
 
+	// Reinicia el temporizador que oculta los controles. Cada tecla o movimiento lo vuelve a empezar.
 	function armChrome() {
 		clearTimeout(chromeTimer);
 		chromeTimer = null;
@@ -216,6 +221,7 @@
 		fullProgress.focus();
 	}
 
+	// Oculta los controles de la vista completa y quita el foco de ellos, para que una tecla no actúe sobre algo invisible.
 	function hideChrome() {
 		clearTimeout(chromeTimer);
 		chromeTimer = null;
@@ -232,6 +238,7 @@
 		fullMeta.textContent = (fileExt ? fileExt + ' · ' : '') + label;
 	}
 
+	// Actualiza barra, tiempos, icono de reproducir/pausa y etiqueta de pistas. Se llama en cada cambio del reproductor.
 	function updateFullTime() {
 		var st = CP.status();
 		var pct = st.duration ? Math.min(100, (st.time / st.duration) * 100) : 0;
@@ -244,6 +251,7 @@
 		updateTracksLabel();
 	}
 
+	// Punto único que aplica el estado del reproductor a la pantalla (modo, tamaño, controles y el indicador de posición).
 	function render(s) {
 		if (typeof updateScrollInd === 'function' && scrollInd) updateScrollInd();
 		var wasFull = inFull;
@@ -304,6 +312,7 @@
 		leaveFull();
 	}
 
+	// Sale de la vista completa a mini. Si la entrada de historial es nuestra, la quita con history.back() sin contarla como Atrás del usuario.
 	function leaveFull() {
 		if (history.state && history.state.full) {
 			// La entrada del reproductor se quita aquí; su evento de historial no debe tratarse como Atrás.
@@ -321,16 +330,19 @@
 		busyEl.hidden = !on;
 	}
 
+	// Anota que el sistema va a devolver un evento de Atrás que la app ya atendió, para ignorarlo y no salir dos veces.
 	function expectEcho() {
 		echoes++;
 		setTimeout(function () { if (echoes > 0) echoes--; }, 3000);
 	}
 
+	// Cancela la carga en curso (Atrás mientras se abre un video): aumenta el token para que la respuesta tardía se descarte.
 	function cancelLoad() {
 		loadToken++;
 		setBusy(false);
 	}
 
+	// Posición de un archivo dentro de una lista por su id; -1 si no está. La cola de reproducción depende de esto.
 	function indexById(list, id) {
 		for (var i = 0; i < list.length; i++) {
 			if (list[i].id === id) return i;
@@ -345,6 +357,7 @@
 		a.classList.toggle('disabled', !enabled);
 	}
 
+	// Habilita o atenúa anterior y siguiente según la posición en la cola, para no ofrecer un botón que no hace nada.
 	function updateNavButtons() {
 		var prev = queueIndex > 0;
 		var next = queueIndex >= 0 && queueIndex < queue.length - 1;
@@ -378,6 +391,7 @@
 	}
 
 
+	// Reproduce el siguiente de la cola. Si estamos al final, no hace nada: no salta a otra carpeta.
 	function nextVideo() {
 		if (queueIndex >= 0 && queueIndex < queue.length - 1) playVideo(queue[queueIndex + 1], 0);
 	}
@@ -399,6 +413,7 @@
 		player.muted = RATES[rate.fwd] !== 1;
 	}
 
+	// Escribe en los botones la velocidad actual de avance y retroceso, para que el usuario sepa en qué velocidad está.
 	function showRates() {
 		document.getElementById('ff-rate').textContent = RATES[rate.fwd] + 'x';
 		document.getElementById('rew-rate').textContent = (rate.rewTimer ? '-' : '') + RATES[rate.rew] + 'x';
@@ -416,17 +431,20 @@
 		}
 	}
 
+	// Detiene el retroceso por pasos. Se llama al reproducir, al cambiar de video o al salir de la vista completa.
 	function stopRewind() {
 		if (rate.rewTimer) clearInterval(rate.rewTimer);
 		rate.rewTimer = null;
 	}
 
+	// Retrocede un paso (velocidad × 1 s) y se detiene al llegar al inicio. Retroceder de forma continua no es posible en el navegador.
 	function rewindStep() {
 		CP.seekBy(-RATES[rate.rew]);
 		if (CP.status().time <= 0.5) stopRewind();
 		showRates();
 	}
 
+	// Sube la velocidad de retroceso y deja el video en pausa mientras retrocede. La velocidad de reproducción vuelve a 1x.
 	function pressRewind() {
 		rate.rew = (rate.rew + 1) % RATES.length;
 		player.playbackRate = 1;
@@ -439,6 +457,7 @@
 	// Control de posición tras cambiar la velocidad (mitigación): si el video queda atrás de la posición
 	// esperada más de 1.5 s, se corrige a esa posición y se registra. No cambia la velocidad elegida.
 	var speedChangeId = 0;
+	// Aplica un cambio de velocidad y, si el video sigue sonando, comprueba que la posición no retroceda sin motivo. Corrige y registra si ocurre.
 	function changeSpeed(apply) {
 		var id = ++speedChangeId;
 		var wasPlaying = !player.paused;
@@ -460,6 +479,7 @@
 		}, 1500);
 	}
 
+	// Sube la velocidad de avance al siguiente paso de la lista. Si el video estaba en pausa, lo reproduce.
 	function pressForward() {
 		stopRewind();
 		rate.fwd = (rate.fwd + 1) % RATES.length;
@@ -482,6 +502,7 @@
 		showRates();
 	}
 
+	// Punto de entrada para reproducir un video. Reinicia velocidades, prepara la cola y decide si el video se abre en completo o en mini.
 	function playVideo(file, startAt, list) {
 		resetRates();
 		var wasFull = inFull;
@@ -543,6 +564,7 @@
 		clearNotice();
 	});
 
+	// Guarda la posición para Continuar viendo, con la ruta de la carpeta. Al terminar el video, lo quita de la lista.
 	function saveProgress(file, time, duration, ended) {
 		var progress = root.CodeStore.get('progress', {});
 		if (ended) {
@@ -747,6 +769,7 @@
 	var lastBackAt = 0;
 	var SECTION_NAME = { inicio: 'Inicio', explorar: 'Explorar', video: 'Video', musica: 'Música', fotos: 'Fotos', ajustes: 'Ajustes' };
 
+	// Agrega una entrada de historial para que el botón Atrás del control se capture en la app y no cierre la aplicación.
 	function armSentinel() {
 		if (!sentinel && !inFull && current !== 'inicio') {
 			history.pushState({ codetv: true }, '');
@@ -838,6 +861,7 @@
 		fotos: { top: document.getElementById('photo-top'), list: document.getElementById('photo-grid') },
 	};
 	var EDGE = 8;
+	// Calcula la posición del indicador de la lista (la parte visible bajo el encabezado fijo). Se oculta si no hay lista que desplazar o hay video en reproducción.
 	function updateScrollInd() {
 		var wasHidden = scrollInd.hidden;
 		scrollInd.hidden = true;
@@ -866,9 +890,11 @@
 	}
 	// Semáforo de Ajustes: rojo solo mientras haya errores sin revisar, y solo al navegar (se oculta en reposo).
 	var navTimer = null;
+	// Enciende o apaga el semáforo de Ajustes según haya errores sin revisar.
 	function refreshAlert() {
 		settingsBtn.classList.toggle('alert', root.CodeErrors.unseen() > 0);
 	}
+	// Marca que el usuario está navegando: muestra el semáforo rojo y despierta el indicador de posición durante unos segundos.
 	function markNavigating() {
 		wakeScrollInd();
 		settingsBtn.classList.add('nav');
@@ -881,6 +907,7 @@
 	document.addEventListener('mousemove', markNavigating);
 	// El indicador se atenúa tras 3 s sin navegar y reaparece con la siguiente tecla, movimiento o desplazamiento.
 	var scrollIdleTimer = null;
+	// Muestra el indicador de posición y lo atenúa tras 3 s sin navegar, para que no moleste al leer la lista.
 	function wakeScrollInd() {
 		scrollInd.classList.remove('idle');
 		clearTimeout(scrollIdleTimer);

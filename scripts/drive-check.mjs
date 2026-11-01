@@ -9,6 +9,7 @@ const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 const SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 
+// Codifica en base64url para armar el JWT de la prueba.
 function b64url(input) {
 	return Buffer.from(input).toString('base64url');
 }
@@ -23,6 +24,7 @@ export function buildJwt(key, nowSeconds = Math.floor(Date.now() / 1000)) {
 	return input + '.' + b64url(signer.sign(key.private_key));
 }
 
+// Obtiene un token de Drive con la cuenta de servicio, para probar el acceso antes de usar la TV.
 export async function getAccessToken(key, fetchFn = fetch) {
 	const res = await fetchFn(TOKEN_URL, {
 		method: 'POST',
@@ -34,6 +36,7 @@ export async function getAccessToken(key, fetchFn = fetch) {
 	return data.access_token;
 }
 
+// Lista archivos que cumplen una consulta de Drive. Muestra el error de Google si la respuesta no es correcta.
 async function listFolder(parentQuery, token, fetchFn = fetch) {
 	const params = new URLSearchParams({ q: parentQuery, fields: 'files(id,name,mimeType,size)', pageSize: '100' });
 	const res = await fetchFn(FILES_URL + '?' + params.toString(), { headers: { Authorization: 'Bearer ' + token } });
@@ -42,6 +45,7 @@ async function listFolder(parentQuery, token, fetchFn = fetch) {
 	return data.files || [];
 }
 
+// Busca una carpeta por nombre y lista sus archivos. Sirve para comprobar que la carpeta esté compartida con la cuenta.
 export async function findFolderFiles(token, folderName, fetchFn = fetch) {
 	const safeName = folderName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 	const folders = await listFolder(
@@ -53,6 +57,7 @@ export async function findFolderFiles(token, folderName, fetchFn = fetch) {
 	return listFolder("'" + folders[0].id + "' in parents and trashed = false", token, fetchFn);
 }
 
+// Ejecuta la prueba de acceso a Drive desde la línea de comandos.
 async function main() {
 	const keyPath = process.argv[2];
 	const folderName = process.argv[3] || 'CodeTV-prueba';

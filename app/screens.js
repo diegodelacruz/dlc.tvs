@@ -28,10 +28,12 @@
 
 	function $(id) { return document.getElementById(id); }
 
+	// Vacía un contenedor antes de volver a dibujarlo. Así cada render parte de cero y no quedan elementos viejos.
 	function clear(node) {
 		while (node.firstChild) node.removeChild(node.firstChild);
 	}
 
+	// Crea un elemento con clase y texto. El texto se asigna como textContent, para que nunca se interprete como HTML.
 	function el(tag, cls, text) {
 		var n = document.createElement(tag);
 		if (cls) n.className = cls;
@@ -56,6 +58,7 @@
 		};
 	}
 
+	// Escribe un mensaje de estado. Si termina en … muestra el giro, para indicar que hay trabajo en curso.
 	function status(id, msg) {
 		var node = $(id);
 		node.textContent = msg || '';
@@ -63,28 +66,34 @@
 		node.classList.toggle('busy', /…/.test(msg || ''));
 	}
 
+	// Muestra un error en la pantalla y lo registra, para que el problema quede visible y también en Ajustes.
 	function fail(id, e) {
 		status(id, 'Error: ' + (e && e.message ? e.message : String(e)));
 		root.CodeErrors.record(AREA[id.split('-')[0]] || 'Pantalla', e);
 	}
 
+	// Lleva el foco al primer enlace de una lista, para que el control remoto tenga un punto de partida.
 	function focusFirst(id) {
 		var a = $(id).querySelector('a');
 		if (a) a.focus();
 	}
 
+	// Agrega el archivo a Recientes (con su carpeta) cada vez que se abre, con el último visto primero.
 	function remember(file) {
 		root.CodeStore.set('recent', L.pushRecent(root.CodeStore.get('recent', []), { id: file.id, name: file.name, kind: file.kind, path: file.path || '' }, 30));
 	}
 
+	// Lee la lista de carpetas favoritas guardada en la TV.
 	function favorites() {
 		return root.CodeStore.get('favs', []);
 	}
 
+	// Indica si una carpeta está en favoritas. Se usa para mostrar la estrella activa.
 	function isFavorite(id) {
 		return favorites().some(function (f) { return f.id === id; });
 	}
 
+	// Agrega o quita una carpeta de favoritas. Se guarda solo id y nombre, lo mínimo para mostrarla.
 	function toggleFavorite(folder) {
 		var list = favorites();
 		var exists = list.some(function (f) { return f.id === folder.id; });
@@ -127,6 +136,7 @@
 		return a;
 	}
 
+	// Tarjeta "Ver todo" al final de una fila. Lleva a la lista completa cuando hay más elementos que los mostrados.
 	function moreCard(count, onPick) {
 		var a = el('a', 'card more');
 		a.href = '#';
@@ -138,6 +148,7 @@
 		return a;
 	}
 
+	// Mensaje cuando una sección no tiene contenido, para que la pantalla nunca quede vacía sin explicación.
 	function emptyNote(parent, msg) {
 		parent.appendChild(el('p', 'status', msg));
 	}
@@ -177,6 +188,7 @@
 	// Continuar viendo muestra como máximo 5 tarjetas; la sexta es Ver todo.
 	var HOME_ROW = 5;
 
+	// Dibuja Inicio: Continuar viendo (una tarjeta por carpeta), Recientes (solo videos), accesos y favoritas.
 	function renderHome() {
 		var cont = $('home-continue');
 		clear(cont);
@@ -289,6 +301,7 @@
 		renderExplore();
 	}
 
+	// Dibuja la carpeta actual de Explorar con su orden, sus vistas y su favorita; restaura la posición al volver.
 	function renderExplore() {
 		var top = explore.stack[explore.stack.length - 1];
 		status('explore-status', explore.stack.length > 1 ? 'Cargando carpeta…' : 'Cargando biblioteca…');
@@ -404,6 +417,7 @@
 		else focusFirst(boxId);
 	}
 
+	// Lista de videos de la sección Video. Hoy la sección está desactivada por interruptor; se conserva para reactivarla.
 	function showVideoList() {
 		var restoreId = videoState.lastId;
 		videoState.lastId = null;
@@ -438,6 +452,7 @@
 		}).catch(function (e) { fail('video-status', e); });
 	}
 
+	// Ficha de un video de la sección Video, con sus acciones de reproducir o continuar.
 	function showVideoDetail(item) {
 		videoState.detail = item;
 		videoState.lastId = item.id;
@@ -482,6 +497,7 @@
 		focusFirst('video-detail');
 	}
 
+	// Fila de dato clave-valor para los paneles de información de Ajustes.
 	function kv(key, value) {
 		var line = el('div', 'kv');
 		line.appendChild(el('span', 'k', key));
@@ -527,6 +543,7 @@
 	// o al enfocar uno de los últimos elementos dibujados.
 	function lazyList(box, items, makeNode, onChunk) {
 		var state = { next: 0 };
+		// Dibuja el siguiente bloque de la lista perezosa.
 		function more() {
 			var end = Math.min(items.length, state.next + CHUNK);
 			for (var i = state.next; i < end; i++) {
@@ -565,6 +582,7 @@
 		}
 	});
 
+	// Busca las pistas de la biblioteca (con avance) y dibuja Música.
 	function enterMusic() {
 		musicRows = [];
 		activeLazy = null;
@@ -579,6 +597,7 @@
 
 	var musicState = { items: [], sorted: [] };
 
+	// Dibuja la lista de Música con el orden y la vista compartidos con Explorar.
 	function renderMusic() {
 		var cfg = root.CodeStore.settings();
 		var sorted = L.sortItems(musicState.items, cfg.sort, cfg.sortDir);
@@ -618,6 +637,7 @@
 		}, function () { renderMusicState(root.CodeMusic.snapshot()); });
 	}
 
+	// Dibuja la lista de Fotos con el orden y la vista compartidos; en vista de miniatura carga las imágenes por demanda.
 	function renderPhotos() {
 		var cfg = root.CodeStore.settings();
 		var sorted = L.sortItems(photoState.items, cfg.sort, cfg.sortDir);
@@ -657,6 +677,7 @@
 		if (root.CodeShell.current() === 'fotos') focusFirst('photo-grid');
 	}
 
+	// Busca las fotos de la biblioteca (con avance) y dibuja Fotos.
 	function enterPhotos() {
 		photoState.items = [];
 		activeLazy = null;
@@ -670,6 +691,7 @@
 
 	var photoState = { list: [], items: [] };
 
+	// Pone una lista de pistas en la cola de música y empieza en el índice elegido, con o sin aleatorio.
 	function playTracks(list, index, shuffle) {
 		root.CodeMusic.setQueue(list, index);
 		root.CodeMusic.setShuffle(shuffle);
@@ -714,6 +736,7 @@
 		showViewerItem();
 	}
 
+	// Muestra la foto actual del visor con su nombre y su posición en la lista.
 	function showViewerItem() {
 		var item = viewer.list[viewer.index];
 		$('viewer-caption').textContent = (viewer.index + 1) + ' / ' + viewer.list.length + ' · ' + item.name +
@@ -723,28 +746,33 @@
 		});
 	}
 
+	// Avanza o retrocede una foto en el visor; da la vuelta al llegar al principio o al final.
 	function stepViewer(delta) {
 		var n = viewer.list.length;
 		viewer.index = (viewer.index + delta + n) % n;
 		showViewerItem();
 	}
 
+	// Detiene la presentación automática de fotos.
 	function stopSlideshow() {
 		if (viewer.timer) clearInterval(viewer.timer);
 		viewer.timer = null;
 	}
 
+	// Inicia la presentación automática, con el intervalo configurado en Ajustes.
 	function startSlideshow() {
 		stopSlideshow();
 		viewer.timer = setInterval(function () { stepViewer(1); }, root.CodeStore.settings().slideSeconds * 1000);
 	}
 
+	// Alterna la presentación automática (OK en el visor).
 	function toggleSlideshow() {
 		if (viewer.timer) stopSlideshow();
 		else startSlideshow();
 		showViewerItem();
 	}
 
+	// Cierra el visor de fotos y devuelve el foco a la lista.
 	function closeViewer() {
 		stopSlideshow();
 		viewer.open = false;
@@ -767,6 +795,7 @@
 	var TEXT_SIZES = [{ key: 'normal', label: 'Normal', zoom: 1 }, { key: 'pequeno', label: 'Pequeño', zoom: 0.9 }, { key: 'muy-pequeno', label: 'Muy pequeño', zoom: 0.8 }, { key: 'minimo', label: 'Mínimo', zoom: 0.7 }];
 	var SLIDE_OPTIONS = [5, 10, 30];
 
+	// Busca la posición de una opción de ajustes por su clave; si no existe, usa la primera para no romper la pantalla.
 	function indexOfKey(list, key) {
 		for (var i = 0; i < list.length; i++) {
 			if (list[i].key === key) return i;
@@ -803,6 +832,7 @@
 		return a;
 	}
 
+	// Escribe un mensaje de confirmación o error en la parte inferior de Ajustes.
 	function setStatus(msg) {
 		$('settings-status').textContent = msg || '';
 	}
@@ -834,6 +864,7 @@
 		root.CodeErrors.markAllSeen();
 	}
 
+	// Dibuja Ajustes: cuenta, opciones, errores, estado de la biblioteca y pruebas de desarrollo.
 	function renderSettings() {
 		var s = root.CodeStore.settings();
 		var list = $('settings-list');
@@ -964,6 +995,7 @@
 		b.setAttribute('aria-label', label);
 	}
 
+	// Reemplaza los textos de los botones de Música y Fotos por iconos con nombre accesible.
 	function setupIcons() {
 		setIconBtn('music-play-all', 'play', 'Reproducir todo', false);
 		setIconBtn('music-shuffle-all', 'shuffle', 'Reproducir en aleatorio', false);
@@ -1034,6 +1066,7 @@
 		return '';
 	}
 
+	// Conecta la música con la pantalla: estado, barra superior y URLs de las pistas.
 	function initMusic() {
 		root.CodeMusic.init($('music'));
 		root.CodeMusic.setUrlFunction(function (item) { return root.CodeDrive.urlFor(item); });

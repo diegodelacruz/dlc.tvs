@@ -7,6 +7,7 @@ import { getAccessToken, findFolderFiles } from './drive-check.mjs';
 
 const FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 
+// Pide solo el primer byte de una URL y muestra el código y las cabeceras de rango; sirve para saber si Drive acepta Range.
 async function probe(label, url, headers) {
 	const res = await fetch(url, { headers: headers });
 	const contentRange = res.headers.get('content-range') || '-';
@@ -22,6 +23,7 @@ async function probe(label, url, headers) {
 	return res.status;
 }
 
+// Prueba cómo responde Drive a Range con y sin token en la URL, para decidir la estrategia del proxy.
 async function main() {
 	const keyPath = process.argv[2];
 	const folder = process.argv[3] || 'CodeTV-prueba';

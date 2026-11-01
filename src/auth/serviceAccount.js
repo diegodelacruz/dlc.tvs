@@ -5,6 +5,7 @@ export const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 export const DRIVE_READONLY = 'https://www.googleapis.com/auth/drive.readonly';
 const JWT_GRANT = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
 
+// Convierte la llave privada PEM a bytes DER, el formato que entiende crypto.subtle.importKey.
 export function pemToDer(pem) {
 	const b64 = pem.replace(/-----[A-Z ]+-----/g, '').replace(/\s+/g, '');
 	const bin = atob(b64);
@@ -13,12 +14,14 @@ export function pemToDer(pem) {
 	return bytes.buffer;
 }
 
+// Codifica bytes en base64url (sin relleno), el formato que exige el JWT.
 export function b64url(bytes) {
 	let bin = '';
 	for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
 	return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// Firma el JWT RS256 con la llave de la cuenta de servicio. La firma se hace en la TV, así la llave no pasa por ningún servidor.
 export async function buildJwt(key, cryptoObj, nowSeconds) {
 	const now = nowSeconds || Math.floor(Date.now() / 1000);
 	const header = b64url(new TextEncoder().encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' })));
@@ -41,6 +44,7 @@ export async function buildJwt(key, cryptoObj, nowSeconds) {
 	return input + '.' + b64url(new Uint8Array(signature));
 }
 
+// Cambia el JWT firmado por un token de acceso de Google. El token dura una hora, por eso se reutiliza.
 export async function exchangeToken(key, cryptoObj, fetchFn) {
 	const doFetch = fetchFn || fetch;
 	const assertion = await buildJwt(key, cryptoObj);

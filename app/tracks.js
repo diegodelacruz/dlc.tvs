@@ -3,6 +3,7 @@
 (function (root) {
 	var L = root.CodeLogic;
 
+	// Vacía un contenedor antes de volver a llenarlo (las pistas pueden cambiar entre videos).
 	function clear(node) {
 		while (node.firstChild) node.removeChild(node.firstChild);
 	}
@@ -26,6 +27,7 @@
 		return a;
 	}
 
+	// Aplica texto, marca de activo y clase CSS a una opción del panel de audio o subtítulos.
 	function setOption(a, text, active) {
 		a.nameNode.textContent = text;
 		a.tagNode.hidden = !active;
@@ -51,6 +53,7 @@
 		var onOpen = (opts && opts.onOpen) || function () {};
 		var onClose = (opts && opts.onClose) || function () {};
 
+		// Vuelve a leer las pistas del <video>, porque el navegador puede activar o cambiar pistas por su cuenta.
 		function refresh() {
 			var audio = video.audioTracks;
 			audioLinks.forEach(function (a, i) {
@@ -70,6 +73,7 @@
 			}
 		}
 
+		// Abre el panel de pistas y guarda el elemento que lo abrió, para devolver el foco al cerrar.
 		function open(from) {
 			opener = from;
 			clear(audioBox);
@@ -115,6 +119,7 @@
 			(active || audioLinks[0] || subLinks[0]).focus();
 		}
 
+		// Cierra el panel, avisa a la vista y devuelve el foco al botón que lo abrió.
 		function close() {
 			if (panel.hidden) return;
 			panel.hidden = true;

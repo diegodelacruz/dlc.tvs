@@ -55,6 +55,7 @@
 			.replace(/access_token["']?\s*[:=]\s*["']?[^"'\s,}]+/gi, 'access_token=[oculto]');
 	}
 
+	// Busca la primera regla que reconoce el mensaje; si ninguna coincide, usa el texto genérico para que el registro nunca quede vacío.
 	function classify(text) {
 		for (var i = 0; i < RULES.length; i++) {
 			if (RULES[i].test.test(text)) return RULES[i];
@@ -62,17 +63,21 @@
 		return FALLBACK;
 	}
 
+	// Da formato fijo dd/mm/aaaa hh:mm:ss a la fecha del registro, para leerla igual en cualquier TV.
 	function stamp(ms) {
 		var d = new Date(ms);
+		// Rellena con cero a dos dígitos (parte del formato fijo de fecha y hora).
 		function p(n) { return n < 10 ? '0' + n : String(n); }
 		return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' +
 			p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
 	}
 
+	// Lee el registro completo guardado; todas las operaciones del registro pasan por aquí.
 	function all() {
 		return root.CodeStore.get(KEY, []);
 	}
 
+	// Avisa a quien escucha el registro (el semáforo de Ajustes) cada vez que cambia.
 	function emit() {
 		listeners.forEach(function (fn) { fn(); });
 	}
@@ -99,16 +104,19 @@
 		emit();
 	}
 
+	// Cuenta los errores sin revisar. El semáforo rojo se enciende solo si este número es mayor que cero.
 	function unseen() {
 		return all().filter(function (e) { return !e.seen; }).length;
 	}
 
+	// Marca todo como visto. Se llama al abrir Ajustes, porque ahí el usuario ya puede leer los errores.
 	function markAllSeen() {
 		var list = all().map(function (e) { e.seen = true; return e; });
 		root.CodeStore.set(KEY, list);
 		emit();
 	}
 
+	// Borra el registro completo a petición del usuario.
 	function clear() {
 		root.CodeStore.set(KEY, []);
 		emit();

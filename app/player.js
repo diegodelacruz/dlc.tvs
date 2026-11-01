@@ -14,19 +14,23 @@
 	var progressHooks = [];
 	var lastTick = 0;
 
+	// Estado de solo lectura del reproductor: archivo actual, estado (reproduciendo, pausa, terminado) y modo (completo o mini).
 	function snapshot() {
 		return { file: current, state: state, mode: mode };
 	}
 
+	// Avisa a los suscriptores de cualquier cambio, para que barra, mini y pantallas se mantengan sincronizadas.
 	function emit() {
 		listeners.forEach(function (fn) { fn(snapshot()); });
 	}
 
+	// Cambia el estado y avisa. Se llama desde los eventos del <video>, no desde la interfaz, para reflejar lo que hace el motor.
 	function setState(next) {
 		state = next;
 		emit();
 	}
 
+	// Informa el avance a quien guarda el progreso (Continuar viendo). Al terminar, informa posición 0 y marca el fin.
 	function reportProgress(ended) {
 		if (!current || !video) return;
 		progressHooks.forEach(function (fn) {
@@ -34,10 +38,12 @@
 		});
 	}
 
+	// Guarda la posición del archivo en memoria para retomarla al reabrirlo en esta sesión. No se guarda si el video terminó.
 	function savePosition() {
 		if (current && video && state !== 'ended') positions[current.id] = video.currentTime;
 	}
 
+	// Conecta el único <video> de la app y sus eventos. Se hace una sola vez al arrancar.
 	function init(el) {
 		video = el;
 		video.addEventListener('playing', function () {
@@ -118,11 +124,13 @@
 		setState('idle');
 	}
 
+	// Cambia entre vista completa y mini sin mover el <video> de sitio; la página decide cómo mostrarlo.
 	function setMode(next) {
 		mode = next;
 		emit();
 	}
 
+	// Registra un suscriptor y le entrega el estado actual de inmediato.
 	function subscribe(fn) {
 		listeners.push(fn);
 		fn(snapshot());
