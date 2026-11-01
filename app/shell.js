@@ -53,6 +53,8 @@
 	var fullToggle = document.getElementById('full-toggle');
 	var fullFwd = document.getElementById('full-fwd');
 	var fullTracks = document.getElementById('full-tracks');
+	var fullControls = document.getElementById('full-controls');
+	var fileExt = '';
 
 	var STATE_TEXT = { playing: 'Reproduciendo', paused: 'En pausa', ended: 'Terminado', idle: '' };
 
@@ -167,11 +169,17 @@
 		chromeTimer = setTimeout(hideChrome, CHROME_MS);
 	}
 
-	function showChrome() {
+	// Muestra los controles sin mover el foco (lo usa el puntero).
+	function revealChrome() {
 		stage.setAttribute('data-chrome', '');
 		updateFullTime();
-		fullProgress.focus();
 		armChrome();
+	}
+
+	// Muestra los controles y lleva el foco a la barra (lo usan las teclas).
+	function showChrome() {
+		revealChrome();
+		fullProgress.focus();
 	}
 
 	function hideChrome() {
@@ -182,12 +190,12 @@
 		if (active && document.getElementById('full-controls').contains(active)) active.blur();
 	}
 
-	// Texto del botón de audio y subtítulos: muestra la pista activa sin abrir el panel.
+	// Pistas activas: se muestran como subtítulo del encabezado, no dentro de los botones.
 	function updateTracksLabel() {
 		var label = trackPanel.summary();
 		if (label === lastTracksLabel) return;
 		lastTracksLabel = label;
-		fullTracks.innerHTML = ICON('subtitles', 26) + ' ' + label;
+		fullMeta.textContent = (fileExt ? fileExt + ' · ' : '') + label;
 	}
 
 	function updateFullTime() {
@@ -197,7 +205,7 @@
 		barKnob.style.left = pct + '%';
 		fullTime.textContent = L.formatTime(st.time);
 		fullDuration.textContent = L.formatTime(st.duration);
-		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 26) + (player.paused ? ' Reproducir' : ' Pausa');
+		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 44);
 		updateTracksLabel();
 	}
 
@@ -209,7 +217,8 @@
 			stage.setAttribute('data-modal', '');
 			if (s.file) {
 				fullTitle.textContent = L.titleOf(s.file.name);
-				fullMeta.textContent = L.extOf(s.file.name) + (s.state === 'playing' ? ' · reproduciendo' : '');
+				fileExt = L.extOf(s.file.name);
+				lastTracksLabel = '';
 			}
 		} else {
 			stage.removeAttribute('data-modal');
@@ -402,17 +411,17 @@
 	fullFwd.onclick = function () { CP.seekBy(SKIP_S); return false; };
 	fullTracks.onclick = function () { trackPanel.open(this); return false; };
 
-	fullBack.innerHTML = ICON('back10', 26) + ' 10 s';
-	fullFwd.innerHTML = ICON('fwd10', 26) + ' 10 s';
-	fullTracks.innerHTML = ICON('subtitles', 26) + ' Audio y subtítulos';
-	fullToggle.innerHTML = ICON('pause', 26) + ' Pausa';
+	fullBack.innerHTML = ICON('back10', 36);
+	fullFwd.innerHTML = ICON('fwd10', 36);
+	fullTracks.innerHTML = ICON('subtitles', 36);
+	fullToggle.innerHTML = ICON('pause', 44);
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
 	miniFull.innerHTML = ICON('expand', 28);
 	miniSize.innerHTML = ICON('resize', 28);
 	miniPrev.innerHTML = ICON('prev', 28);
 	miniNext.innerHTML = ICON('next', 28);
-	fullPrev.innerHTML = ICON('prev', 26) + ' Anterior';
-	fullNext.innerHTML = ICON('next', 26) + ' Siguiente';
+	fullPrev.innerHTML = ICON('prev', 36);
+	fullNext.innerHTML = ICON('next', 36);
 	miniPrev.onclick = function () { prevVideo(); return false; };
 	miniNext.onclick = function () { nextVideo(); return false; };
 	fullPrev.onclick = function () { prevVideo(); return false; };
@@ -453,6 +462,12 @@
 	});
 
 	window.addEventListener('resize', function () { placeStage(CP.snapshot()); });
+
+	// Puntero en el tercio inferior de la vista normal: muestra los controles, sin mover el foco.
+	document.addEventListener('mousemove', function (e) {
+		if (!inFull || trackPanel.isOpen()) return;
+		if (e.clientY >= window.innerHeight * 2 / 3 || fullControls.contains(e.target)) revealChrome();
+	});
 
 	// Rueda del Magic Remote: desplaza la página cuando no hay vista completa ni visor.
 	document.addEventListener('wheel', function (e) {

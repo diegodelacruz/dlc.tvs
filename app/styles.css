@@ -756,9 +756,10 @@ a.row:focus {
 /* ---------- Reproductor a pantalla completa ---------- */
 #full-head {
 	position: absolute;
-	top: var(--safe-y);
-	left: var(--safe-x);
-	right: var(--safe-x);
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: var(--safe-y) var(--safe-x) 0;
 }
 
 #full-head h1 {
@@ -1084,4 +1085,64 @@ a.srow:focus {
 
 .notice[hidden] {
 	display: none;
+}
+
+/* Vista normal: una sola barra con la posición del video y los controles solo con iconos. */
+#full-controls {
+	padding: 70px var(--safe-x) 36px;
+	background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.9) 45%);
+}
+
+#full-progress {
+	display: block;
+	padding: 12px 18px 8px;
+	border-radius: 12px;
+	background-color: rgba(35, 37, 50, 0.85);
+	border: 2px solid transparent;
+}
+
+#full-progress:focus {
+	border-color: var(--accent-hi);
+	box-shadow: none;
+}
+
+#full-controls .bar-times {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 8px;
+	font-size: 22px;
+	color: var(--text-2);
+}
+
+#full-controls .full-actions {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 22px;
+}
+
+#full-controls a.ctl {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 84px;
+	height: 84px;
+	margin: 0 12px;
+	padding: 0;
+	border-radius: 16px;
+	border: 2px solid var(--line);
+	background-color: var(--surface-2);
+	color: var(--text);
+}
+
+#full-controls a.ctl.ctl-main {
+	width: 104px;
+	height: 104px;
+	background-color: var(--accent-fill);
+	border-color: var(--accent);
+	color: var(--on-accent);
+}
+
+#full-controls a.ctl.disabled {
+	opacity: 0.35;
 }
