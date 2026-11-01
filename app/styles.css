@@ -422,7 +422,7 @@ p {
 
 .card {
 	display: block;
-	width: 340px;
+	width: 300px;
 	margin: 0 14px 30px 14px;
 	background-color: var(--surface);
 	border-radius: var(--radius-l);
@@ -437,7 +437,7 @@ a.card:focus {
 
 .thumb {
 	position: relative;
-	height: 190px;
+	height: 169px;
 	background: repeating-linear-gradient(135deg, #2a2d3d 0 16px, #232532 16px 32px);
 	overflow: hidden;
 }
@@ -511,14 +511,23 @@ a.card:focus {
 	text-overflow: ellipsis;
 }
 
+/* Ver todo: angosta, del mismo alto que las tarjetas (la fila la estira) y centrada. */
 .card.more {
+	display: flex;
+	flex-direction: column;
 	background-color: #000000;
 	border: 2px solid var(--line);
-	width: 330px;
+	width: 190px;
 }
 
 .card.more .card-body {
-	padding: 220px 30px 0 30px;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	padding: 20px;
 }
 
 .card.more .arrow {

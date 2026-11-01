@@ -147,7 +147,8 @@
 			return;
 		}
 		var r = slot.getBoundingClientRect();
-		var scale = root.CodeStore.settings().miniSize === 'grande' ? 2 : 1;
+		// Normal y grande: proporciones intermedias entre el tamaño anterior (1x y 2x) y lo que se ve bien en la TV.
+		var scale = root.CodeStore.settings().miniSize === 'grande' ? 1.75 : 1.35;
 		var width = r.width * scale;
 		var height = width / videoRatio;
 		// Un video vertical no debe tapar la pantalla: si la altura pasa del máximo, se reduce el ancho.
