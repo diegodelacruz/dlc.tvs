@@ -76,6 +76,7 @@
 	function card(o) {
 		var a = el('a', 'card');
 		a.href = '#';
+		if (o.id) a.setAttribute('data-id', o.id);
 		a.onclick = function () { o.onPick(); return false; };
 		var thumb = el('div', 'thumb');
 		if (o.imageUrl) {
@@ -125,6 +126,7 @@
 	function row(o) {
 		var a = el('a', 'row');
 		a.href = '#';
+		if (o.id) a.setAttribute('data-id', o.id);
 		a.onclick = function () { o.onPick(); return false; };
 		var tile = el('span', 'tile' + (o.art ? ' art' : ''));
 		tile.innerHTML = o.art ? ICON('wave', 28) : KIND_ICON(o.kind, 30);
@@ -301,15 +303,17 @@
 				var date = L.dateText(item.modifiedTime);
 				if (item.kind === 'folder') {
 					box.appendChild(row({
-						kind: 'folder', title: item.name, date: date, size: '',
+						kind: 'folder', id: item.id, title: item.name, date: date, size: '',
 						onPick: function () {
+							// Al volver con Atrás, el foco regresa a esta carpeta.
+							explore.stack[explore.stack.length - 1].focusId = item.id;
 							explore.stack.push({ id: item.id, name: item.name });
 							renderExplore();
 						},
 					}));
 				} else {
 					box.appendChild(row({
-						kind: item.kind, title: item.name, date: date, size: L.sizeText(item.size),
+						kind: item.kind, id: item.id, title: item.name, date: date, size: L.sizeText(item.size),
 						onPick: function () {
 							remember(item);
 							openItem(item, sorted, sorted.indexOf(item));
@@ -318,7 +322,7 @@
 				}
 			});
 			status('explore-status', sorted.length ? plural(sorted.length, 'elemento', 'elementos') + ' · carpetas primero' : 'Carpeta vacía: no hay archivos compatibles.');
-			if (root.CodeShell.current() === 'explorar') focusFirst('explore-list');
+			if (root.CodeShell.current() === 'explorar') restoreFocus('explore-list', explore.stack[explore.stack.length - 1]);
 		}).catch(function (e) { fail('explore-status', e); });
 	}
 
@@ -328,7 +332,17 @@
 		else showVideoList();
 	}
 
+	// Enfoca el elemento de la lista que lleva el id guardado; si no hay ninguno, el primero.
+	function restoreFocus(boxId, entry) {
+		var target = entry && entry.focusId ? $(boxId).querySelector('[data-id="' + entry.focusId + '"]') : null;
+		if (entry) entry.focusId = null;
+		if (target) target.focus();
+		else focusFirst(boxId);
+	}
+
 	function showVideoList() {
+		var restoreId = videoState.lastId;
+		videoState.lastId = null;
 		videoState.detail = null;
 		$('video-detail').hidden = true;
 		$('video-list').hidden = false;
@@ -345,19 +359,24 @@
 				var entry = progress[item.id];
 				var inProgress = L.isInProgress(entry);
 				grid.appendChild(card({
-					kind: 'video', chip: L.extOf(item.name), note: item.path.indexOf(' / ') >= 0 ? item.path.split(' / ').slice(-2, -1)[0] : '',
+					kind: 'video', id: item.id, chip: L.extOf(item.name), note: item.path.indexOf(' / ') >= 0 ? item.path.split(' / ').slice(-2, -1)[0] : '',
 					title: L.titleOf(item.name),
 					meta: inProgress ? L.remainingText(entry.time, entry.duration) : L.sizeText(item.size),
 					progress: inProgress && entry.duration ? entry.time / entry.duration : 0,
 					onPick: function () { showVideoDetail(item); },
 				}));
 			});
-			if (root.CodeShell.current() === 'video') focusFirst('video-list');
+			if (root.CodeShell.current() === 'video') {
+				var back = restoreId ? grid.querySelector('[data-id="' + restoreId + '"]') : null;
+				if (back) back.focus();
+				else focusFirst('video-list');
+			}
 		}).catch(function (e) { fail('video-status', e); });
 	}
 
 	function showVideoDetail(item) {
 		videoState.detail = item;
+		videoState.lastId = item.id;
 		$('video-list').hidden = true;
 		$('video-count').textContent = '';
 		status('video-status', '');
