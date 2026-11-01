@@ -515,6 +515,24 @@ a.card:focus {
 	text-overflow: ellipsis;
 }
 
+/* Dos tarjetas apiladas con el ancho de "Ver todo"; se estiran a la altura de la fila. */
+.card-stack {
+	display: flex;
+	flex-direction: column;
+	width: 190px;
+	margin: 0 14px 30px 14px;
+}
+
+.card-stack > .card.more {
+	width: auto;
+	flex: 1;
+	margin: 0 0 12px 0;
+}
+
+.card-stack > .card.more:last-child {
+	margin-bottom: 0;
+}
+
 .card-folder {
 	font-size: 16px;
 	color: var(--muted);

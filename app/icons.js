@@ -43,6 +43,7 @@
 		viewGrid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
 		skipBack: '<path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.5" font-size="7" font-family="Inter, sans-serif" text-anchor="middle" fill="currentColor" stroke="none">10</text>',
 		skipFwd: '<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15.5" font-size="7" font-family="Inter, sans-serif" text-anchor="middle" fill="currentColor" stroke="none">10</text>',
+		trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
 		zoom: '<circle cx="11" cy="11" r="7"/><path d="M16 16l5 5M11 8v6M8 11h6"/>',
 		fullscreen: '<path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/>',
 		repeat: '<path d="M4 12V9a3 3 0 0 1 3-3h11M20 12v3a3 3 0 0 1-3 3H6"/><path d="M17 3l3 3-3 3M7 21l-3-3 3-3"/>',

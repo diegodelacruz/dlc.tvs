@@ -148,6 +148,31 @@
 		return a;
 	}
 
+	// Borra el historial de Continuar viendo. Pide confirmación: un OK accidental no debe borrar nada.
+	var clearPending = null;
+	function clearCard() {
+		var a = el('a', 'card more clear-card');
+		a.href = '#';
+		a.innerHTML = '<div class="card-body"><div class="arrow">' + ICON('trash', 30) + '</div></div>';
+		var body = a.querySelector('.card-body');
+		var title = el('div', 'card-title', clearPending ? '¿Borrar? OK de nuevo' : 'Borrar historial');
+		body.appendChild(title);
+		body.appendChild(el('div', 'card-meta', 'de Continuar viendo'));
+		a.onclick = function () {
+			if (!clearPending) {
+				clearPending = setTimeout(function () { clearPending = null; renderHome(); }, 4000);
+				renderHome();
+				return false;
+			}
+			clearTimeout(clearPending);
+			clearPending = null;
+			root.CodeStore.set('progress', {});
+			renderHome();
+			return false;
+		};
+		return a;
+	}
+
 	// Mensaje cuando una sección no tiene contenido, para que la pantalla nunca quede vacía sin explicación.
 	function emptyNote(parent, msg) {
 		parent.appendChild(el('p', 'status', msg));
@@ -186,7 +211,7 @@
 
 	// ---------- Inicio ----------
 	// Continuar viendo muestra como máximo 5 tarjetas; la sexta es Ver todo.
-	var HOME_ROW = 5;
+	var CONTINUE_LIMIT = 3; // Número fijo de tarjetas de Continuar viendo. Pendiente de pasar a Ajustes.
 
 	// Dibuja Inicio: Continuar viendo (una tarjeta por carpeta), Recientes (solo videos), accesos y favoritas.
 	function renderHome() {
@@ -200,7 +225,7 @@
 			seenFolders[key] = true;
 			return true;
 		});
-		var shown = inProgress.slice(0, HOME_ROW);
+		var shown = inProgress.slice(0, CONTINUE_LIMIT);
 		$('continue-count').textContent = inProgress.length ? plural(inProgress.length, 'carpeta', 'carpetas') : '';
 		if (inProgress.length === 0) emptyNote(cont, 'Nada en curso. Empieza un video desde Video o Explorar.');
 		shown.forEach(function (e) {
@@ -212,7 +237,11 @@
 			}));
 		});
 		if (inProgress.length > 0) {
-			cont.appendChild(moreCard(plural(inProgress.length, 'elemento', 'elementos'), function () { root.CodeShell.show(root.CodeFlags.videoSection ? 'video' : 'explorar'); }));
+			// Columna de dos tarjetas apiladas, del mismo ancho que "Ver todo": borrar historial (arriba) y Ver todo (abajo).
+			var stack = el('div', 'card-stack');
+			stack.appendChild(clearCard());
+			stack.appendChild(moreCard(plural(inProgress.length, 'elemento', 'elementos'), function () { root.CodeShell.show(root.CodeFlags.videoSection ? 'video' : 'explorar'); }));
+			cont.appendChild(stack);
 		}
 
 		var rec = $('home-recent');
