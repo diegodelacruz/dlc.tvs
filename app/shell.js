@@ -430,25 +430,41 @@
 		showRates();
 	}
 
-	function pressForward() {
-		var before = CP.status().time;
-		stopRewind();
-		rate.fwd = (rate.fwd + 1) % RATES.length;
-		applyForwardRate();
-		if (player.paused && CP.snapshot().file) {
-			var p = player.play();
-			if (p && p.catch) p.catch(function () {});
-		}
-		showRates();
-		// Diagnóstico: si la posición retrocede tras cambiar la velocidad, queda registrado con los tiempos.
-		var speed = RATES[rate.fwd];
+	// Control de posición tras cambiar la velocidad (mitigación): si el video queda atrás de la posición
+	// esperada más de 1.5 s, se corrige a esa posición y se registra. No cambia la velocidad elegida.
+	var speedChangeId = 0;
+	function changeSpeed(apply) {
+		var id = ++speedChangeId;
+		var wasPlaying = !player.paused;
+		apply();
+		if (!wasPlaying) return;
+		var t0 = player.currentTime;
+		var at = Date.now();
+		var r = player.playbackRate;
 		setTimeout(function () {
-			var now = CP.status().time;
-			if (now < before - 1) {
-				root.CodeErrors.record('Reproducción', 'Salto hacia atrás tras cambiar la velocidad a ' + speed + 'x: de ' +
-					Math.round(before) + ' s a ' + Math.round(now) + ' s.');
+			if (id !== speedChangeId || player.paused) return;
+			var expected = t0 + (Date.now() - at) / 1000 * r;
+			if (expected >= (player.duration || Infinity)) return;
+			var now = player.currentTime;
+			if (now < expected - 1.5) {
+				root.CodeErrors.record('Reproducción', 'La posición retrocedió al cambiar la velocidad a ' + r + 'x: de ' +
+					Math.round(expected) + ' s esperados a ' + Math.round(now) + ' s. Se corrigió.');
+				player.currentTime = expected;
 			}
 		}, 1500);
+	}
+
+	function pressForward() {
+		stopRewind();
+		rate.fwd = (rate.fwd + 1) % RATES.length;
+		changeSpeed(function () {
+			applyForwardRate();
+			if (player.paused && CP.snapshot().file) {
+				var p = player.play();
+				if (p && p.catch) p.catch(function () {});
+			}
+		});
+		showRates();
 	}
 
 	// Un video nuevo empieza a 1x en ambos sentidos.
@@ -588,7 +604,7 @@
 		// Con avance a otra velocidad, este botón vuelve a 1x; si no, reproduce o pausa.
 		if (rate.fwd !== 1 && !rate.rewTimer) {
 			rate.fwd = 1;
-			applyForwardRate();
+			changeSpeed(applyForwardRate);
 			showRates();
 			return false;
 		}
