@@ -120,7 +120,7 @@
 		'NO cargada': 'NOT loaded', 'cargada': 'loaded', ' · Llave (js/service-account.js): ': ' · Key (js/service-account.js): ',
 		'Cargando…': 'Loading…', 'Vuelve al inicio de la página': 'Back to the top of the page',
 		'Sube la página y lleva el foco al primer elemento': 'Scrolls up and moves focus to the first item',
-		'Motor web': 'Web engine'
+		'Motor web': 'Web engine', 'Visto': 'Watched'
 	};
 
 	var MONTHS_EN = { ene: 'Jan', feb: 'Feb', mar: 'Mar', abr: 'Apr', may: 'May', jun: 'Jun', jul: 'Jul', ago: 'Aug', sep: 'Sep', oct: 'Oct', nov: 'Nov', dic: 'Dec' };

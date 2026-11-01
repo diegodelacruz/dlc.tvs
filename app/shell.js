@@ -538,8 +538,12 @@
 	}
 
 	// Al terminar, sigue con el siguiente video de la lista (si hay).
+	// Se aplaza un turno: el reproductor debe informar primero que ESTE archivo terminó (marca y progreso),
+	// antes de que nextVideo cambie el archivo actual.
 	player.addEventListener('ended', function () {
-		if (queueIndex >= 0 && queueIndex < queue.length - 1) nextVideo();
+		setTimeout(function () {
+			if (queueIndex >= 0 && queueIndex < queue.length - 1) nextVideo();
+		}, 0);
 	});
 
 	// Errores del propio <video>: se muestran con su código, no quedan en silencio.
@@ -569,6 +573,10 @@
 		var progress = root.CodeStore.get('progress', {});
 		if (ended) {
 			delete progress[file.id];
+			// Visto por completo: la marca no se borra con Continuar viendo.
+			var watched = root.CodeStore.get('watched', {});
+			watched[file.id] = true;
+			root.CodeStore.set('watched', watched);
 		} else {
 			progress[file.id] = { name: file.name, path: file.path || '', time: time, duration: duration, updated: Date.now() };
 		}

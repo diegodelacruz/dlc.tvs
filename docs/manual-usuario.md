@@ -36,6 +36,7 @@ Este manual describe lo que hace la app y cómo usarla. Para detalles técnicos,
 - **Favorita (estrella).** Marca o quita la carpeta actual de favoritas. Está separada del orden por una línea.
 - **Vistas.** Lista (compacta), detalle (con fecha y tamaño) y miniatura (tarjetas, con fotograma para los videos). La vista también se comparte con Música y Fotos.
 - **Recargar (flechas circulares).** Vuelve a leer Drive. Úsalo después de compartir una carpeta nueva: no hace falta reiniciar la app.
+- **Visto.** Los videos vistos hasta el final muestran un círculo con check. La marca no se borra con "Borrar historial"; solo con "Cerrar sesión" en Ajustes.
 - **Posición.** Al salir de Explorar y volver, la lista queda donde la dejaste.
 - **Indicador de posición.** Una barra a la derecha muestra qué parte de la lista estás viendo. Se atenúa tras 3 s sin navegar y no aparece mientras hay un video en reproducción.
 

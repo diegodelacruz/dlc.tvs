@@ -172,9 +172,10 @@ Todas las claves tienen el prefijo `codetv.`.
 | `progress` | `{id: {name, path, time, duration, updated}}` | `shell.js` (`saveProgress`) |
 | `recent` | Lista de los últimos 30 archivos abiertos, con su ruta. | `screens.js` (`remember`) |
 | `favs` | Carpetas favoritas. | `screens.js` |
+| `watched` | Videos vistos por completo: `{id: true}`. Independiente de `progress`, así borrar el historial de Continuar viendo no la quita. | `shell.js` (`saveProgress`) |
 | `errors` | Registro de errores (máximo 50). | `errors.js` |
 
-"Cerrar sesión" en Ajustes borra progreso, recientes, favoritas y ajustes. No borra el registro de errores.
+"Cerrar sesión" en Ajustes borra progreso, recientes, favoritas, vistos y ajustes. No borra el registro de errores.
 
 ## 9. Decisiones y su motivo
 

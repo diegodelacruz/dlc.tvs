@@ -127,6 +127,7 @@
 			bar.appendChild(fill);
 			thumb.appendChild(bar);
 		}
+		if (o.watched) thumb.appendChild(watchedMark());
 		a.appendChild(thumb);
 		var body = el('div', 'card-body');
 		body.appendChild(el('div', 'card-title', o.title));
@@ -155,6 +156,7 @@
 		a.href = '#';
 		a.innerHTML = '<div class="card-body"><div class="arrow">' + ICON('trash', 30) + '</div></div>';
 		var body = a.querySelector('.card-body');
+		if (clearPending) a.className += ' confirm';
 		var title = el('div', 'card-title', clearPending ? '¿Borrar? OK de nuevo' : 'Borrar historial');
 		body.appendChild(title);
 		body.appendChild(el('div', 'card-meta', 'de Continuar viendo'));
@@ -179,6 +181,19 @@
 	}
 
 	// Fila de lista: tile con icono, nombre (y ruta), columnas de fecha y tamaño.
+	// Marca de archivo visto por completo. Se guarda aparte del progreso, así Continuar viendo no la borra.
+	function watchedMark() {
+		var m = el('span', 'watched-mark');
+		m.innerHTML = ICON('check', 20);
+		m.setAttribute('aria-label', 'Visto');
+		return m;
+	}
+
+	// Consulta si un video se vio por completo.
+	function isWatched(id) {
+		return Boolean(root.CodeStore.get('watched', {})[id]);
+	}
+
 	function row(o) {
 		var a = el('a', 'row');
 		a.href = '#';
@@ -203,6 +218,7 @@
 			a.appendChild(tag);
 			o.tagNode = tag;
 		}
+		if (o.watched) a.appendChild(watchedMark());
 		if (o.date !== undefined) a.appendChild(el('span', 'row-col wide', o.date));
 		if (o.size !== undefined) a.appendChild(el('span', 'row-col', o.size));
 		o.node = a;
@@ -414,7 +430,7 @@
 					}));
 				} else {
 					box.appendChild(row({
-						kind: item.kind, id: item.id, title: item.name, date: detail ? L.dateText(item.modifiedTime) : '', size: detail ? L.sizeText(item.size) : '',
+						kind: item.kind, id: item.id, title: item.name, date: detail ? L.dateText(item.modifiedTime) : '', size: detail ? L.sizeText(item.size) : '', watched: isWatched(item.id),
 						onPick: function () {
 							remember(item);
 							openItem(item, sorted, sorted.indexOf(item));
@@ -945,6 +961,7 @@
 			root.CodeStore.set('progress', {});
 			root.CodeStore.set('recent', []);
 			root.CodeStore.set('favs', []);
+			root.CodeStore.set('watched', {});
 			root.CodeStore.set('settings', {});
 			applySettings();
 			setStatus('Datos de esta TV borrados: progreso, recientes, favoritas y ajustes. El acceso a Drive sigue con la cuenta de servicio de la app.');
@@ -1001,7 +1018,7 @@
 		var image = item.kind === 'video' ? function () { return root.CodeDrive.thumbUrl(item); }
 			: item.kind === 'image' ? function () { return root.CodeDrive.urlFor(item); } : null;
 		return card({
-			kind: item.kind, id: item.id, chip: KIND_LABEL[item.kind] || 'Archivo', note: L.extOf(item.name),
+			kind: item.kind, id: item.id, chip: KIND_LABEL[item.kind] || 'Archivo', note: L.extOf(item.name), watched: isWatched(item.id),
 			title: L.titleOf(item.name), meta: L.sizeText(item.size), imageUrl: image,
 			onPick: function () { remember(item); openItem(item, sorted, sorted.indexOf(item)); },
 		});

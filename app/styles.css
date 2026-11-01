@@ -523,6 +523,48 @@ a.card:focus {
 	margin: 0 14px 30px 14px;
 }
 
+/* Marca de visto: un círculo con check sobre la miniatura (tarjetas) o al final de la fila (lista). */
+.watched-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: 30px;
+	height: 30px;
+	margin-left: 12px;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, 0.6);
+	color: var(--accent-hi);
+}
+
+.watched-mark svg {
+	width: 20px;
+	height: 20px;
+	margin: 0;
+}
+
+.thumb .watched-mark {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	margin: 0;
+}
+
+/* Confirmación de Borrar historial: texto pequeño y tenue, para que se note sin llamar la atención. */
+.clear-card.confirm {
+	border-color: #8a6d3b;
+}
+
+.clear-card.confirm .card-title {
+	font-size: 18px;
+	font-weight: 400;
+	color: #c9a04f;
+}
+
+.clear-card.confirm .card-meta {
+	color: #8a6d3b;
+}
+
 .card-stack > .card.more {
 	width: auto;
 	flex: 1;
