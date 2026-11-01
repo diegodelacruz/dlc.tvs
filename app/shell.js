@@ -431,6 +431,7 @@
 	}
 
 	function pressForward() {
+		var before = CP.status().time;
 		stopRewind();
 		rate.fwd = (rate.fwd + 1) % RATES.length;
 		applyForwardRate();
@@ -439,6 +440,15 @@
 			if (p && p.catch) p.catch(function () {});
 		}
 		showRates();
+		// Diagnóstico: si la posición retrocede tras cambiar la velocidad, queda registrado con los tiempos.
+		var speed = RATES[rate.fwd];
+		setTimeout(function () {
+			var now = CP.status().time;
+			if (now < before - 1) {
+				root.CodeErrors.record('Reproducción', 'Salto hacia atrás tras cambiar la velocidad a ' + speed + 'x: de ' +
+					Math.round(before) + ' s a ' + Math.round(now) + ' s.');
+			}
+		}, 1500);
 	}
 
 	// Un video nuevo empieza a 1x en ambos sentidos.

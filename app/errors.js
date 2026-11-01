@@ -7,6 +7,9 @@
 
 	// Patrones (en orden): el primero que coincida define título, explicación y acción.
 	var RULES = [
+		{ test: /Salto hacia atrás tras cambiar la velocidad/, title: 'La posición retrocedió al cambiar la velocidad',
+			explain: 'Al subir la velocidad, el video volvió a un punto anterior sin que se pidiera un salto.',
+			action: 'Anota la velocidad y los pasos previos; el detalle técnico muestra los segundos de antes y después.' },
 		{ test: /Falta js\/|no cargó|Falta la biblioteca/i, title: 'Un archivo de la app no cargó',
 			explain: 'La TV no encontró js/app.js o js/service-account.js. Sin ellos no hay acceso a Drive.',
 			action: 'Vuelve a instalar la app completa (npm run package:tv y ares-install).' },
