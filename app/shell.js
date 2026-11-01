@@ -444,7 +444,6 @@
 			armSentinel();
 			return;
 		}
-		if (result) hint(result);
 		if (current === 'inicio') {
 			// Atrás en Inicio: sin más historial, el sistema cierra la app.
 			if (!result) history.back();
@@ -468,7 +467,6 @@
 	// es un Atrás. Si la tecla llega primero, el evento de historial que llegue después se ignora.
 	var sentinel = false;
 	var lastBackAt = 0;
-	var hintTimer = null;
 	var SECTION_NAME = { inicio: 'Inicio', explorar: 'Explorar', video: 'Video', musica: 'Música', fotos: 'Fotos', ajustes: 'Ajustes' };
 
 	function armSentinel() {
@@ -476,15 +474,6 @@
 			history.pushState({ codetv: true }, '');
 			sentinel = true;
 		}
-	}
-
-	// Aviso breve con la acción que hizo Atrás (se oculta solo).
-	function hint(text) {
-		clearTimeout(hintTimer);
-		var box = document.getElementById('notice');
-		box.textContent = text;
-		box.hidden = false;
-		hintTimer = setTimeout(function () { box.hidden = true; }, 1800);
 	}
 
 	// Una acción de Atrás fuera de la vista completa. Devuelve el texto de la acción, o '' si no hubo ninguna.
@@ -518,7 +507,6 @@
 			// En Inicio sin nada que hacer no se previene: el sistema decide (cerrar la app).
 			if (result) {
 				e.preventDefault();
-				hint(result);
 				armSentinel();
 			}
 			return;
