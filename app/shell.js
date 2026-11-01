@@ -275,9 +275,8 @@
 	}
 
 	// Indicador de carga visible en cualquier pantalla, desde el clic hasta que empieza el video.
-	function setBusy(on, name) {
+	function setBusy(on) {
 		busyEl.hidden = !on;
-		if (on) busyText.textContent = 'Cargando' + (name ? ' «' + name + '»' : '') + '…';
 	}
 
 	function cancelLoad() {
@@ -346,7 +345,7 @@
 		var wasFull = inFull;
 		var token = ++loadToken;
 		clearNotice();
-		setBusy(true, file.name);
+		setBusy(true);
 		ensureQueue(file, list).then(function () {
 			return root.CodeDrive.urlFor(file);
 		}).then(function (url) {
@@ -387,7 +386,12 @@
 			(err && err.message ? ' Detalle: ' + err.message : ''));
 		if (inFull) showChrome();
 	});
+	// Búfer vacío: el video espera datos. Se indica con un giro encima del video, sin texto.
+	player.addEventListener('waiting', function () {
+		stage.setAttribute('data-buffering', '');
+	});
 	player.addEventListener('playing', function () {
+		stage.removeAttribute('data-buffering');
 		playingSeen = true;
 		setBusy(false);
 		clearTimeout(loadTimer);
