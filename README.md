@@ -1,82 +1,67 @@
 # CodeTV
 
-Aplicación para LG webOS TV que reproduce audio, imágenes y video desde Google Drive.
+CodeTV es una aplicación para televisores LG con webOS que reproduce **audio, imágenes y video guardados en Google Drive**, con navegación pensada para el control remoto.
 
-Estado actual: **Hito 0** completo y **Hitos 2 y 3** con código y pruebas simuladas. Falta probar con credenciales y en la TV.
+## Qué hace
+
+- **Inicio:** Continuar viendo (una tarjeta por carpeta) y Recientes (últimos videos vistos).
+- **Explorar:** navega las carpetas de la biblioteca, con orden, tres vistas, favoritas y recarga.
+- **Música y Fotos:** listas con el mismo orden y vista que Explorar; presentación y visor de fotos.
+- **Reproductor:** mini reproductor y vista completa, con velocidades de 0.5x a 10x, saltos de 10 s y subtítulos incrustados.
+- **Errores explicados:** registro con fecha, explicación, acción y detalle técnico, con un semáforo en Ajustes.
+
+## Documentación
+
+| Documento | Idioma | Para quién |
+|---|---|---|
+| [Manual de usuario](docs/manual-usuario.md) | Español | Quien usa la app. |
+| [Arquitectura](docs/arquitectura.md) | Español | Quien mantiene o extiende el código. |
+| [Implementation guide](docs/en/implementation.md) | Inglés | Developers who maintain the code. |
+| [Matriz de pruebas](docs/pruebas.md) | Español | Resultados por TV y casos de uso. |
+
+Documentos de diseño e investigación: [plan.md](docs/plan.md), [investigacion-webos.md](docs/investigacion-webos.md), [diseno-interfaz.md](docs/diseno-interfaz.md), [diseno-mini-reproductor.md](docs/diseno-mini-reproductor.md).
+
+## Requisitos
+
+- Node.js 18 o superior (probado con v22).
+- Para empaquetar: CLI de webOS `@webos-tools/cli` (probado con 3.2.6).
+- Una cuenta de servicio de Google con acceso de lectura a las carpetas compartidas.
+- Opcional: una computadora en la misma red con el proxy (`server/proxy.mjs`) y ffmpeg.
+
+## Inicio rápido
+
+```bash
+npm install
+npm test                 # pruebas automáticas
+npm run build            # compila src/ a app/js/app.js
+npm run check:es2015     # verifica compatibilidad con el motor de la TV
+```
+
+Para instalar en la TV, colocar la llave de la cuenta de servicio en `~/.config/codetv/service-account.json` y ejecutar:
+
+```bash
+npm run package:tv       # genera dist/*.ipk (incluye la llave; no distribuir)
+```
+
+Detalles de la CLI de webOS, perfiles de TV y proxy: ver [arquitectura.md](docs/arquitectura.md), sección 7.
 
 ## Estructura
 
 ```
-app/                 Código de la app webOS (web empaquetada)
-  appinfo.json       Metadatos de la app (id, versión, icono)
-  index.html         Página principal (placeholder)
-  icon.png           Icono pequeño
-  largeIcon.png      Icono grande
-docs/
-  investigacion-webos.md   Hallazgos de plataforma, Developer Mode, Drive y distribución
-  plan.md                  Plan por hitos
-  pruebas.md               Matriz de pruebas por TV
+app/          Interfaz de la app (se empaqueta)
+src/          Módulo de Drive y autenticación (se compila a app/js/)
+server/       Proxy para Drive, remux faststart y subtítulos
+scripts/      Compilación y pruebas manuales de Drive
+test/         Pruebas automáticas
+docs/         Documentación
 ```
 
-## Requisitos de desarrollo
+## Seguridad y privacidad
 
-- Node.js 18 o superior (probado con v22.22.0).
-- CLI de webOS: `@webos-tools/cli` (probado con 3.2.6).
+- La llave de la cuenta de servicio viaja dentro del paquete de la TV. Es aceptable solo para uso personal. No se versiona ni se distribuye.
+- Los datos de uso se guardan solo en la TV; "Cerrar sesión" en Ajustes los borra.
+- El proxy requiere un secreto y debe correr solo en la red local.
 
-Instalación de la CLI, sin agregarla al repositorio:
+## Estado
 
-```bash
-npm install --prefix ~/webos-cli @webos-tools/cli@3.2.6
-export PATH="$HOME/webos-cli/node_modules/.bin:$PATH"
-```
-
-## Construcción y empaquetado
-
-```bash
-npm install
-npm run build          # compila src/ a app/js/app.js (Chrome 53, script clásico)
-npm run check:es2015   # verifica que el bundle es ES2015
-ares-package app -o dist
-```
-
-`app/js/` se genera; no se edita a mano ni se versiona.
-
-Genera `dist/com.diegodelacruz.codetv_<versión>_all.ipk`. La carpeta `dist/` está en `.gitignore`.
-
-## Próximos pasos
-
-Ver [docs/plan.md](docs/plan.md). Los hitos que dependen de credenciales (Google Cloud, cuenta LG, IP de las TV) se harán al final.
-
-## Diseño de interfaz
-
-Ver [docs/diseno-interfaz.md](docs/diseno-interfaz.md): referencias revisadas, principios, estructura de pantallas y criterios de foco.
-
-## Prototipo
-
-- [docs/prototipo/CodeTV.html](docs/prototipo/CodeTV.html): prototipo navegable (un solo archivo, sin conexión). Flechas = D-pad, Enter = OK, Escape/Backspace = Atrás.
-- [docs/prototipo/captura-inicio.png](docs/prototipo/captura-inicio.png): captura de la pantalla de Inicio a 1920x1080.
-- [docs/revision-prototipo.md](docs/revision-prototipo.md): resultados de la revisión con teclado y pendientes.
-- [docs/factibilidad-mini-reproductor.md](docs/factibilidad-mini-reproductor.md): factibilidad del mini reproductor de video.
-
-## Tokens (borrador)
-
-- [app/src/styles/tokens.json](app/src/styles/tokens.json) y [app/src/styles/tokens.css](app/src/styles/tokens.css): colores de los cinco temas, tipografía, márgenes de seguridad y foco, derivados del prototipo. Son un borrador hasta que se aprueben los tokens oficiales.
-
-## Pruebas
-
-```bash
-npm test
-```
-
-Usa el runner integrado de Node 22. Las pruebas de autenticación y Drive usan respuestas simuladas, no llaman a Google.
-
-## Código
-
-- `src/auth/deviceFlow.js`: flujo de dispositivo de Google (código, sondeo, renovación).
-- `src/drive/driveClient.js`: listado de Drive y URL de contenido.
-- `src/main.js`: punto de entrada que compila a `app/js/app.js`.
-- `src/styles/`: tokens de diseño (borrador).
-
-## Compatibilidad
-
-Objetivo: las dos TV de prueba. OLED55B9PSB (webOS 4.5 de fábrica, según fuentes secundarias [No verificado en TV]) y OLED48A1PSA (webOS 6.0 según distribuidor [No verificado en TV]). El bundle se compila para Chrome 53 y no usa módulos ES en el navegador.
+Uso personal, en desarrollo. Las pruebas de interfaz se hacen en TV 2021 (OLED48A1PSA); la TV 2019 está pendiente. Ver [pruebas.md](docs/pruebas.md) para el estado de cada caso.
