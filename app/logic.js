@@ -53,6 +53,24 @@
 		return out.slice(0, max || 10);
 	}
 
+	// Carpeta de un archivo a partir de su ruta ("Serie / Temporada 1 / ep1.mkv" -> "Serie / Temporada 1").
+	// Sin ruta devuelve null; en la raíz de la biblioteca devuelve ''.
+	function folderOf(path) {
+		if (!path) return null;
+		var i = path.lastIndexOf(' / ');
+		return i < 0 ? '' : path.slice(0, i);
+	}
+
+	// Texto corto de la carpeta para una tarjeta: "Temporada 1 · Serie" (carpeta y nivel superior).
+	function folderLabel(path) {
+		var f = folderOf(path);
+		if (f === null) return 'Carpeta no registrada';
+		if (f === '') return 'Raíz de la biblioteca';
+		var parts = f.split(' / ');
+		var name = parts[parts.length - 1];
+		return parts.length > 1 ? name + ' · ' + parts[parts.length - 2] : name;
+	}
+
 	// Orden de reproducción: índices 0..n-1 en orden o mezclados (Fisher-Yates con randomFn en [0, 1)).
 	function playOrder(n, shuffle, randomFn) {
 		var order = [];
@@ -140,6 +158,8 @@
 		isInProgress: isInProgress,
 		continueList: continueList,
 		pushRecent: pushRecent,
+		folderOf: folderOf,
+		folderLabel: folderLabel,
 		playOrder: playOrder,
 		nextPosition: nextPosition,
 		previousPosition: previousPosition,

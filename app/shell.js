@@ -369,21 +369,14 @@
 		}
 		// Sin lista (p. ej. desde Continuar viendo): el siguiente es el de la misma carpeta de origen.
 		return root.CodeDrive.crawl(['video']).then(function (items) {
-			var folder = folderOf(file.path);
-			var scope = folder === null ? items : items.filter(function (i) { return folderOf(i.path) === folder; });
+			var folder = L.folderOf(file.path);
+			var scope = folder === null ? items : items.filter(function (i) { return L.folderOf(i.path) === folder; });
 			queue = L.sortItems(scope, 'name');
 			queueIndex = indexById(queue, file.id);
 			updateNavButtons();
 		});
 	}
 
-	// Carpeta de un archivo a partir de su ruta ("Serie / Temporada 1 / ep1.mkv" -> "Serie / Temporada 1").
-	// Sin ruta devuelve null: en ese caso no hay carpeta de origen.
-	function folderOf(path) {
-		if (!path) return null;
-		var i = path.lastIndexOf(' / ');
-		return i < 0 ? '' : path.slice(0, i);
-	}
 
 	function nextVideo() {
 		if (queueIndex >= 0 && queueIndex < queue.length - 1) playVideo(queue[queueIndex + 1], 0);

@@ -74,7 +74,7 @@
 	}
 
 	function remember(file) {
-		root.CodeStore.set('recent', L.pushRecent(root.CodeStore.get('recent', []), { id: file.id, name: file.name, kind: file.kind }, 12));
+		root.CodeStore.set('recent', L.pushRecent(root.CodeStore.get('recent', []), { id: file.id, name: file.name, kind: file.kind, path: file.path || '' }, 30));
 	}
 
 	function favorites() {
@@ -122,6 +122,7 @@
 		var body = el('div', 'card-body');
 		body.appendChild(el('div', 'card-title', o.title));
 		if (o.meta) body.appendChild(el('div', 'card-meta', o.meta));
+		if (o.folder) body.appendChild(el('div', 'card-folder', o.folder));
 		a.appendChild(body);
 		return a;
 	}
@@ -179,14 +180,21 @@
 	function renderHome() {
 		var cont = $('home-continue');
 		clear(cont);
-		var inProgress = L.continueList(root.CodeStore.get('progress', {}), 12);
+		// Una tarjeta por carpeta: el último video en curso de cada carpeta, el más reciente primero.
+		var seenFolders = {};
+		var inProgress = L.continueList(root.CodeStore.get('progress', {}), 200).filter(function (e) {
+			var key = L.folderOf(e.path) || '';
+			if (seenFolders[key]) return false;
+			seenFolders[key] = true;
+			return true;
+		});
 		var shown = inProgress.slice(0, HOME_ROW);
-		$('continue-count').textContent = inProgress.length ? plural(inProgress.length, 'en curso', 'en curso') : '';
+		$('continue-count').textContent = inProgress.length ? plural(inProgress.length, 'carpeta', 'carpetas') : '';
 		if (inProgress.length === 0) emptyNote(cont, 'Nada en curso. Empieza un video desde Video o Explorar.');
 		shown.forEach(function (e) {
 			cont.appendChild(card({
 				kind: 'video', chip: 'Video', note: L.extOf(e.name), title: L.titleOf(e.name),
-				meta: L.remainingText(e.time, e.duration), progress: e.duration ? e.time / e.duration : 0,
+				meta: L.remainingText(e.time, e.duration), folder: L.folderLabel(e.path), progress: e.duration ? e.time / e.duration : 0,
 				imageUrl: function () { return root.CodeDrive.thumbUrl({ id: e.id }); },
 				onPick: function () { root.CodeShell.playVideo({ id: e.id, name: e.name, kind: 'video', path: e.path }, e.time); },
 			}));
@@ -197,15 +205,16 @@
 
 		var rec = $('home-recent');
 		clear(rec);
-		var recent = root.CodeStore.get('recent', []);
-		$('recent-count').textContent = recent.length ? plural(recent.length, 'elemento', 'elementos') : '';
-		if (recent.length === 0) emptyNote(rec, 'Todavía no hay archivos recientes.');
-		recent.forEach(function (f) {
+		// Solo videos, en el orden en que se vieron (el último primero). Al elegir uno, sigue el siguiente de esta lista.
+		var recentVideos = root.CodeStore.get('recent', []).filter(function (f) { return f.kind === 'video'; });
+		$('recent-count').textContent = recentVideos.length ? plural(recentVideos.length, 'video', 'videos') : '';
+		if (recentVideos.length === 0) emptyNote(rec, 'Todavía no hay videos recientes.');
+		recentVideos.forEach(function (f) {
 			rec.appendChild(card({
-				kind: f.kind, chip: KIND_LABEL[f.kind] || 'Archivo', note: L.extOf(f.name),
-				title: L.titleOf(f.name), meta: KIND_LABEL[f.kind] || '',
-				imageUrl: f.kind === 'image' ? function () { return root.CodeDrive.urlFor(f); } : f.kind === 'video' ? function () { return root.CodeDrive.thumbUrl(f); } : null,
-				onPick: function () { openItem(f, [f], 0); },
+				kind: 'video', chip: 'Video', note: L.extOf(f.name), id: f.id,
+				title: L.titleOf(f.name), meta: '', folder: L.folderLabel(f.path),
+				imageUrl: function () { return root.CodeDrive.thumbUrl(f); },
+				onPick: function () { root.CodeShell.playVideo(f, 0, recentVideos); },
 			}));
 		});
 
