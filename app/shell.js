@@ -830,6 +830,7 @@
 	var exploreList = document.getElementById('explore-list');
 	var EDGE = 8;
 	function updateScrollInd() {
+		var wasHidden = scrollInd.hidden;
 		scrollInd.hidden = true;
 		// Con un video en reproducción (completo o en mini), el indicador no se muestra.
 		if (current !== 'explorar' || inFull || CP.snapshot().file) return;
@@ -850,6 +851,7 @@
 		scrollThumb.style.height = thumbH + 'px';
 		scrollThumb.style.top = Math.max(0, thumbTop) + 'px';
 		scrollInd.hidden = false;
+		if (wasHidden) wakeScrollInd();
 	}
 	// Semáforo de Ajustes: rojo solo mientras haya errores sin revisar, y solo al navegar (se oculta en reposo).
 	var navTimer = null;
@@ -857,6 +859,7 @@
 		settingsBtn.classList.toggle('alert', root.CodeErrors.unseen() > 0);
 	}
 	function markNavigating() {
+		wakeScrollInd();
 		settingsBtn.classList.add('nav');
 		clearTimeout(navTimer);
 		navTimer = setTimeout(function () { settingsBtn.classList.remove('nav'); }, 5000);
@@ -865,7 +868,14 @@
 	refreshAlert();
 	document.addEventListener('keydown', markNavigating, true);
 	document.addEventListener('mousemove', markNavigating);
-	window.addEventListener('scroll', updateScrollInd);
+	// El indicador se atenúa tras 3 s sin navegar y reaparece con la siguiente tecla, movimiento o desplazamiento.
+	var scrollIdleTimer = null;
+	function wakeScrollInd() {
+		scrollInd.classList.remove('idle');
+		clearTimeout(scrollIdleTimer);
+		scrollIdleTimer = setTimeout(function () { scrollInd.classList.add('idle'); }, 3000);
+	}
+	window.addEventListener('scroll', function () { wakeScrollInd(); updateScrollInd(); });
 	window.addEventListener('resize', updateScrollInd);
 	if (window.ResizeObserver) {
 		var scrollObserver = new ResizeObserver(updateScrollInd);

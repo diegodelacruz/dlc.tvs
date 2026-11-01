@@ -1338,6 +1338,14 @@ a.srow:focus {
 	display: none;
 }
 
+#scroll-ind {
+	transition: opacity 0.3s ease-out;
+}
+
+#scroll-ind.idle {
+	opacity: 0;
+}
+
 #scroll-thumb {
 	position: absolute;
 	left: 0;
