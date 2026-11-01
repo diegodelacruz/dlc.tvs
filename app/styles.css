@@ -1266,6 +1266,7 @@ a.srow:focus {
 }
 
 /* Explorar: la parte superior (ruta, orden, vistas) se queda fija al bajar por la lista. */
+.list-top,
 #explore-top {
 	position: sticky;
 	top: 0;
@@ -1274,10 +1275,19 @@ a.srow:focus {
 	padding: 8px 0 6px 0;
 }
 
+.list-top .section-head,
 #explore-top .section-head {
 	margin-bottom: 14px;
 }
 
+.sortrow {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	margin-bottom: 14px;
+}
+
+.list-top .statusbar,
 #explore-top .statusbar {
 	margin-bottom: 6px;
 }

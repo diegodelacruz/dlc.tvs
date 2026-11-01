@@ -116,12 +116,20 @@
 		</section>
 
 		<section id="sec-musica" class="section" hidden>
-			<div class="section-head">
-				<h1>Música <span class="count" id="music-count"></span></h1>
-				<div class="actions">
-					<a href="#" class="btn primary" id="music-play-all">Reproducir todo</a>
-					<a href="#" class="btn" id="music-shuffle-all">Aleatorio</a>
+			<div class="list-top" id="music-top">
+				<div class="section-head">
+					<h1>Música <span class="count" id="music-count"></span></h1>
+					<div class="actions">
+						<a href="#" class="btn primary" id="music-play-all">Reproducir todo</a>
+						<a href="#" class="btn" id="music-shuffle-all">Aleatorio</a>
+					</div>
 				</div>
+				<div class="sortrow" id="music-sort"></div>
+				<div class="statusbar">
+					<p class="status" id="music-status"></p>
+					<div class="actions" id="music-tools"></div>
+				</div>
+				<div class="columns" id="music-columns"></div>
 			</div>
 			<div class="setting" id="music-now" hidden>
 				<span class="k" id="music-now-title"></span>
@@ -133,19 +141,25 @@
 					<a href="#" class="btn" id="music-repeat">Repetir: no</a>
 				</span>
 			</div>
-			<p class="status" id="music-status"></p>
 			<div class="rows" id="music-list"></div>
 			<div class="keys"><span class="hint"><kbd>OK</kbd>Reproducir</span><span class="hint"><kbd>Atrás</kbd>Inicio</span></div>
 		</section>
 
 		<section id="sec-fotos" class="section" hidden>
-			<div class="section-head">
-				<h1>Fotos <span class="count" id="photo-count"></span></h1>
-				<div class="actions">
-					<a href="#" class="btn primary" id="photo-slideshow">Iniciar presentación</a>
+			<div class="list-top" id="photo-top">
+				<div class="section-head">
+					<h1>Fotos <span class="count" id="photo-count"></span></h1>
+					<div class="actions">
+						<a href="#" class="btn primary" id="photo-slideshow">Iniciar presentación</a>
+					</div>
 				</div>
+				<div class="sortrow" id="photo-sort"></div>
+				<div class="statusbar">
+					<p class="status" id="photo-status"></p>
+					<div class="actions" id="photo-tools"></div>
+				</div>
+				<div class="columns" id="photo-columns"></div>
 			</div>
-			<p class="status" id="photo-status"></p>
 			<div class="grid" id="photo-grid"></div>
 			<div class="keys"><span class="hint"><kbd>OK</kbd>Ver</span><span class="hint"><kbd>Atrás</kbd>Inicio</span></div>
 		</section>

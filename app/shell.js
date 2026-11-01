@@ -827,14 +827,20 @@
 	// Indicador de posición (ascensor): solo en Explorar y solo sobre la región de la lista de archivos.
 	var scrollInd = document.getElementById('scroll-ind');
 	var scrollThumb = document.getElementById('scroll-thumb');
-	var exploreTop = document.getElementById('explore-top');
-	var exploreList = document.getElementById('explore-list');
+	// Cada sección con lista tiene una parte fija (arriba) y la lista que se desplaza.
+	var LISTS = {
+		explorar: { top: document.getElementById('explore-top'), list: document.getElementById('explore-list') },
+		musica: { top: document.getElementById('music-top'), list: document.getElementById('music-list') },
+		fotos: { top: document.getElementById('photo-top'), list: document.getElementById('photo-grid') },
+	};
 	var EDGE = 8;
 	function updateScrollInd() {
 		var wasHidden = scrollInd.hidden;
 		scrollInd.hidden = true;
 		// Con un video en reproducción (completo o en mini), el indicador no se muestra.
-		if (current !== 'explorar' || inFull || CP.snapshot().file) return;
+		if (!LISTS[current] || inFull || CP.snapshot().file) return;
+		var exploreList = LISTS[current].list;
+		var exploreTop = LISTS[current].top;
 		var listRect = exploreList.getBoundingClientRect();
 		var topRect = exploreTop.getBoundingClientRect();
 		// Región visible de la lista: desde debajo del encabezado fijo hasta el borde inferior de la pantalla.
@@ -880,8 +886,10 @@
 	window.addEventListener('resize', updateScrollInd);
 	if (window.ResizeObserver) {
 		var scrollObserver = new ResizeObserver(updateScrollInd);
-		scrollObserver.observe(exploreList);
-		scrollObserver.observe(exploreTop);
+		Object.keys(LISTS).forEach(function (k) {
+			scrollObserver.observe(LISTS[k].list);
+			scrollObserver.observe(LISTS[k].top);
+		});
 	} else {
 		setInterval(updateScrollInd, 500);
 	}

@@ -481,35 +481,185 @@
 	}
 
 	// ---------- Música ----------
+	// ---------- Orden, vista y carga por bloques (Música y Fotos) ----------
+	// El orden y la vista son los mismos que en Explorar: se guardan en ajustes.
+	var CHUNK = 60;
+	var activeLazy = null;
+
+	// Dibuja la barra de orden (con flecha en el orden activo) y la de vista.
+	function renderSortBar(sortBox, toolsBox, cfg, onChange) {
+		clear(sortBox);
+		clear(toolsBox);
+		sortBox.appendChild(el('span', 'sort-label', 'Ordenar por'));
+		SORT_ORDER.forEach(function (m) {
+			var on = m === cfg.sort;
+			var btn = action('btn sortbtn' + (on ? ' on' : ''), SORT_LABEL[m], function () {
+				// Pulsar el orden activo invierte la dirección; uno nuevo usa su dirección por defecto.
+				var nextDir = on ? (cfg.sortDir === 'desc' ? 'asc' : 'desc') : SORT_DEFAULT_DIR[m];
+				root.CodeStore.saveSettings({ sort: m, sortDir: nextDir });
+				onChange();
+			});
+			if (on) btn.appendChild(el('span', 'sort-arrow')).innerHTML = ICON(cfg.sortDir === 'desc' ? 'arrowDown' : 'arrowUp', 18);
+			sortBox.appendChild(btn);
+			sortBox.appendChild(document.createTextNode(' '));
+		});
+		VIEW_MODES.forEach(function (v) {
+			var vb = iconButton(v.icon, v.label, v.id === cfg.explorerView);
+			vb.onclick = function () {
+				root.CodeStore.saveSettings({ explorerView: v.id });
+				onChange();
+				return false;
+			};
+			toolsBox.appendChild(vb);
+		});
+	}
+
+	// Carga perezosa: dibuja la lista por bloques. Otro bloque se añade al acercarse al final de la página
+	// o al enfocar uno de los últimos elementos dibujados.
+	function lazyList(box, items, makeNode, onChunk) {
+		var state = { next: 0 };
+		function more() {
+			var end = Math.min(items.length, state.next + CHUNK);
+			for (var i = state.next; i < end; i++) {
+				box.appendChild(makeNode(items[i], i));
+			}
+			state.next = end;
+			if (onChunk) onChunk();
+		}
+		var lazy = {
+			box: box,
+			check: function () {
+				while (state.next < items.length &&
+					document.documentElement.scrollHeight - (window.pageYOffset + window.innerHeight) < 900) {
+					more();
+				}
+			},
+			focused: function (target) {
+				var index = Array.prototype.indexOf.call(box.children, target);
+				if (index >= 0 && index >= state.next - 12) lazy.check();
+				if (index >= state.next - 12 && state.next < items.length) more();
+			},
+		};
+		activeLazy = lazy;
+		more();
+		lazy.check();
+		return lazy;
+	}
+
+	// Scroll y foco alimentan la carga por bloques de la lista activa.
+	window.addEventListener('scroll', function () { if (activeLazy) activeLazy.check(); });
+	document.addEventListener('focusin', function (e) {
+		if (activeLazy && activeLazy.box.contains(e.target)) {
+			var child = e.target;
+			while (child && child.parentNode !== activeLazy.box) child = child.parentNode;
+			if (child) activeLazy.focused(child);
+		}
+	});
+
 	function enterMusic() {
-		var list = $('music-list');
-		clear(list);
 		musicRows = [];
+		activeLazy = null;
 		$('music-count').textContent = '';
 		status('music-status', 'Buscando música en la biblioteca…');
 		root.CodeDrive.crawl(['audio'], crawlProgress('music-status', 'Buscando música…', 'pistas')).then(function (items) {
-			var sorted = L.sortItems(items, 'name');
-			$('music-count').textContent = plural(sorted.length, 'pista', 'pistas');
-			status('music-status', sorted.length ? '' : 'No hay pistas de audio en la biblioteca.');
-			$('music-play-all').onclick = function () { playTracks(sorted, 0, false); return false; };
-			$('music-shuffle-all').onclick = function () {
-				playTracks(sorted, Math.floor(Math.random() * sorted.length), true);
-				return false;
-			};
-			sorted.forEach(function (item, i) {
-				var r = row({
-					kind: 'audio', art: true, no: i + 1, title: L.titleOf(item.name),
-					sub: item.path.indexOf(' / ') >= 0 ? item.path.replace(/ \/ [^/]*$/, '') : '',
-					size: L.sizeText(item.size),
-					onPick: function () { playTracks(sorted, i, false); },
-				});
-				musicRows.push({ item: item, node: r });
-				list.appendChild(r);
-			});
-			renderMusicState(root.CodeMusic.snapshot());
+			musicState.items = items;
+			renderMusic();
 			if (root.CodeShell.current() === 'musica') focusFirst('music-list');
 		}).catch(function (e) { fail('music-status', e); });
 	}
+
+	var musicState = { items: [], sorted: [] };
+
+	function renderMusic() {
+		var cfg = root.CodeStore.settings();
+		var sorted = L.sortItems(musicState.items, cfg.sort, cfg.sortDir);
+		musicState.sorted = sorted;
+		var detail = cfg.explorerView === 'detalle';
+		$('music-count').textContent = plural(sorted.length, 'pista', 'pistas');
+		status('music-status', sorted.length ? '' : 'No hay pistas de audio en la biblioteca.');
+		renderSortBar($('music-sort'), $('music-tools'), cfg, renderMusic);
+		var cols = $('music-columns');
+		clear(cols);
+		cols.style.display = detail ? '' : 'none';
+		if (detail) cols.appendChild(el('span', 'row-col', 'Tamaño'));
+		$('music-play-all').onclick = function () { playTracks(sorted, 0, false); return false; };
+		$('music-shuffle-all').onclick = function () {
+			if (sorted.length) playTracks(sorted, Math.floor(Math.random() * sorted.length), true);
+			return false;
+		};
+		var list = $('music-list');
+		clear(list);
+		musicRows = [];
+		list.className = cfg.explorerView === 'miniatura' ? 'grid' : 'rows';
+		lazyList(list, sorted, function (item, i) {
+			var node;
+			if (cfg.explorerView === 'miniatura') {
+				node = card({ kind: 'audio', chip: 'Pista', id: item.id, title: L.titleOf(item.name), meta: L.sizeText(item.size),
+					onPick: function () { playTracks(sorted, i, false); } });
+			} else {
+				node = row({
+					kind: 'audio', art: true, no: i + 1, id: item.id, title: L.titleOf(item.name),
+					sub: item.path.indexOf(' / ') >= 0 ? item.path.replace(/ \/ [^/]*$/, '') : '',
+					size: detail ? L.sizeText(item.size) : '',
+					onPick: function () { playTracks(sorted, i, false); },
+				});
+			}
+			musicRows.push({ item: item, node: node });
+			return node;
+		}, function () { renderMusicState(root.CodeMusic.snapshot()); });
+	}
+
+	function renderPhotos() {
+		var cfg = root.CodeStore.settings();
+		var sorted = L.sortItems(photoState.items, cfg.sort, cfg.sortDir);
+		photoState.list = sorted;
+		var detail = cfg.explorerView === 'detalle';
+		$('photo-count').textContent = plural(sorted.length, 'foto', 'fotos');
+		status('photo-status', sorted.length ? '' : 'No hay fotos en la biblioteca.');
+		renderSortBar($('photo-sort'), $('photo-tools'), cfg, renderPhotos);
+		var cols = $('photo-columns');
+		clear(cols);
+		cols.style.display = detail ? '' : 'none';
+		if (detail) {
+			cols.appendChild(el('span', 'row-col wide', 'Modificado'));
+			cols.appendChild(el('span', 'row-col', 'Tamaño'));
+		}
+		$('photo-slideshow').onclick = function () {
+			if (sorted.length) openViewer(sorted, 0, true);
+			return false;
+		};
+		var grid = $('photo-grid');
+		clear(grid);
+		grid.className = cfg.explorerView === 'miniatura' ? 'grid' : 'rows';
+		activeLazy = null;
+		lazyList(grid, sorted, function (item, i) {
+			var onPick = function () { openViewer(sorted, i, false); };
+			if (cfg.explorerView === 'miniatura') {
+				return card({
+					kind: 'image', chip: 'Foto', id: item.id, title: item.name, meta: L.dateText(item.modifiedTime),
+					imageUrl: function () { return root.CodeDrive.urlFor(item); }, onPick: onPick,
+				});
+			}
+			return row({
+				kind: 'image', id: item.id, title: item.name,
+				date: detail ? L.dateText(item.modifiedTime) : '', size: detail ? L.sizeText(item.size) : '', onPick: onPick,
+			});
+		});
+		if (root.CodeShell.current() === 'fotos') focusFirst('photo-grid');
+	}
+
+	function enterPhotos() {
+		photoState.items = [];
+		activeLazy = null;
+		$('photo-count').textContent = '';
+		status('photo-status', 'Buscando fotos en la biblioteca…');
+		root.CodeDrive.crawl(['image'], crawlProgress('photo-status', 'Buscando fotos…', 'fotos')).then(function (items) {
+			photoState.items = items;
+			renderPhotos();
+		}).catch(function (e) { fail('photo-status', e); });
+	}
+
+	var photoState = { list: [], items: [] };
 
 	function playTracks(list, index, shuffle) {
 		root.CodeMusic.setQueue(list, index);
@@ -525,7 +675,9 @@
 			var tag = r.node.querySelector('.tag');
 			if (playing && !tag) {
 				var t = el('span', 'tag', s.playing ? 'Sonando' : 'En pausa');
-				r.node.insertBefore(t, r.node.querySelector('.row-col'));
+				var anchor = r.node.querySelector('.row-col');
+				if (anchor) r.node.insertBefore(t, anchor);
+				else (r.node.querySelector('.card-body') || r.node).appendChild(t);
 			} else if (playing && tag) {
 				tag.textContent = s.playing ? 'Sonando' : 'En pausa';
 			} else if (!playing && tag) {
@@ -543,33 +695,6 @@
 	}
 
 	// ---------- Fotos ----------
-	function enterPhotos() {
-		var grid = $('photo-grid');
-		clear(grid);
-		$('photo-count').textContent = '';
-		status('photo-status', 'Buscando fotos en la biblioteca…');
-		root.CodeDrive.crawl(['image'], crawlProgress('photo-status', 'Buscando fotos…', 'fotos')).then(function (items) {
-			var sorted = L.sortItems(items, 'name');
-			photoState.list = sorted;
-			$('photo-count').textContent = plural(sorted.length, 'foto', 'fotos');
-			status('photo-status', sorted.length ? '' : 'No hay fotos en la biblioteca.');
-			$('photo-slideshow').onclick = function () {
-				if (sorted.length) openViewer(sorted, 0, true);
-				return false;
-			};
-			sorted.forEach(function (item, i) {
-				grid.appendChild(card({
-					kind: 'image', chip: 'Foto', title: item.name, meta: L.dateText(item.modifiedTime),
-					imageUrl: function () { return root.CodeDrive.urlFor(item); },
-					onPick: function () { openViewer(sorted, i, false); },
-				}));
-			});
-			if (root.CodeShell.current() === 'fotos') focusFirst('photo-grid');
-		}).catch(function (e) { fail('photo-status', e); });
-	}
-
-	var photoState = { list: [] };
-
 	function openViewer(list, index, slide) {
 		viewer.open = true;
 		viewer.list = list;
