@@ -88,7 +88,8 @@
 			var target = nearest(active, DIRECTIONS[code]);
 			if (target) target.focus();
 		} else if (code === 13) {
-			if (active && active.tagName === 'A') {
+			// Si otra capa ya atendió OK (por ejemplo, reproducir/pausar en vista completa), no se activa de nuevo.
+			if (!e.defaultPrevented && active && active.tagName === 'A') {
 				e.preventDefault();
 				active.click();
 			}
