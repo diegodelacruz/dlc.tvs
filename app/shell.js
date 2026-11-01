@@ -387,8 +387,14 @@
 
 	// Reproduce un archivo de video desde una posición (o desde el inicio). list: lista de la que sale el video.
 	// Velocidades: avance cambia playbackRate; retroceso salta hacia atrás a intervalos (el video queda en pausa).
+	// El audio solo suena a 1x: en cualquier otra velocidad se silencia y se indica en el botón.
+	function applyForwardRate() {
+		player.playbackRate = RATES[rate.fwd];
+		player.muted = RATES[rate.fwd] !== 1;
+	}
+
 	function showRates() {
-		document.getElementById('ff-rate').textContent = RATES[rate.fwd] + 'x';
+		document.getElementById('ff-rate').textContent = RATES[rate.fwd] + 'x' + (RATES[rate.fwd] !== 1 ? ' · mudo' : '');
 		document.getElementById('rew-rate').textContent = (rate.rewTimer ? '-' : '') + RATES[rate.rew] + 'x';
 	}
 
@@ -398,8 +404,8 @@
 	}
 
 	function rewindStep() {
-		CP.seekBy(-RATES[rate.rew] * 0.25);
-		if (CP.status().time <= 0.25) stopRewind();
+		CP.seekBy(-RATES[rate.rew]);
+		if (CP.status().time <= 0.5) stopRewind();
 		showRates();
 	}
 
@@ -408,14 +414,14 @@
 		player.playbackRate = 1;
 		player.pause();
 		stopRewind();
-		rate.rewTimer = setInterval(rewindStep, 250);
+		rate.rewTimer = setInterval(rewindStep, 1000);
 		showRates();
 	}
 
 	function pressForward() {
 		stopRewind();
 		rate.fwd = (rate.fwd + 1) % RATES.length;
-		player.playbackRate = RATES[rate.fwd];
+		applyForwardRate();
 		if (player.paused && CP.snapshot().file) {
 			var p = player.play();
 			if (p && p.catch) p.catch(function () {});
@@ -428,7 +434,7 @@
 		stopRewind();
 		rate.fwd = 1;
 		rate.rew = 1;
-		player.playbackRate = 1;
+		applyForwardRate();
 		showRates();
 	}
 
