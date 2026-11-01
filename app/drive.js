@@ -146,5 +146,11 @@
 		hasProxy: function () { return Boolean(root.CodeTVConfig && root.CodeTVConfig.proxyBase); },
 		ready: ready,
 		status: status,
+		// Olvida lo ya leído: la próxima consulta vuelve a Drive (carpetas nuevas o compartidas).
+		refresh: function () {
+			rootsPromise = null;
+			listCache = {};
+			crawlCache = {};
+		},
 	};
 })(window);

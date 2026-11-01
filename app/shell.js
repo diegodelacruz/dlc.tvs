@@ -6,6 +6,7 @@
 //   En Inicio no se intercepta: el sistema decide.
 (function (root) {
 	var SECTIONS = ['inicio', 'explorar', 'video', 'musica', 'fotos', 'ajustes'];
+	var RELOADABLE = ['explorar', 'musica', 'fotos'];
 	var CP = root.CodePlayer;
 	var ICON = root.CodeIcons.icon;
 	var L = root.CodeLogic;
@@ -81,6 +82,7 @@
 		if (SECTIONS.indexOf(name) < 0) return;
 		if (!fromBack && name !== current) sectionHistory.push(current);
 		current = name;
+		updateReloadButton();
 		if (name !== 'inicio') armSentinel();
 		SECTIONS.forEach(function (s) {
 			document.getElementById('sec-' + s).hidden = (s !== name);
@@ -507,6 +509,17 @@
 	fullTracks.innerHTML = ICON('subtitles', 22);
 	fullToggle.innerHTML = ICON('pause', 24);
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
+	var reloadBtn = document.getElementById('reload-btn');
+	reloadBtn.innerHTML = ICON('cycle', 30);
+	reloadBtn.onclick = function () {
+		root.CodeScreens.reload(current);
+		return false;
+	};
+	// Solo en las secciones que muestran archivos de Drive.
+	function updateReloadButton() {
+		reloadBtn.hidden = RELOADABLE.indexOf(current) < 0;
+	}
+	updateReloadButton();
 	miniFull.innerHTML = ICON('fullscreen', 16);
 	miniSize.innerHTML = ICON('zoom', 16);
 	miniCorner.innerHTML = ICON('corner', 16);

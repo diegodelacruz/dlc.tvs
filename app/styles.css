@@ -143,6 +143,15 @@ a:focus {
 	align-items: center;
 }
 
+#header-right #reload-btn {
+	margin-right: 14px;
+	opacity: 0.6;
+}
+
+#header-right #reload-btn[hidden] {
+	display: none;
+}
+
 /* Mini de música: tarjeta con la pista actual. */
 .pill {
 	display: flex;

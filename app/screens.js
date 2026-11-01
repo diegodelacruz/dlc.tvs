@@ -790,6 +790,10 @@
 			initMusic();
 		},
 		enter: enter,
+		reload: function (name) {
+			root.CodeDrive.refresh();
+			enter(name);
+		},
 		back: back,
 		remember: remember,
 		openItem: openItem,
