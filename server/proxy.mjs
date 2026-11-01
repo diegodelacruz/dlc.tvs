@@ -154,7 +154,7 @@ export function createHandler({
 		}
 		const path = await vttOf(id, track.n, token);
 		res.writeHead(200, Object.assign({ 'Content-Type': 'text/vtt; charset=utf-8' }, cors));
-		createReadStream(path).pipe(res);
+		pipeTo(createReadStream(path), res);
 	}
 
 	return async function (req, res) {
@@ -195,8 +195,21 @@ export function createHandler({
 			res.end();
 			return;
 		}
-		Readable.fromWeb(upstream.body).pipe(res);
+		pipeTo(Readable.fromWeb(upstream.body), res);
 	};
+}
+
+// Envía un stream a la respuesta. Si el origen falla a mitad (p. ej. Drive corta la conexión), cierra
+// la respuesta en lugar de tumbar el proceso; si el TV se desconecta, se libera el origen.
+export function pipeTo(source, res) {
+	source.on('error', function (e) {
+		console.error('error de transmisión: ' + e.message);
+		res.destroy();
+	});
+	res.on('close', function () {
+		source.destroy();
+	});
+	source.pipe(res);
 }
 
 // Interpreta un Range sencillo (bytes=a-b, bytes=a-, bytes=-n). Sin Range o no válido: archivo completo.
@@ -227,7 +240,7 @@ export function serveLocal(req, res, path) {
 	};
 	if (range.partial) headers['Content-Range'] = 'bytes ' + range.start + '-' + range.end + '/' + size;
 	res.writeHead(range.partial ? 206 : 200, headers);
-	createReadStream(path, { start: range.start, end: range.end }).pipe(res);
+	pipeTo(createReadStream(path, { start: range.start, end: range.end }), res);
 }
 
 // Obtiene token y lo renueva antes de caducar.

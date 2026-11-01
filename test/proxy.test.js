@@ -65,3 +65,26 @@ test('rechaza con 413 y un mensaje claro un mp4 con el índice al final que supe
 		server.close();
 	}
 });
+
+test('pipeTo cierra la respuesta si el origen falla a mitad, sin tumbar el proceso', async () => {
+	const { pipeTo } = await import('../server/proxy.mjs');
+	const { Readable, PassThrough } = await import('node:stream');
+	const { EventEmitter } = await import('node:events');
+	const source = new Readable({ read() {} });
+	const res = new PassThrough();
+	let destroyed = false;
+	res.destroy = () => { destroyed = true; };
+	const errors = [];
+	const original = console.error;
+	console.error = (m) => errors.push(m);
+	try {
+		pipeTo(source, res);
+		source.push('datos');
+		source.destroy(new Error('read ETIMEDOUT'));
+		await new Promise((resolve) => setTimeout(resolve, 20));
+	} finally {
+		console.error = original;
+	}
+	assert.equal(destroyed, true);
+	assert.match(errors.join(' '), /read ETIMEDOUT/);
+});
