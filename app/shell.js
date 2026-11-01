@@ -223,7 +223,7 @@
 		barKnob.style.left = pct + '%';
 		fullTime.textContent = L.formatTime(st.time);
 		fullDuration.textContent = L.formatTime(st.duration);
-		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 44);
+		fullToggle.innerHTML = ICON(player.paused ? 'play' : 'pause', 30);
 		updateTracksLabel();
 	}
 
@@ -249,7 +249,7 @@
 		mini.className = (s.file && !inFull) ? 'show' : '';
 		if (s.file && !inFull) {
 			miniState.textContent = s.file.name + ' · ' + STATE_TEXT[s.state];
-			miniToggle.innerHTML = ICON(s.state === 'playing' ? 'pause' : 'play', 28);
+			miniToggle.innerHTML = ICON(s.state === 'playing' ? 'pause' : 'play', 20);
 		}
 		updateFullTime();
 		renderPill(null);
@@ -351,6 +351,8 @@
 	// Reproduce un archivo de video desde una posición (o desde el inicio). list: lista de la que sale el video.
 	function playVideo(file, startAt, list) {
 		var wasFull = inFull;
+		// Si ya hay un video en el mini, el siguiente o el anterior se reproducen en el mini.
+		var keepMini = CP.snapshot().file !== null && CP.snapshot().mode === 'mini';
 		var token = ++loadToken;
 		clearNotice();
 		setBusy(true);
@@ -367,10 +369,11 @@
 					return;
 				}
 				CP.play(file, url, startAt || 0);
+				if (keepMini) CP.setMode('mini');
 				armLoadTimer();
 				root.CodeTracks.loadSubtitles(player, url);
 				root.CodeScreens.remember(file);
-				if (!wasFull) history.pushState({ full: true }, '');
+				if (!wasFull && !keepMini) history.pushState({ full: true }, '');
 			});
 		}).catch(function (e) {
 			if (token !== loadToken) return;
@@ -473,22 +476,22 @@
 	fullFwd.onclick = function () { CP.seekBy(SKIP_S); return false; };
 	fullTracks.onclick = function () { trackPanel.open(this); return false; };
 
-	fullBack.innerHTML = ICON('back10', 36);
-	fullFwd.innerHTML = ICON('fwd10', 36);
-	fullTracks.innerHTML = ICON('subtitles', 36);
-	fullToggle.innerHTML = ICON('pause', 44);
+	fullBack.innerHTML = ICON('back10', 26);
+	fullFwd.innerHTML = ICON('fwd10', 26);
+	fullTracks.innerHTML = ICON('subtitles', 26);
+	fullToggle.innerHTML = ICON('pause', 30);
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
-	miniFull.innerHTML = ICON('expand', 28);
-	miniSize.innerHTML = ICON('resize', 28);
-	miniPrev.innerHTML = ICON('prev', 28);
-	miniNext.innerHTML = ICON('next', 28);
-	fullPrev.innerHTML = ICON('prev', 36);
-	fullNext.innerHTML = ICON('next', 36);
+	miniFull.innerHTML = ICON('expand', 20);
+	miniSize.innerHTML = ICON('resize', 20);
+	miniPrev.innerHTML = ICON('prev', 20);
+	miniNext.innerHTML = ICON('next', 20);
+	fullPrev.innerHTML = ICON('prev', 26);
+	fullNext.innerHTML = ICON('next', 26);
 	miniPrev.onclick = function () { prevVideo(); return false; };
 	miniNext.onclick = function () { nextVideo(); return false; };
 	fullPrev.onclick = function () { prevVideo(); return false; };
 	fullNext.onclick = function () { nextVideo(); return false; };
-	miniClose.innerHTML = ICON('close', 28);
+	miniClose.innerHTML = ICON('close', 20);
 	miniSize.onclick = function () {
 		var next = root.CodeStore.settings().miniSize === 'grande' ? 'normal' : 'grande';
 		root.CodeStore.saveSettings({ miniSize: next });
