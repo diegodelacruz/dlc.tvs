@@ -74,7 +74,8 @@
 
 	// Recorre todas las raíces y sus subcarpetas (hasta MAX_FOLDERS) y devuelve los archivos del tipo pedido con su ruta.
 	// kinds: lista como ['video'] o ['audio'] o ['image'].
-	function crawl(kinds) {
+	// onProgress(info) se llama al revisar cada carpeta: { folders, files }. Muestra el avance en listas grandes.
+	function crawl(kinds, onProgress) {
 		var key = kinds.join(',');
 		if (crawlCache[key]) return crawlCache[key];
 		crawlCache[key] = roots().then(function (rootList) {
@@ -85,6 +86,7 @@
 				if (queue.length === 0 || visited >= MAX_FOLDERS) return Promise.resolve(found);
 				var current = queue.shift();
 				visited++;
+			if (onProgress) onProgress({ folders: visited, files: found.length });
 				return children(current.id).then(function (items) {
 					items.forEach(function (item) {
 						var where = current.path ? current.path + ' / ' : '';
@@ -115,14 +117,25 @@
 		});
 	}
 
+	// Caché de miniaturas: las URL de Drive caducan, así que se reutilizan solo unos minutos.
+	// Una misma miniatura pedida varias veces comparte la misma consulta.
+	var THUMB_TTL_MS = 20 * 60 * 1000;
+	var thumbCache = {};
+
 	function thumbUrl(file) {
-		return whenLoaded(50).then(tokenNow).then(function (t) {
+		var hit = thumbCache[file.id];
+		if (hit && Date.now() - hit.at < THUMB_TTL_MS) return hit.promise;
+		var promise = whenLoaded(50).then(tokenNow).then(function (t) {
 			return root.CodeTV.drive.getThumbnailLink(file.id, t);
 		}).then(function (link) {
+			if (!link) delete thumbCache[file.id];
 			return link || '';
 		}).catch(function () {
+			delete thumbCache[file.id];
 			return '';
 		});
+		thumbCache[file.id] = { at: Date.now(), promise: promise };
+		return promise;
 	}
 
 	// URL que el elemento multimedia puede abrir. Con proxy, el token lo añade el proxy.

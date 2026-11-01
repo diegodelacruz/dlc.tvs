@@ -87,6 +87,7 @@
 	function show(name, fromBack) {
 		if (SECTIONS.indexOf(name) < 0) return;
 		if (!fromBack && name !== current) sectionHistory.push(current);
+		if (name !== current) root.CodeScreens.leave(current);
 		current = name;
 		updateReloadButton();
 		updateScrollInd();

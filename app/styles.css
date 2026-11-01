@@ -643,6 +643,23 @@ a.row:focus {
 	color: var(--muted);
 }
 
+.status.busy::before {
+	content: '';
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	margin-right: 12px;
+	vertical-align: -3px;
+	border: 3px solid var(--muted);
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: codetv-spin 0.8s linear infinite;
+}
+
+@keyframes codetv-spin {
+	to { transform: rotate(360deg); }
+}
+
 .sort-label {
 	white-space: nowrap;
 	font-size: 22px;

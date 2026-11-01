@@ -21,7 +21,7 @@
 		return n + ' ' + (n === 1 ? one : many);
 	}
 
-	var explore = { stack: [] };
+	var explore = { stack: [], scrollY: null };
 	var videoState = { list: [], detail: null };
 	var musicRows = [];
 	var viewer = { open: false, list: [], index: 0, timer: null };
@@ -49,8 +49,18 @@
 		return a;
 	}
 
+	// Avance de una búsqueda larga: carpetas revisadas y archivos encontrados.
+	function crawlProgress(id, label, unit) {
+		return function (p) {
+			status(id, label + ' Carpetas revisadas: ' + p.folders + ' · ' + unit + ' encontradas: ' + p.files + '…');
+		};
+	}
+
 	function status(id, msg) {
-		$(id).textContent = msg || '';
+		var node = $(id);
+		node.textContent = msg || '';
+		// Un mensaje que termina en … indica trabajo en curso: se muestra con un giro.
+		node.classList.toggle('busy', /…/.test(msg || ''));
 	}
 
 	function fail(id, e) {
@@ -272,7 +282,7 @@
 
 	function renderExplore() {
 		var top = explore.stack[explore.stack.length - 1];
-		status('explore-status', 'Cargando…');
+		status('explore-status', explore.stack.length > 1 ? 'Cargando carpeta…' : 'Cargando biblioteca…');
 		root.CodeDrive.children(top.id).then(function (items) {
 			var cfg = root.CodeStore.settings();
 			var mode = cfg.sort;
@@ -363,6 +373,11 @@
 			});
 			status('explore-status', sorted.length ? plural(sorted.length, 'elemento', 'elementos') + ' · carpetas primero' : 'Carpeta vacía: no hay archivos compatibles.');
 			if (root.CodeShell.current() === 'explorar') restoreFocus('explore-list', explore.stack[explore.stack.length - 1]);
+			// Al volver a Explorar, la lista queda donde se dejó.
+			if (root.CodeShell.current() === 'explorar' && explore.scrollY !== null) {
+				window.scrollTo(0, explore.scrollY);
+				explore.scrollY = null;
+			}
 		}).catch(function (e) { fail('explore-status', e); });
 	}
 
@@ -472,7 +487,7 @@
 		musicRows = [];
 		$('music-count').textContent = '';
 		status('music-status', 'Buscando música en la biblioteca…');
-		root.CodeDrive.crawl(['audio']).then(function (items) {
+		root.CodeDrive.crawl(['audio'], crawlProgress('music-status', 'Buscando música…', 'pistas')).then(function (items) {
 			var sorted = L.sortItems(items, 'name');
 			$('music-count').textContent = plural(sorted.length, 'pista', 'pistas');
 			status('music-status', sorted.length ? '' : 'No hay pistas de audio en la biblioteca.');
@@ -533,7 +548,7 @@
 		clear(grid);
 		$('photo-count').textContent = '';
 		status('photo-status', 'Buscando fotos en la biblioteca…');
-		root.CodeDrive.crawl(['image']).then(function (items) {
+		root.CodeDrive.crawl(['image'], crawlProgress('photo-status', 'Buscando fotos…', 'fotos')).then(function (items) {
 			var sorted = L.sortItems(items, 'name');
 			photoState.list = sorted;
 			$('photo-count').textContent = plural(sorted.length, 'foto', 'fotos');
@@ -906,6 +921,9 @@
 			setupIcons();
 		},
 		enter: enter,
+		leave: function (name) {
+			if (name === 'explorar') explore.scrollY = window.scrollY;
+		},
 		reload: function (name) {
 			root.CodeDrive.refresh();
 			enter(name);
