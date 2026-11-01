@@ -688,6 +688,11 @@
 	if (engine) engine.textContent = navigator.userAgent;
 
 	root.CodeScreens.init();
+	// Sección Video desactivada por interruptor (app/flags.js): se oculta su pestaña.
+	if (!root.CodeFlags.videoSection) {
+		var videoTab = document.querySelector('#tabs a[data-section="video"]');
+		if (videoTab) videoTab.hidden = true;
+	}
 	show('inicio');
 	placeStage(CP.snapshot());
 	renderPill(null);

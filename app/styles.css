@@ -119,6 +119,10 @@ a:focus {
 	margin-right: 6px;
 }
 
+#tabs a.tab[hidden] {
+	display: none;
+}
+
 #tabs a.tab.current {
 	color: var(--text);
 }
@@ -495,7 +499,7 @@ a.card:focus {
 }
 
 .card-title {
-	font-size: 32px;
+	font-size: 26px;
 	font-weight: 500;
 	white-space: nowrap;
 	overflow: hidden;
@@ -503,7 +507,7 @@ a.card:focus {
 }
 
 .card-meta {
-	font-size: 26px;
+	font-size: 20px;
 	color: var(--muted);
 	margin-top: 6px;
 	white-space: nowrap;

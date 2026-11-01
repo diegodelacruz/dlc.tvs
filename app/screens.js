@@ -173,7 +173,7 @@
 			}));
 		});
 		if (inProgress.length > 0) {
-			cont.appendChild(moreCard(plural(inProgress.length, 'elemento', 'elementos'), function () { root.CodeShell.show('video'); }));
+			cont.appendChild(moreCard(plural(inProgress.length, 'elemento', 'elementos'), function () { root.CodeShell.show(root.CodeFlags.videoSection ? 'video' : 'explorar'); }));
 		}
 
 		var rec = $('home-recent');
@@ -198,7 +198,9 @@
 			{ section: 'musica', title: 'Música', meta: 'Pistas de audio', icon: 'audio' },
 			{ section: 'fotos', title: 'Fotos', meta: 'Imágenes', icon: 'image' },
 			{ section: 'explorar', title: 'Explorar', meta: 'Carpetas de la biblioteca', icon: 'folder' },
-		].forEach(function (a) {
+		].filter(function (a) {
+			return root.CodeFlags.videoSection || a.section !== 'video';
+		}).forEach(function (a) {
 			var c = el('a', 'card');
 			c.href = '#';
 			c.onclick = function () { root.CodeShell.show(a.section); return false; };
