@@ -769,7 +769,7 @@
 		var b = el('a', 'btn iconbtn' + (on ? ' on' : ''));
 		b.href = '#';
 		b.setAttribute('aria-label', label);
-		b.innerHTML = ICON(icon, 30);
+		b.innerHTML = ICON(icon, 24);
 		b.onclick = function () { return false; };
 		return b;
 	}
@@ -779,7 +779,7 @@
 		var b = $(id);
 		var keep = b.className.replace(/\b(on|iconbtn)\b/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 		b.className = keep + ' iconbtn' + (on ? ' on' : '');
-		b.innerHTML = ICON(icon, 30);
+		b.innerHTML = ICON(icon, 24);
 		b.setAttribute('aria-label', label);
 	}
 
@@ -819,13 +819,14 @@
 		var section = root.CodeShell.current();
 		var content = document.getElementById('sec-' + section);
 		if (!content || !content.contains(document.activeElement)) return '';
-		if (window.scrollY > 0) {
-			window.scrollTo(0, 0);
-			return 'Vuelve al inicio de la página';
-		}
 		var id = listIdFor(section);
-		if (!id) return '';
-		var first = $(id).querySelector('a');
+		var first = id ? $(id).querySelector('a') : null;
+		if (window.scrollY > 0) {
+			// Sube la página y lleva el foco al primer elemento, para que la siguiente flecha parta desde arriba.
+			window.scrollTo(0, 0);
+			if (first) first.focus();
+			return 'Vuelve al inicio de la lista';
+		}
 		if (!first || document.activeElement === first) return '';
 		first.focus();
 		return 'Vuelve al inicio de la lista';

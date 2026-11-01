@@ -645,7 +645,7 @@ a.row:focus {
 
 .sort-label {
 	white-space: nowrap;
-	font-size: 28px;
+	font-size: 22px;
 	color: var(--muted);
 	margin-right: 18px;
 }
@@ -1247,8 +1247,15 @@ a.srow:focus {
 
 /* Botones de orden con el mismo ancho, sin importar el texto. */
 .btn.sortbtn {
-	min-width: 230px;
+	min-width: 180px;
 	justify-content: center;
+	padding: 10px 20px;
+	font-size: 24px;
+}
+
+/* Espacio arriba de la lista: el contorno de selección de la primera fila no queda tapado por la parte fija. */
+#explore-list {
+	padding-top: 12px;
 }
 
 .sort-arrow {
@@ -1258,8 +1265,8 @@ a.srow:focus {
 }
 
 .sort-arrow svg {
-	width: 22px;
-	height: 22px;
+	width: 18px;
+	height: 18px;
 	margin: 0;
 }
 
@@ -1268,10 +1275,10 @@ a.srow:focus {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 64px;
-	height: 64px;
+	width: 48px;
+	height: 48px;
 	padding: 0;
-	margin-left: 8px;
+	margin-left: 6px;
 }
 
 /* El icono va centrado: sin el margen de .btn svg que lo empuja a la izquierda. */
@@ -1283,8 +1290,8 @@ a.srow:focus {
 .tool-sep {
 	display: inline-block;
 	width: 2px;
-	height: 44px;
-	margin: 0 22px;
+	height: 32px;
+	margin: 0 16px;
 	vertical-align: middle;
 	background-color: var(--line);
 }
