@@ -1204,3 +1204,18 @@ a.srow:focus {
 	pointer-events: none;
 	z-index: 5;
 }
+
+/* Mini: imagen fija del video (miniatura de Drive). Debajo de los controles del mini. */
+#mini-poster {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	background-color: #000000;
+}
+
+#mini-poster[hidden] {
+	display: none;
+}

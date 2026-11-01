@@ -123,3 +123,13 @@ export async function listSharedFolders(accessToken, opts) {
 	} while (pageToken);
 	return folders;
 }
+
+// Enlace a la miniatura que Drive genera para el archivo. Devuelve null si no tiene.
+export async function getThumbnailLink(fileId, accessToken, opts) {
+	const fetchFn = (opts && opts.fetchFn) || fetch;
+	const res = await fetchFn(FILES_URL + '/' + encodeURIComponent(fileId) + '?fields=thumbnailLink', {
+		headers: { Authorization: 'Bearer ' + accessToken },
+	});
+	if (!res.ok) throw new DriveError(res.status, 'thumbnail_failed');
+	return (await res.json()).thumbnailLink || null;
+}

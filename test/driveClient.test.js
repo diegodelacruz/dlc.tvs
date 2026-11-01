@@ -73,3 +73,11 @@ test('listSharedFolders recorre todas las páginas y conserva los padres', async
 		{ id: 'B', name: 'Música', parents: [] },
 	]);
 });
+
+test('getThumbnailLink devuelve el enlace de la miniatura o null', async () => {
+	const { getThumbnailLink } = await import('../src/drive/driveClient.js');
+	const link = await getThumbnailLink('F1', 'tok', { fetchFn: async () => jsonResponse(200, { thumbnailLink: 'https://thumb/x' }) });
+	assert.equal(link, 'https://thumb/x');
+	const none = await getThumbnailLink('F1', 'tok', { fetchFn: async () => jsonResponse(200, {}) });
+	assert.equal(none, null);
+});

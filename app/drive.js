@@ -105,6 +105,17 @@
 		return crawlCache[key];
 	}
 
+	// Miniatura de Drive para un archivo (cadena vacía si no tiene o falla). Se usa como imagen fija.
+	function thumbUrl(file) {
+		return tokenNow().then(function (t) {
+			return root.CodeTV.drive.getThumbnailLink(file.id, t);
+		}).then(function (link) {
+			return link || '';
+		}).catch(function () {
+			return '';
+		});
+	}
+
 	// URL que el elemento multimedia puede abrir. Con proxy, el token lo añade el proxy.
 	function urlFor(file) {
 		var config = root.CodeTVConfig;
@@ -122,6 +133,7 @@
 		children: children,
 		crawl: crawl,
 		urlFor: urlFor,
+		thumbUrl: thumbUrl,
 		hasProxy: function () { return Boolean(root.CodeTVConfig && root.CodeTVConfig.proxyBase); },
 		ready: ready,
 		status: status,

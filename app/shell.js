@@ -35,6 +35,8 @@
 	var player = document.getElementById('player');
 	var mini = document.getElementById('mini');
 	var miniState = document.getElementById('mini-state');
+	var miniPoster = document.getElementById('mini-poster');
+	var posterFileId = null;
 	var miniFull = document.getElementById('mini-full');
 	var miniToggle = document.getElementById('mini-toggle');
 	var miniClose = document.getElementById('mini-close');
@@ -62,6 +64,8 @@
 	var expectPop = false;
 	// Atrás atendidos por tecla cuyo evento de historial aún puede llegar (el sistema lo repite).
 	var echoes = 0;
+	// Último Atrás que llegó por el historial (sin tecla) en vista normal.
+	var lastPopBackAt = 0;
 	var miniHideTimer = null;
 	// Proporción del video (ancho/alto). El mini la toma para no mostrar franjas.
 	var videoRatio = 16 / 9;
@@ -243,6 +247,21 @@
 			if (trackPanel.isOpen()) trackPanel.close();
 		}
 		placeStage(s);
+		// En el mini, el video se oculta y se muestra una imagen fija (miniatura de Drive). El sonido sigue.
+		player.style.visibility = (inFull || !s.file) ? '' : 'hidden';
+		if (inFull || !s.file) {
+			miniPoster.hidden = true;
+			posterFileId = null;
+		} else if (s.file.id !== posterFileId) {
+			posterFileId = s.file.id;
+			miniPoster.hidden = true;
+			root.CodeDrive.thumbUrl(s.file).then(function (url) {
+				if (url && posterFileId === s.file.id) {
+					miniPoster.src = url;
+					miniPoster.hidden = false;
+				}
+			});
+		}
 		// Al entrar, los controles aparecen un momento con el foco en la barra; el reproductor ya está visible.
 		if (inFull && !wasFull) showChrome();
 		if (!inFull) hideChrome();
@@ -265,6 +284,27 @@
 	}
 
 	// Sale de vista completa. Solo usa el historial si la entrada la creó la app; si no, cambia el modo.
+	// Atrás en la vista normal, en orden: cierra el menú de audio, oculta los controles, y al final sale al mini.
+	// popped: true si el sistema ya quitó la entrada del reproductor; entonces hay que volver a dejarla.
+	function handleFullBack(popped) {
+		if (trackPanel.isOpen()) {
+			trackPanel.close();
+			if (popped) history.pushState({ full: true }, '');
+			return;
+		}
+		if (chromeOn()) {
+			hideChrome();
+			if (popped) history.pushState({ full: true }, '');
+			return;
+		}
+		if (popped) {
+			CP.setMode('mini');
+			miniFull.focus();
+			return;
+		}
+		leaveFull();
+	}
+
 	function leaveFull() {
 		if (history.state && history.state.full) {
 			// La entrada del reproductor se quita aquí; su evento de historial no debe tratarse como Atrás.
@@ -525,8 +565,9 @@
 				history.pushState({ full: true }, '');
 				return;
 			}
-			CP.setMode('mini');
-			miniFull.focus();
+			// Atrás llegó primero por el historial: la misma acción, sin repetirla con la tecla.
+			lastPopBackAt = Date.now();
+			handleFullBack(true);
 			return;
 		}
 		// El sistema quitó la entrada centinela: es un Atrás, salvo que la tecla ya lo haya atendido.
@@ -607,8 +648,12 @@
 			return;
 		}
 		if (isBack && inFull) {
-			lastBackAt = Date.now();
+			e.preventDefault();
+			// Si el historial ya atendió este Atrás hace un instante, no se repite.
+			if (Date.now() - lastPopBackAt < 400) return;
 			expectEcho();
+			handleFullBack(false);
+			return;
 		}
 		if (!inFull) {
 			if (!isBack) return;
@@ -623,19 +668,6 @@
 				expectEcho();
 				armSentinel();
 			}
-			return;
-		}
-		if (trackPanel.isOpen()) {
-			if (isBack) {
-				e.preventDefault();
-				trackPanel.close();
-			}
-			return;
-		}
-		if (isBack) {
-			e.preventDefault();
-			if (chromeOn()) hideChrome();
-			else leaveFull();
 			return;
 		}
 		// Con los controles ocultos, cualquier tecla los muestra; izquierda/derecha y OK también actúan.
