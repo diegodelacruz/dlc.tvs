@@ -160,9 +160,9 @@ Los scripts de headless se ejecutaron desde la carpeta de trabajo local (no se v
 | Caso | Resultado | Notas |
 |---|---|---|
 | A1. Abrir video: empieza a 1x con audio | HL ok; TV ok (reproducción previa) | |
-| A2. OK con la barra enfocada alterna reproducir/pausa una sola vez | HL ok; pend. | Corregido: antes se alternaba dos veces (`nav.js` respeta `defaultPrevented`). |
+| A2. OK con la barra enfocada alterna reproducir/pausa una sola vez | HL ok; pend. | `nav.js` ahora respeta `defaultPrevented`, para evitar una activación doble. En headless no se reprodujo la doble activación antes del cambio: es preventivo, no confirmado como causa. |
 | A3. OK con controles ocultos: una sola acción y muestra controles | HL ok; pend. | Mismo arreglo que A2. |
-| A4. Avance a 2x y OK en el botón central: vuelve a 1x y sigue reproduciendo | HL ok; pend. | Diego lo reportó como "no funciona": causa = doble activación (A2/A3). |
+| A4. Avance a 2x y OK en el botón central: vuelve a 1x y sigue reproduciendo | HL ok; pend. | Diego reportó que no funcionaba en TV. Causa en TV no confirmada; ver A2. Pendiente de probar en TV. |
 | A5. Velocidades de avance 0.5x, 1x, 1.5x, 2x, 5x, 10x (ciclo) | HL ok | Etiqueta solo con la velocidad (sin "mudo"). |
 | A6. Audio silenciado fuera de 1x y restaurado al volver a 1x | HL ok; TV: "se mutea" (Diego, 2026-11-01) | Solo se escucha a 1x (confirmado en TV). |
 | A7. Velocidad distinta de 1x: el botón central cambia a "Volver a 1x" | HL ok; TV ok (2026-11-01, "sí, que se entienda") | |
