@@ -11,6 +11,9 @@
 	var ICON = root.CodeIcons.icon;
 	var L = root.CodeLogic;
 	var SKIP_S = 10;
+	// Velocidades de avance (playbackRate) y de retroceso (salto hacia atrás cada 250 ms). Por defecto 1x.
+	var RATES = [0.5, 1, 1.5, 2, 5, 10];
+	var rate = { fwd: 1, rew: 1, rewTimer: null };
 	var PREV_RESTART_S = 5;
 	var current = 'inicio';
 	var inFull = false;
@@ -55,6 +58,8 @@
 	var fullBack = document.getElementById('full-back');
 	var fullToggle = document.getElementById('full-toggle');
 	var fullFwd = document.getElementById('full-fwd');
+	var fullRew = document.getElementById('full-rew');
+	var fullFf = document.getElementById('full-ff');
 	var fullTracks = document.getElementById('full-tracks');
 	var fullControls = document.getElementById('full-controls');
 	var fileExt = '';
@@ -381,7 +386,54 @@
 	}
 
 	// Reproduce un archivo de video desde una posición (o desde el inicio). list: lista de la que sale el video.
+	// Velocidades: avance cambia playbackRate; retroceso salta hacia atrás a intervalos (el video queda en pausa).
+	function showRates() {
+		document.getElementById('ff-rate').textContent = RATES[rate.fwd] + 'x';
+		document.getElementById('rew-rate').textContent = (rate.rewTimer ? '-' : '') + RATES[rate.rew] + 'x';
+	}
+
+	function stopRewind() {
+		if (rate.rewTimer) clearInterval(rate.rewTimer);
+		rate.rewTimer = null;
+	}
+
+	function rewindStep() {
+		CP.seekBy(-RATES[rate.rew] * 0.25);
+		if (CP.status().time <= 0.25) stopRewind();
+		showRates();
+	}
+
+	function pressRewind() {
+		rate.rew = (rate.rew + 1) % RATES.length;
+		player.playbackRate = 1;
+		player.pause();
+		stopRewind();
+		rate.rewTimer = setInterval(rewindStep, 250);
+		showRates();
+	}
+
+	function pressForward() {
+		stopRewind();
+		rate.fwd = (rate.fwd + 1) % RATES.length;
+		player.playbackRate = RATES[rate.fwd];
+		if (player.paused && CP.snapshot().file) {
+			var p = player.play();
+			if (p && p.catch) p.catch(function () {});
+		}
+		showRates();
+	}
+
+	// Un video nuevo empieza a 1x en ambos sentidos.
+	function resetRates() {
+		stopRewind();
+		rate.fwd = 1;
+		rate.rew = 1;
+		player.playbackRate = 1;
+		showRates();
+	}
+
 	function playVideo(file, startAt, list) {
+		resetRates();
 		var wasFull = inFull;
 		// Si ya hay un video en el mini, el siguiente o el anterior se reproducen en el mini.
 		var keepMini = CP.snapshot().file !== null && CP.snapshot().mode === 'mini';
@@ -504,12 +556,16 @@
 
 	fullProgress.onclick = function () { CP.toggle(); return false; };
 	fullBack.onclick = function () { CP.seekBy(-SKIP_S); return false; };
-	fullToggle.onclick = function () { CP.toggle(); return false; };
+	fullToggle.onclick = function () { stopRewind(); showRates(); CP.toggle(); return false; };
 	fullFwd.onclick = function () { CP.seekBy(SKIP_S); return false; };
+	fullRew.onclick = function () { pressRewind(); return false; };
+	fullFf.onclick = function () { pressForward(); return false; };
 	fullTracks.onclick = function () { trackPanel.open(this); return false; };
 
-	fullBack.innerHTML = ICON('back10', 22);
-	fullFwd.innerHTML = ICON('fwd10', 22);
+	fullBack.innerHTML = ICON('skipBack', 22);
+	fullFwd.innerHTML = ICON('skipFwd', 22);
+	fullRew.innerHTML = ICON('back10', 22) + '<span class="rate" id="rew-rate"></span>';
+	fullFf.innerHTML = ICON('fwd10', 22) + '<span class="rate" id="ff-rate"></span>';
 	fullTracks.innerHTML = ICON('subtitles', 22);
 	fullToggle.innerHTML = ICON('pause', 24);
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);

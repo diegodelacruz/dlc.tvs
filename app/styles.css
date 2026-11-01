@@ -1171,6 +1171,26 @@ a.srow:focus {
 	opacity: 0.35;
 }
 
+/* Velocidad de avance y retroceso: texto pequeño bajo el icono. */
+#full-controls a.ctl {
+	position: relative;
+}
+
+#full-controls .rate {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -22px;
+	text-align: center;
+	font-size: 14px;
+	color: var(--text-2);
+	font-variant-numeric: tabular-nums;
+}
+
+#full-controls {
+	padding-bottom: 44px;
+}
+
 /* Indicador de carga: aparece al elegir un video y desaparece cuando empieza. Atrás lo cancela. */
 #busy {
 	position: fixed;
