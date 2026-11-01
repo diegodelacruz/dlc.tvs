@@ -35,8 +35,6 @@
 	var player = document.getElementById('player');
 	var mini = document.getElementById('mini');
 	var miniState = document.getElementById('mini-state');
-	var miniPoster = document.getElementById('mini-poster');
-	var posterFileId = null;
 	var miniFull = document.getElementById('mini-full');
 	var miniToggle = document.getElementById('mini-toggle');
 	var miniClose = document.getElementById('mini-close');
@@ -247,21 +245,6 @@
 			if (trackPanel.isOpen()) trackPanel.close();
 		}
 		placeStage(s);
-		// En el mini, el video se oculta y se muestra una imagen fija (miniatura de Drive). El sonido sigue.
-		player.style.visibility = (inFull || !s.file) ? '' : 'hidden';
-		if (inFull || !s.file) {
-			miniPoster.hidden = true;
-			posterFileId = null;
-		} else if (s.file.id !== posterFileId) {
-			posterFileId = s.file.id;
-			miniPoster.hidden = true;
-			root.CodeDrive.thumbUrl(s.file).then(function (url) {
-				if (url && posterFileId === s.file.id) {
-					miniPoster.src = url;
-					miniPoster.hidden = false;
-				}
-			});
-		}
 		// Al entrar, los controles aparecen un momento con el foco en la barra; el reproductor ya está visible.
 		if (inFull && !wasFull) showChrome();
 		if (!inFull) hideChrome();
@@ -521,8 +504,8 @@
 	fullTracks.innerHTML = ICON('subtitles', 26);
 	fullToggle.innerHTML = ICON('pause', 30);
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
-	miniFull.innerHTML = ICON('expand', 20);
-	miniSize.innerHTML = ICON('resize', 20);
+	miniFull.innerHTML = ICON('fullscreen', 20);
+	miniSize.innerHTML = ICON('zoom', 20);
 	miniPrev.innerHTML = ICON('prev', 20);
 	miniNext.innerHTML = ICON('next', 20);
 	fullPrev.innerHTML = ICON('prev', 26);
@@ -593,8 +576,14 @@
 	window.addEventListener('resize', function () { placeStage(CP.snapshot()); });
 
 	// Puntero en el tercio inferior de la vista normal: muestra los controles, sin mover el foco.
+	var pointerX = null;
+	var pointerY = null;
 	document.addEventListener('mousemove', function (e) {
 		if (!inFull || trackPanel.isOpen()) return;
+		// Un temblor del puntero no cuenta como movimiento: no reinicia el temporizador de ocultar.
+		if (pointerX !== null && Math.abs(e.clientX - pointerX) + Math.abs(e.clientY - pointerY) < 6) return;
+		pointerX = e.clientX;
+		pointerY = e.clientY;
 		if (e.clientY >= window.innerHeight * 2 / 3 || fullControls.contains(e.target)) revealChrome();
 	});
 

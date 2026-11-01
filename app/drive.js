@@ -106,8 +106,17 @@
 	}
 
 	// Miniatura de Drive para un archivo (cadena vacía si no tiene o falla). Se usa como imagen fija.
+	// Espera a que app.js y la llave estén cargados (Inicio se pinta antes que ellos). Reintenta unos 10 s.
+	function whenLoaded(tries) {
+		if (root.CodeTV && root.CodeTVKey) return Promise.resolve();
+		if (tries <= 0) return Promise.reject(new Error('El módulo de Drive no cargó.'));
+		return new Promise(function (resolve) { setTimeout(resolve, 200); }).then(function () {
+			return whenLoaded(tries - 1);
+		});
+	}
+
 	function thumbUrl(file) {
-		return tokenNow().then(function (t) {
+		return whenLoaded(50).then(tokenNow).then(function (t) {
 			return root.CodeTV.drive.getThumbnailLink(file.id, t);
 		}).then(function (link) {
 			return link || '';

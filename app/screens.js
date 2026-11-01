@@ -83,7 +83,7 @@
 			var img = el('img');
 			img.alt = '';
 			thumb.appendChild(img);
-			o.imageUrl().then(function (url) { img.src = url; });
+			o.imageUrl().then(function (url) { if (url) img.src = url; });
 		}
 		if (o.chip) {
 			var chip = el('span', 'chip');
@@ -164,6 +164,7 @@
 			cont.appendChild(card({
 				kind: 'video', chip: 'Video', note: L.extOf(e.name), title: L.titleOf(e.name),
 				meta: L.remainingText(e.time, e.duration), progress: e.duration ? e.time / e.duration : 0,
+				imageUrl: function () { return root.CodeDrive.thumbUrl({ id: e.id }); },
 				onPick: function () { root.CodeShell.playVideo({ id: e.id, name: e.name, kind: 'video' }, e.time); },
 			}));
 		});
@@ -180,7 +181,7 @@
 			rec.appendChild(card({
 				kind: f.kind, chip: KIND_LABEL[f.kind] || 'Archivo', note: L.extOf(f.name),
 				title: L.titleOf(f.name), meta: KIND_LABEL[f.kind] || '',
-				imageUrl: f.kind === 'image' ? function () { return root.CodeDrive.urlFor(f); } : null,
+				imageUrl: f.kind === 'image' ? function () { return root.CodeDrive.urlFor(f); } : f.kind === 'video' ? function () { return root.CodeDrive.thumbUrl(f); } : null,
 				onPick: function () { openItem(f, [f], 0); },
 			}));
 		});
