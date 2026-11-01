@@ -40,7 +40,7 @@
 	function continueList(progress, max) {
 		var list = Object.keys(progress || {}).map(function (id) {
 			var e = progress[id];
-			return { id: id, name: e.name, time: e.time, duration: e.duration, updated: e.updated || 0 };
+			return { id: id, name: e.name, path: e.path || '', time: e.time, duration: e.duration, updated: e.updated || 0 };
 		}).filter(isInProgress);
 		list.sort(function (a, b) { return b.updated - a.updated; });
 		return list.slice(0, max || 10);

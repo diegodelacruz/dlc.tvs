@@ -1430,6 +1430,11 @@ a.srow:focus {
 /* Mini: cierre arriba a la derecha; reproducción a un lado y ver/tamaño/esquina al otro. */
 #mini-close {
 	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	margin: 0;
 	position: absolute;
 	top: 6px;
 	right: 6px;

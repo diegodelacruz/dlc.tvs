@@ -188,7 +188,7 @@
 				kind: 'video', chip: 'Video', note: L.extOf(e.name), title: L.titleOf(e.name),
 				meta: L.remainingText(e.time, e.duration), progress: e.duration ? e.time / e.duration : 0,
 				imageUrl: function () { return root.CodeDrive.thumbUrl({ id: e.id }); },
-				onPick: function () { root.CodeShell.playVideo({ id: e.id, name: e.name, kind: 'video' }, e.time); },
+				onPick: function () { root.CodeShell.playVideo({ id: e.id, name: e.name, kind: 'video', path: e.path }, e.time); },
 			}));
 		});
 		if (inProgress.length > 0) {

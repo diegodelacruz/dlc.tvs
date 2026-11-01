@@ -367,11 +367,22 @@
 			updateNavButtons();
 			return Promise.resolve();
 		}
+		// Sin lista (p. ej. desde Continuar viendo): el siguiente es el de la misma carpeta de origen.
 		return root.CodeDrive.crawl(['video']).then(function (items) {
-			queue = L.sortItems(items, 'name');
+			var folder = folderOf(file.path);
+			var scope = folder === null ? items : items.filter(function (i) { return folderOf(i.path) === folder; });
+			queue = L.sortItems(scope, 'name');
 			queueIndex = indexById(queue, file.id);
 			updateNavButtons();
 		});
+	}
+
+	// Carpeta de un archivo a partir de su ruta ("Serie / Temporada 1 / ep1.mkv" -> "Serie / Temporada 1").
+	// Sin ruta devuelve null: en ese caso no hay carpeta de origen.
+	function folderOf(path) {
+		if (!path) return null;
+		var i = path.lastIndexOf(' / ');
+		return i < 0 ? '' : path.slice(0, i);
 	}
 
 	function nextVideo() {
@@ -544,7 +555,7 @@
 		if (ended) {
 			delete progress[file.id];
 		} else {
-			progress[file.id] = { name: file.name, time: time, duration: duration, updated: Date.now() };
+			progress[file.id] = { name: file.name, path: file.path || '', time: time, duration: duration, updated: Date.now() };
 		}
 		root.CodeStore.set('progress', progress);
 	}
