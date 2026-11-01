@@ -55,6 +55,9 @@
 	var fullTracks = document.getElementById('full-tracks');
 	var fullControls = document.getElementById('full-controls');
 	var fileExt = '';
+	// Proporción del video (ancho/alto). El mini la toma para no mostrar franjas.
+	var videoRatio = 16 / 9;
+	var MINI_MAX_H = 540;
 
 	var STATE_TEXT = { playing: 'Reproduciendo', paused: 'En pausa', ended: 'Terminado', idle: '' };
 
@@ -135,10 +138,17 @@
 		}
 		var r = slot.getBoundingClientRect();
 		var scale = root.CodeStore.settings().miniSize === 'grande' ? 2 : 1;
+		var width = r.width * scale;
+		var height = width / videoRatio;
+		// Un video vertical no debe tapar la pantalla: si la altura pasa del máximo, se reduce el ancho.
+		if (height > MINI_MAX_H) {
+			height = MINI_MAX_H;
+			width = height * videoRatio;
+		}
 		stage.className = 'mini';
-		stage.style.width = r.width * scale + 'px';
-		stage.style.height = r.height * scale + 'px';
-		stage.style.left = (r.right - r.width * scale) + 'px';
+		stage.style.width = width + 'px';
+		stage.style.height = height + 'px';
+		stage.style.left = (r.right - width) + 'px';
 		stage.style.top = r.top + 'px';
 	}
 
@@ -433,6 +443,13 @@
 		placeStage(CP.snapshot());
 		return false;
 	};
+
+	player.addEventListener('loadedmetadata', function () {
+		if (player.videoWidth && player.videoHeight) {
+			videoRatio = player.videoWidth / player.videoHeight;
+			placeStage(CP.snapshot());
+		}
+	});
 
 	player.addEventListener('timeupdate', function () {
 		if (inFull) updateFullTime();
