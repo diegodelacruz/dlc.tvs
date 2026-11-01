@@ -60,6 +60,9 @@
 	// Cada carga tiene un número; si llega otra antes de terminar, la anterior se ignora.
 	var loadToken = 0;
 	var expectPop = false;
+	// Atrás atendidos por tecla cuyo evento de historial aún puede llegar (el sistema lo repite).
+	var echoes = 0;
+	var miniHideTimer = null;
 	// Proporción del video (ancho/alto). El mini la toma para no mostrar franjas.
 	var videoRatio = 16 / 9;
 	var MINI_MAX_H = 540;
@@ -279,6 +282,11 @@
 		busyEl.hidden = !on;
 	}
 
+	function expectEcho() {
+		echoes++;
+		setTimeout(function () { if (echoes > 0) echoes--; }, 3000);
+	}
+
 	function cancelLoad() {
 		loadToken++;
 		setBusy(false);
@@ -388,7 +396,7 @@
 	});
 	// Búfer vacío: el video espera datos. Se indica con un giro encima del video, sin texto.
 	player.addEventListener('waiting', function () {
-		stage.setAttribute('data-buffering', '');
+		if (busyEl.hidden) stage.setAttribute('data-buffering', '');
 	});
 	player.addEventListener('playing', function () {
 		stage.removeAttribute('data-buffering');
@@ -451,6 +459,14 @@
 
 	pill.onclick = function () { show('musica'); return false; };
 
+	// Controles del mini: aparecen al llegar el foco (control remoto) y se ocultan solos.
+	stage.addEventListener('focusin', function () {
+		if (!stage.classList.contains('mini')) return;
+		stage.setAttribute('data-mini-chrome', '');
+		clearTimeout(miniHideTimer);
+		miniHideTimer = setTimeout(function () { stage.removeAttribute('data-mini-chrome'); }, 3000);
+	});
+
 	fullProgress.onclick = function () { CP.toggle(); return false; };
 	fullBack.onclick = function () { CP.seekBy(-SKIP_S); return false; };
 	fullToggle.onclick = function () { CP.toggle(); return false; };
@@ -496,11 +512,13 @@
 	window.addEventListener('popstate', function () {
 		if (expectPop) {
 			expectPop = false;
+			if (echoes > 0) echoes--;
 			return;
 		}
 		if (CP.snapshot().mode === 'full') {
-			// Si la tecla ya atendió este Atrás (menú, controles), el sistema repite la navegación: se rehace la entrada.
-			if (Date.now() - lastBackAt < 400) {
+			// Si la tecla ya atendió este Atrás, el sistema repite la navegación: se rehace la entrada del reproductor.
+			if (echoes > 0) {
+				echoes--;
 				history.pushState({ full: true }, '');
 				return;
 			}
@@ -508,8 +526,13 @@
 			miniFull.focus();
 			return;
 		}
-		// El sistema quitó la entrada centinela: es un Atrás.
+		// El sistema quitó la entrada centinela: es un Atrás, salvo que la tecla ya lo haya atendido.
 		sentinel = false;
+		if (echoes > 0) {
+			echoes--;
+			armSentinel();
+			return;
+		}
 		var result = backOnce();
 		if (result === null) {
 			armSentinel();
@@ -580,7 +603,10 @@
 			cancelLoad();
 			return;
 		}
-		if (isBack && inFull) lastBackAt = Date.now();
+		if (isBack && inFull) {
+			lastBackAt = Date.now();
+			expectEcho();
+		}
 		if (!inFull) {
 			if (!isBack) return;
 			var result = backOnce();
@@ -591,6 +617,7 @@
 			// En Inicio sin nada que hacer no se previene: el sistema decide (cerrar la app).
 			if (result) {
 				e.preventDefault();
+				expectEcho();
 				armSentinel();
 			}
 			return;
