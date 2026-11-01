@@ -1,15 +1,19 @@
 // Funciones puras de la app: orden, progreso, tiempos y listas. Sin acceso al DOM ni a la red.
 (function (root) {
 	// Carpetas primero; luego ordena por 'name', 'date' (más reciente primero) o 'size' (más grande primero).
-	function sortItems(items, mode) {
+	// dir: 'asc' o 'desc'. Sin dir: fecha y tamaño de mayor a menor (como antes), nombre A-Z.
+	function sortItems(items, mode, dir) {
 		var list = items.slice();
+		var desc = dir ? dir === 'desc' : (mode === 'date' || mode === 'size');
 		list.sort(function (a, b) {
 			var fa = a.kind === 'folder' ? 0 : 1;
 			var fb = b.kind === 'folder' ? 0 : 1;
 			if (fa !== fb) return fa - fb;
-			if (mode === 'date') return String(b.modifiedTime || '').localeCompare(String(a.modifiedTime || ''));
-			if (mode === 'size') return (b.size || 0) - (a.size || 0);
-			return String(a.name).localeCompare(String(b.name));
+			var c;
+			if (mode === 'date') c = String(a.modifiedTime || '').localeCompare(String(b.modifiedTime || ''));
+			else if (mode === 'size') c = (a.size || 0) - (b.size || 0);
+			else c = String(a.name).localeCompare(String(b.name));
+			return desc ? -c : c;
 		});
 		return list;
 	}

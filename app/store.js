@@ -20,7 +20,7 @@
 		}
 	}
 
-	var DEFAULTS = { slideSeconds: 10, sort: 'name', theme: 'Negro OLED', font: 'inter', textSize: 'normal', miniSize: 'normal', miniCorner: 'arriba' };
+	var DEFAULTS = { slideSeconds: 10, sort: 'name', theme: 'Negro OLED', font: 'inter', textSize: 'normal', miniSize: 'normal', miniCorner: 'arriba', sortDir: 'asc', explorerView: 'detalle' };
 
 	root.CodeStore = {
 		get: get,
@@ -35,6 +35,8 @@
 				textSize: s.textSize || DEFAULTS.textSize,
 				miniSize: s.miniSize || DEFAULTS.miniSize,
 				miniCorner: s.miniCorner || DEFAULTS.miniCorner,
+				sortDir: s.sortDir || DEFAULTS.sortDir,
+				explorerView: s.explorerView || DEFAULTS.explorerView,
 			};
 		},
 		saveSettings: function (patch) {

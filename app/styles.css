@@ -644,6 +644,7 @@ a.row:focus {
 }
 
 .sort-label {
+	white-space: nowrap;
 	font-size: 28px;
 	color: var(--muted);
 	margin-right: 18px;
@@ -1225,4 +1226,92 @@ a.srow:focus {
 	animation: busy-spin 0.9s linear infinite;
 	pointer-events: none;
 	z-index: 5;
+}
+
+/* Explorar: la parte superior (ruta, orden, vistas) se queda fija al bajar por la lista. */
+#explore-top {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	background-color: var(--bg);
+	padding: 8px 0 6px 0;
+}
+
+#explore-top .section-head {
+	margin-bottom: 14px;
+}
+
+#explore-top .statusbar {
+	margin-bottom: 6px;
+}
+
+/* Botones de orden con el mismo ancho, sin importar el texto. */
+.btn.sortbtn {
+	min-width: 230px;
+	justify-content: center;
+}
+
+.sort-arrow {
+	display: inline-flex;
+	margin-left: 10px;
+	vertical-align: middle;
+}
+
+.sort-arrow svg {
+	width: 22px;
+	height: 22px;
+}
+
+/* Botones solo con icono (orden, favorita, vistas, Música y Fotos). */
+.btn.iconbtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	padding: 0;
+	margin-left: 8px;
+}
+
+/* Favorita: separada del orden por una línea y con un borde propio. */
+.tool-sep {
+	display: inline-block;
+	width: 2px;
+	height: 44px;
+	margin: 0 22px;
+	vertical-align: middle;
+	background-color: var(--line);
+}
+
+.btn.iconbtn.fav-btn {
+	border-style: dashed;
+}
+
+.btn.iconbtn.fav-btn.on {
+	color: #f5c451;
+	border-color: #f5c451;
+}
+
+/* Indicador de posición (ascensor) en el borde derecho. */
+#scroll-ind {
+	position: fixed;
+	top: 0;
+	right: 6px;
+	width: 8px;
+	height: 100%;
+	z-index: 30;
+	pointer-events: none;
+}
+
+#scroll-ind[hidden] {
+	display: none;
+}
+
+#scroll-thumb {
+	position: absolute;
+	left: 0;
+	width: 8px;
+	border-radius: 4px;
+	background-color: var(--accent-hi);
+	opacity: 0.75;
 }

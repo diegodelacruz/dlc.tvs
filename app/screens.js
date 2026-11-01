@@ -3,6 +3,13 @@
 (function (root) {
 	var SORT_LABEL = { name: 'Nombre', date: 'Fecha', size: 'Tamaño' };
 	var SORT_ORDER = ['name', 'date', 'size'];
+	// Dirección por defecto de cada orden: nombre A-Z; fecha y tamaño, de mayor a menor.
+	var SORT_DEFAULT_DIR = { name: 'asc', date: 'desc', size: 'desc' };
+	var VIEW_MODES = [
+		{ id: 'lista', label: 'Vista de lista', icon: 'viewList' },
+		{ id: 'detalle', label: 'Vista de detalle', icon: 'viewDetail' },
+		{ id: 'miniatura', label: 'Vista de miniatura', icon: 'viewGrid' },
+	];
 	var KIND_LABEL = { folder: 'Carpeta', video: 'Video', audio: 'Audio', image: 'Foto' };
 	var ICON = root.CodeIcons.icon;
 	var KIND_ICON = root.CodeIcons.kindIcon;
@@ -265,8 +272,12 @@
 		var top = explore.stack[explore.stack.length - 1];
 		status('explore-status', 'Cargando…');
 		root.CodeDrive.children(top.id).then(function (items) {
-			var mode = root.CodeStore.settings().sort;
-			var sorted = L.sortItems(items, mode);
+			var cfg = root.CodeStore.settings();
+			var mode = cfg.sort;
+			var dir = cfg.sortDir;
+			var view = cfg.explorerView;
+			var sorted = L.sortItems(items, mode, dir);
+			var detail = view === 'detalle';
 
 			var crumbs = $('explore-path');
 			clear(crumbs);
@@ -283,44 +294,64 @@
 			sortBox.appendChild(el('span', 'sort-label', 'Ordenar por'));
 			SORT_ORDER.forEach(function (m) {
 				var on = m === mode;
-				sortBox.appendChild(action('btn' + (on ? ' on' : ''), SORT_LABEL[m], function () {
-					root.CodeStore.saveSettings({ sort: m });
+				var btn = action('btn sortbtn' + (on ? ' on' : ''), SORT_LABEL[m], function () {
+					// Pulsar el orden activo invierte la dirección; uno nuevo usa su dirección por defecto.
+					var nextDir = on ? (dir === 'desc' ? 'asc' : 'desc') : SORT_DEFAULT_DIR[m];
+					root.CodeStore.saveSettings({ sort: m, sortDir: nextDir });
 					renderExplore();
-				}, on ? ICON('check', 26) + ' ' : ''));
+				});
+				if (on) btn.appendChild(el('span', 'sort-arrow')).innerHTML = ICON(dir === 'desc' ? 'arrowDown' : 'arrowUp', 22);
+				sortBox.appendChild(btn);
 				sortBox.appendChild(document.createTextNode(' '));
 			});
+			// Favorita: en la misma fila que el orden, separada por una línea y con icono de estrella.
+			if (top.id !== root.CodeDrive.ROOTS_ID) {
+				var fav = isFavorite(top.id);
+				sortBox.appendChild(el('span', 'tool-sep'));
+				var favBtn = iconButton(fav ? 'starFill' : 'star', fav ? 'Quitar de favoritas' : 'Marcar como favorita', fav);
+				favBtn.className += ' fav-btn';
+				favBtn.onclick = function () {
+					toggleFavorite(top);
+					renderExplore();
+					return false;
+				};
+				sortBox.appendChild(favBtn);
+			}
 
 			var tools = $('explore-tools');
 			clear(tools);
-			if (top.id !== root.CodeDrive.ROOTS_ID) {
-				tools.appendChild(action('btn', isFavorite(top.id) ? 'Quitar de favoritas' : 'Marcar como favorita', function () {
-					toggleFavorite(top);
+			VIEW_MODES.forEach(function (v) {
+				var vb = iconButton(v.icon, v.label, v.id === view);
+				vb.onclick = function () {
+					root.CodeStore.saveSettings({ explorerView: v.id });
 					renderExplore();
-				}));
-			}
+					return false;
+				};
+				tools.appendChild(vb);
+			});
 
 			var cols = $('explore-columns');
 			clear(cols);
-			cols.appendChild(el('span', 'row-col wide', 'Modificado'));
-			cols.appendChild(el('span', 'row-col', 'Tamaño'));
+			cols.style.display = detail ? '' : 'none';
+			if (detail) {
+				cols.appendChild(el('span', 'row-col wide', 'Modificado'));
+				cols.appendChild(el('span', 'row-col', 'Tamaño'));
+			}
 
 			var box = $('explore-list');
 			clear(box);
+			box.className = view === 'miniatura' ? 'grid' : 'rows';
 			sorted.forEach(function (item) {
-				var date = L.dateText(item.modifiedTime);
-				if (item.kind === 'folder') {
+				if (view === 'miniatura') {
+					box.appendChild(explorerTile(item, sorted));
+				} else if (item.kind === 'folder') {
 					box.appendChild(row({
-						kind: 'folder', id: item.id, title: item.name, date: date, size: '',
-						onPick: function () {
-							// Al volver con Atrás, el foco regresa a esta carpeta.
-							explore.stack[explore.stack.length - 1].focusId = item.id;
-							explore.stack.push({ id: item.id, name: item.name });
-							renderExplore();
-						},
+						kind: 'folder', id: item.id, title: item.name, date: detail ? L.dateText(item.modifiedTime) : '', size: '',
+						onPick: function () { openFolder(item); },
 					}));
 				} else {
 					box.appendChild(row({
-						kind: item.kind, id: item.id, title: item.name, date: date, size: L.sizeText(item.size),
+						kind: item.kind, id: item.id, title: item.name, date: detail ? L.dateText(item.modifiedTime) : '', size: detail ? L.sizeText(item.size) : '',
 						onPick: function () {
 							remember(item);
 							openItem(item, sorted, sorted.indexOf(item));
@@ -488,9 +519,9 @@
 		now.hidden = !s.item;
 		if (s.item) {
 			$('music-now-title').textContent = (s.playing ? 'Reproduciendo: ' : 'En pausa: ') + L.titleOf(s.item.name);
-			$('music-toggle').textContent = s.playing ? 'Pausa' : 'Reproducir';
-			$('music-shuffle').textContent = 'Aleatorio: ' + (s.shuffle ? 'sí' : 'no');
-			$('music-repeat').textContent = 'Repetir: ' + (s.repeat ? 'sí' : 'no');
+			setIconBtn('music-toggle', s.playing ? 'pause' : 'play', s.playing ? 'Pausar' : 'Reproducir', false);
+			setIconBtn('music-shuffle', 'shuffle', 'Aleatorio: ' + (s.shuffle ? 'sí' : 'no'), s.shuffle);
+			setIconBtn('music-repeat', 'repeat', 'Repetir: ' + (s.repeat ? 'sí' : 'no'), s.repeat);
 		}
 	}
 
@@ -666,7 +697,7 @@
 
 		list.appendChild(settingRow('sort', 'Orden por defecto', SORT_LABEL[s.sort], function () {
 			var next = SORT_ORDER[(SORT_ORDER.indexOf(s.sort) + 1) % SORT_ORDER.length];
-			root.CodeStore.saveSettings({ sort: next });
+			root.CodeStore.saveSettings({ sort: next, sortDir: SORT_DEFAULT_DIR[next] });
 			renderSettings();
 		}, true));
 
@@ -710,6 +741,57 @@
 				window.location.href = d.file;
 			}, false));
 		});
+	}
+
+	// Entra en una carpeta de Explorar. Al volver con Atrás, el foco regresa a ella.
+	function openFolder(item) {
+		explore.stack[explore.stack.length - 1].focusId = item.id;
+		explore.stack.push({ id: item.id, name: item.name });
+		renderExplore();
+	}
+
+	// Vista de miniatura: carpetas con icono y archivos con fotograma (video) o imagen.
+	function explorerTile(item, sorted) {
+		if (item.kind === 'folder') {
+			return card({ kind: 'folder', id: item.id, chip: 'Carpeta', title: item.name, meta: '', onPick: function () { openFolder(item); } });
+		}
+		var image = item.kind === 'video' ? function () { return root.CodeDrive.thumbUrl(item); }
+			: item.kind === 'image' ? function () { return root.CodeDrive.urlFor(item); } : null;
+		return card({
+			kind: item.kind, id: item.id, chip: KIND_LABEL[item.kind] || 'Archivo', note: L.extOf(item.name),
+			title: L.titleOf(item.name), meta: L.sizeText(item.size), imageUrl: image,
+			onPick: function () { remember(item); openItem(item, sorted, sorted.indexOf(item)); },
+		});
+	}
+
+	// Botón solo con icono, con nombre accesible. on marca el estado activo.
+	function iconButton(icon, label, on) {
+		var b = el('a', 'btn iconbtn' + (on ? ' on' : ''));
+		b.href = '#';
+		b.setAttribute('aria-label', label);
+		b.innerHTML = ICON(icon, 30);
+		b.onclick = function () { return false; };
+		return b;
+	}
+
+	// Cambia un botón de texto por uno de icono (Música y Fotos).
+	function setIconBtn(id, icon, label, on) {
+		var b = $(id);
+		var keep = b.className.replace(/\b(on|iconbtn)\b/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+		b.className = keep + ' iconbtn' + (on ? ' on' : '');
+		b.innerHTML = ICON(icon, 30);
+		b.setAttribute('aria-label', label);
+	}
+
+	function setupIcons() {
+		setIconBtn('music-play-all', 'play', 'Reproducir todo', false);
+		setIconBtn('music-shuffle-all', 'shuffle', 'Reproducir en aleatorio', false);
+		setIconBtn('music-prev', 'prev', 'Anterior', false);
+		setIconBtn('music-toggle', 'play', 'Reproducir', false);
+		setIconBtn('music-next', 'next', 'Siguiente', false);
+		setIconBtn('music-shuffle', 'shuffle', 'Aleatorio: no', false);
+		setIconBtn('music-repeat', 'repeat', 'Repetir: no', false);
+		setIconBtn('photo-slideshow', 'play', 'Iniciar presentación', false);
 	}
 
 	// ---------- Entrada a cada sección y Atrás ----------
@@ -788,6 +870,7 @@
 		init: function () {
 			applySettings();
 			initMusic();
+			setupIcons();
 		},
 		enter: enter,
 		reload: function (name) {

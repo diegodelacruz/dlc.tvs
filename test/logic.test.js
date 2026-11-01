@@ -69,3 +69,16 @@ test('clampTime mantiene el tiempo dentro del archivo', () => {
 	assert.equal(L.clampTime(150, 100), 100);
 	assert.equal(L.clampTime(42, 100), 42);
 });
+
+test('sortItems respeta la dirección y mantiene carpetas primero', () => {
+	const items = [
+		{ name: 'b.mkv', kind: 'video', modifiedTime: '2024-01-01', size: 10 },
+		{ name: 'a.mp3', kind: 'audio', modifiedTime: '2025-01-01', size: 30 },
+		{ name: 'Serie', kind: 'folder', modifiedTime: '2023-01-01', size: 0 },
+	];
+	assert.deepEqual(L.sortItems(items, 'name', 'asc').map(i => i.name), ['Serie', 'a.mp3', 'b.mkv']);
+	assert.deepEqual(L.sortItems(items, 'name', 'desc').map(i => i.name), ['Serie', 'b.mkv', 'a.mp3']);
+	assert.deepEqual(L.sortItems(items, 'date', 'asc').map(i => i.name), ['Serie', 'b.mkv', 'a.mp3']);
+	assert.deepEqual(L.sortItems(items, 'date', 'desc').map(i => i.name), ['Serie', 'a.mp3', 'b.mkv']);
+	assert.deepEqual(L.sortItems(items, 'size', 'desc').map(i => i.name), ['Serie', 'a.mp3', 'b.mkv']);
+});

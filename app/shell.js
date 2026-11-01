@@ -706,6 +706,30 @@
 		var videoTab = document.querySelector('#tabs a[data-section="video"]');
 		if (videoTab) videoTab.hidden = true;
 	}
+	// Indicador de posición (ascensor): muestra qué parte de la página se ve.
+	var scrollInd = document.getElementById('scroll-ind');
+	var scrollThumb = document.getElementById('scroll-thumb');
+	function updateScrollInd() {
+		var total = document.documentElement.scrollHeight;
+		var view = window.innerHeight;
+		if (total <= view + 8) {
+			scrollInd.hidden = true;
+			return;
+		}
+		scrollInd.hidden = false;
+		var track = view - 16;
+		var h = Math.max(56, track * view / total);
+		var maxScroll = total - view;
+		var y = window.pageYOffset || 0;
+		scrollThumb.style.height = h + 'px';
+		scrollThumb.style.top = (8 + (y / maxScroll) * (track - h)) + 'px';
+	}
+	window.addEventListener('scroll', updateScrollInd);
+	window.addEventListener('resize', updateScrollInd);
+	if (window.ResizeObserver) new ResizeObserver(updateScrollInd).observe(document.getElementById('app'));
+	else setInterval(updateScrollInd, 500);
+	updateScrollInd();
+
 	show('inicio');
 	placeStage(CP.snapshot());
 	renderPill(null);
