@@ -154,13 +154,17 @@
 	}
 
 	// ---------- Inicio ----------
+	// Continuar viendo muestra como máximo 5 tarjetas; la sexta es Ver todo.
+	var HOME_ROW = 5;
+
 	function renderHome() {
 		var cont = $('home-continue');
 		clear(cont);
 		var inProgress = L.continueList(root.CodeStore.get('progress', {}), 12);
+		var shown = inProgress.slice(0, HOME_ROW);
 		$('continue-count').textContent = inProgress.length ? plural(inProgress.length, 'en curso', 'en curso') : '';
 		if (inProgress.length === 0) emptyNote(cont, 'Nada en curso. Empieza un video desde Video o Explorar.');
-		inProgress.forEach(function (e) {
+		shown.forEach(function (e) {
 			cont.appendChild(card({
 				kind: 'video', chip: 'Video', note: L.extOf(e.name), title: L.titleOf(e.name),
 				meta: L.remainingText(e.time, e.duration), progress: e.duration ? e.time / e.duration : 0,

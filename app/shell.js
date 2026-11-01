@@ -39,6 +39,7 @@
 	var miniToggle = document.getElementById('mini-toggle');
 	var miniClose = document.getElementById('mini-close');
 	var miniSize = document.getElementById('mini-size');
+	var miniCorner = document.getElementById('mini-corner');
 	var pill = document.getElementById('now-pill');
 	var pillArt = document.getElementById('pill-art');
 	var pillTitle = document.getElementById('pill-title');
@@ -149,6 +150,7 @@
 		var r = slot.getBoundingClientRect();
 		// Normal y grande: proporciones intermedias entre el tamaño anterior (1x y 2x) y lo que se ve bien en la TV.
 		var scale = root.CodeStore.settings().miniSize === 'grande' ? 1.75 : 1.35;
+		var bottom = root.CodeStore.settings().miniCorner === 'abajo';
 		var width = r.width * scale;
 		var height = width / videoRatio;
 		// Un video vertical no debe tapar la pantalla: si la altura pasa del máximo, se reduce el ancho.
@@ -160,7 +162,7 @@
 		stage.style.width = width + 'px';
 		stage.style.height = height + 'px';
 		stage.style.left = (r.right - width) + 'px';
-		stage.style.top = r.top + 'px';
+		stage.style.top = (bottom ? window.innerHeight - height - 24 : r.top) + 'px';
 	}
 
 	// Tarjeta de música en la barra: pista actual, o nada si no hay.
@@ -500,22 +502,29 @@
 	fullFwd.onclick = function () { CP.seekBy(SKIP_S); return false; };
 	fullTracks.onclick = function () { trackPanel.open(this); return false; };
 
-	fullBack.innerHTML = ICON('back10', 26);
-	fullFwd.innerHTML = ICON('fwd10', 26);
-	fullTracks.innerHTML = ICON('subtitles', 26);
-	fullToggle.innerHTML = ICON('pause', 30);
+	fullBack.innerHTML = ICON('back10', 22);
+	fullFwd.innerHTML = ICON('fwd10', 22);
+	fullTracks.innerHTML = ICON('subtitles', 22);
+	fullToggle.innerHTML = ICON('pause', 24);
 	document.getElementById('settings-btn').innerHTML = ICON('gear', 34);
-	miniFull.innerHTML = ICON('fullscreen', 20);
-	miniSize.innerHTML = ICON('zoom', 20);
-	miniPrev.innerHTML = ICON('prev', 20);
-	miniNext.innerHTML = ICON('next', 20);
-	fullPrev.innerHTML = ICON('prev', 26);
-	fullNext.innerHTML = ICON('next', 26);
+	miniFull.innerHTML = ICON('fullscreen', 16);
+	miniSize.innerHTML = ICON('zoom', 16);
+	miniCorner.innerHTML = ICON('corner', 16);
+	miniPrev.innerHTML = ICON('prev', 16);
+	miniNext.innerHTML = ICON('next', 16);
+	fullPrev.innerHTML = ICON('prev', 22);
+	fullNext.innerHTML = ICON('next', 22);
 	miniPrev.onclick = function () { prevVideo(); return false; };
 	miniNext.onclick = function () { nextVideo(); return false; };
 	fullPrev.onclick = function () { prevVideo(); return false; };
 	fullNext.onclick = function () { nextVideo(); return false; };
-	miniClose.innerHTML = ICON('close', 20);
+	miniClose.innerHTML = ICON('close', 16);
+	miniCorner.onclick = function () {
+		var next = root.CodeStore.settings().miniCorner === 'abajo' ? 'arriba' : 'abajo';
+		root.CodeStore.saveSettings({ miniCorner: next });
+		placeStage(CP.snapshot());
+		return false;
+	};
 	miniSize.onclick = function () {
 		var next = root.CodeStore.settings().miniSize === 'grande' ? 'normal' : 'grande';
 		root.CodeStore.saveSettings({ miniSize: next });

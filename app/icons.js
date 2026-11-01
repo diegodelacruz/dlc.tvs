@@ -33,6 +33,7 @@
 		prev: '<path d="M6 5v14M19 5l-9 7 9 7V5z"/>',
 		next: '<path d="M18 5v14M5 5l9 7-9 7V5z"/>',
 		resize: '<path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/>',
+		corner: '<rect x="3" y="4" width="18" height="14" rx="2"/><rect x="13" y="11" width="6" height="5" rx="1" fill="currentColor"/>',
 		zoom: '<circle cx="11" cy="11" r="7"/><path d="M16 16l5 5M11 8v6M8 11h6"/>',
 		fullscreen: '<path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/>',
 		repeat: '<path d="M4 12V9a3 3 0 0 1 3-3h11M20 12v3a3 3 0 0 1-3 3H6"/><path d="M17 3l3 3-3 3M7 21l-3-3 3-3"/>',

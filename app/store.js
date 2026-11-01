@@ -20,7 +20,7 @@
 		}
 	}
 
-	var DEFAULTS = { slideSeconds: 10, sort: 'name', theme: 'Negro OLED', font: 'inter', textSize: 'normal', miniSize: 'normal' };
+	var DEFAULTS = { slideSeconds: 10, sort: 'name', theme: 'Negro OLED', font: 'inter', textSize: 'normal', miniSize: 'normal', miniCorner: 'arriba' };
 
 	root.CodeStore = {
 		get: get,
@@ -34,6 +34,7 @@
 				font: s.font || DEFAULTS.font,
 				textSize: s.textSize || DEFAULTS.textSize,
 				miniSize: s.miniSize || DEFAULTS.miniSize,
+				miniCorner: s.miniCorner || DEFAULTS.miniCorner,
 			};
 		},
 		saveSettings: function (patch) {
