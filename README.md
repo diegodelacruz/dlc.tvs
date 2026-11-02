@@ -14,6 +14,7 @@ CodeTV es una aplicación para televisores LG con webOS que reproduce **audio, i
 
 | Documento | Idioma | Para quién |
 |---|---|---|
+| [Guía de instalación y configuración](docs/guia-instalacion.md) | Español | Quien instala la app: cuenta de desarrollador, TV, Drive, proxy y mantenimiento. |
 | [Manual de usuario](docs/manual-usuario.md) | Español | Quien usa la app. |
 | [Arquitectura](docs/arquitectura.md) | Español | Quien mantiene o extiende el código. |
 | [Implementation guide](docs/en/implementation.md) | Inglés | Developers who maintain the code. |
